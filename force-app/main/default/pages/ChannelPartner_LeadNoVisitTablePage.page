@@ -1,0 +1,135 @@
+<apex:page showHeader="false" standardStylesheets="false" sidebar="false" docType="html-5.0">
+
+    <style>
+        .header {
+            font-weight: 600;
+            color: #0B1E35;
+            margin-bottom: 20px;
+        }
+
+        .table-header-custom {
+            background-color: #6886AA;
+            color: white;
+        }
+        .table-header-custom th:first-child {
+            border-top-left-radius: 10px; /* Round top-left corner */
+        }
+        .table-header-custom th:last-child {
+            border-top-right-radius: 10px; /* Round top-right corner */
+        }
+
+        .outcome-label {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .interested {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .not-interested {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .back-link {
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            color: #0B1E35;
+            text-decoration: none;
+            margin-bottom: 20px;
+        }
+
+        .back-link i {
+            margin-right: 8px;
+        }
+
+        .search-bar {
+            max-width: 300px;
+            margin-bottom: 20px;
+        }
+    </style>
+
+    <div class="container-fluid">
+        <div class="d-flex justify-content-end mb-3">
+            <input type="text" class="form-control search-bar" placeholder="Search by project wise.."/>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead class="table-header-custom">
+                    <tr>
+                        <th scope="col">Sr.</th>
+                        <th scope="col">Channel Partner ID</th>
+                        <th scope="col">Channel Partner/Company Name</th>
+                        <th scope="col">Project Name</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Outcome</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">1</th>
+                        <td>CP001</td>
+                        <td>John Doe</td>
+                        <td>SNN Heights</td>
+                        <td>Show Flat Meeting</td>
+                        <td><span class="outcome-label interested">Interested</span></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">2</th>
+                        <td>CP002</td>
+                        <td>Jane Smith</td>
+                        <td>SNN Villas</td>
+                        <td>Meeting</td>
+                        <td><span class="outcome-label interested">Interested</span></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">3</th>
+                        <td>CP003</td>
+                        <td>Bob Johnson</td>
+                        <td>SNN Greens</td>
+                        <td>Negotiation</td>
+                        <td><span class="outcome-label not-interested">Not Interested</span></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">4</th>
+                        <td>CP004</td>
+                        <td>Alice Lee</td>
+                        <td>SNN Residency</td>
+                        <td>Show Flat Meeting</td>
+                        <td><span class="outcome-label interested">Interested</span></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">5</th>
+                        <td>CP005</td>
+                        <td>Emma Brown</td>
+                        <td>SNN Towers</td>
+                        <td>Meeting</td>
+                        <td><span class="outcome-label not-interested">Not Interested</span></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">6</th>
+                        <td>CP006</td>
+                        <td>Jack Wilson</td>
+                        <td>SNN Towers</td>
+                        <td>Negotiation</td>
+                        <td><span class="outcome-label not-interested">Not Interested</span></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">7</th>
+                        <td>CP007</td>
+                        <td>Sarah Clark</td>
+                        <td>SNN Towers</td>
+                        <td>Show Flat Meeting</td>
+                        <td><span class="outcome-label interested">Interested</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</apex:page>

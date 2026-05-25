@@ -1,0 +1,285 @@
+img {
+    height: 80px;
+    width: 217px;
+}
+.profileLeftLabels{
+    width: 450px;
+}
+@media(min-width:1680px){
+    .profileLeftLabels{
+        width: 490px;
+    }
+}
+.anniversaryCss{
+    margin-left: -95px;
+    margin-right: 40px;
+}
+@media(min-width:1680px){
+    .anniversaryCss{
+        margin-left: -110px;
+        margin-right: 40px;
+    }
+}
+.profilePic{
+    height: -webkit-fill-available;
+}
+@media(min-width:1680px){
+    img{
+        height: 87px;
+        width: 232px;
+    }
+}
+.application-date {
+    font-size: 16px; 
+    line-height: 1.5;
+    margin: 10px 0;
+}
+.headerCss{
+    margin-top: 2.3%;
+    color: #8c8c8c;
+    font-size: 37px;
+    border-bottom: 4px solid #c18d0b;
+    padding-bottom: 2px;
+    padding-left: 0;
+}
+.maivDiv{
+    background-color: white;
+    margin-left : 15%;
+	margin-right: 15%;
+    padding-left: 0;
+}
+.input-no-border {
+    --lwc-shadowButtonFocus: 0;
+    --lwc-borderWidthThin: 0;
+    --slds-c-input-shadow-focus: 0;
+    --sds-c-input-shadow-focus: 0;
+    border-bottom: 2px dashed #4d4d4d;
+}
+.appDate{
+    padding-top: 28px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #4d4d4d;
+}
+.dateCss{
+    border-top: none;
+    border-right: none;
+    border-bottom: 2px #4d4d4d dashed;
+    border-left: none;
+    width: 107px;
+    padding-top: 29px;
+}
+.unitLabels{
+    padding-left: 32px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #4d4d4d;
+}
+.unitDetails{
+    padding: 6px 75px 6px 75px;
+    background-color: #c18d0b;
+    font-size: 18px;
+    color: white;
+    font-weight: 700;
+    width: 270px;
+}
+.white-utility-icon{
+    --sds-c-icon-color-foreground-default: white;
+}
+.accordianText{
+    font-size: 20px;
+    font-weight: 600;
+}
+.colonPadding{
+    padding-right: 30px;
+}
+.height35px{
+    height: 35px !important;
+}
+.height0px{
+    height: 0px !important;
+}
+.applicantDetails{
+    padding-top: 60px;
+}
+.mainCSSContener{
+    margin: 0px 180px 0px 180px;
+}
+@media(min-width:1680px) {
+    .mainCSSContener{
+        margin: 0px 460px;
+    }
+}
+@media(min-width:1680px){
+    .headerCss{
+        margin-top: 2.3%;
+        color: #8c8c8c;
+        font-size: 40px;
+        border-bottom: 4px solid #c18d0b;
+        padding-bottom: 2px;
+        padding-left: 0;
+    }
+}
+.paddingTop28{
+    padding-top: 28px !important;
+}
+.paddingTop3{
+    padding-top: 3px;
+}
+.height17px{
+    height: 17px;
+}
+.annDate{
+    width: 143px; 
+}
+@media(min-width:1680px){
+    .annDate{
+        width: 154px; 
+    }
+}
+.firmText{
+    font-size: 14.3px;
+    line-height: 25px;
+}
+@media(min-width:1680px){
+    .firmText{
+        font-size: 15.9px;
+    }
+}
+.paddingTop32px{
+    padding-top: 32px !important;
+}
+.uploadPicCss{
+    height: 211px;
+    border: 1px solid;
+    margin-top: 50px;
+    margin-left: -33px;
+}
+.panPadding{
+    padding-right: 166px;
+}
+@media(min-width:1680px){
+    .panPadding{
+        padding-right: 188px;
+    }
+}
+.paddingBottom3px{
+    padding-bottom: 3px;
+}
+.options-container {
+    display: flex;
+    flex-wrap: wrap; 
+}
+.option-item {
+    margin-right: 10px;
+    white-space: nowrap;
+}
+.twoCol{
+    padding-top: 8px;
+    padding-left: 18px;
+    height: 48px;
+}
+.twoColLabelWidth{
+    width: 247px;
+}
+@media(min-width:1680px){
+    .twoColLabelWidth{
+        width: 267px;
+    }
+}
+@media(min-width:1680px){
+    .twoColLabelWidth2{
+        width: 218px;
+    }
+}
+.twoColInputWidth{
+    width: 214px;
+    /* width: 250px; */
+}
+@media(min-width:1680px){
+    .twoColInputWidth{
+        width: 250px;
+    }
+}
+.oneColInput{
+    margin-left: -21px;
+    width: 619px;
+}
+@media(min-width:1680px){
+    .oneColInput{
+        margin-left: -28px;
+        width: 672px;
+    }
+}
+@media(min-width:1680px){
+    .twoColGutter{
+        width: 219px;
+    }
+}
+.optionsNameCss{
+    font-size: 16px;
+    font-weight: 500;
+    color: #4d4d4d;
+}
+.addressCss{
+    height: 19px;
+}
+@media(min-width:1680px){
+    .widthCss2Col{
+        width: 507px;
+    }
+}
+.customButtonCss{
+	background-color: white;
+    border: 1px solid black;
+    border-radius: 4px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-right: 15px;
+    padding-left: 15px;
+}
+.customButtonCss:hover{
+	cursor: pointer;
+}
+.newButtonCss{
+	--slds-c-button-brand-color-background : #4d4d4d;
+    --slds-c-button-brand-color-border : #4d4d4d;
+    --slds-c-button-brand-text-color : white;
+}
+.newButtonCss:hover{
+	--slds-c-button-brand-color-background : #4d4d4d;
+    --slds-c-button-brand-color-border : #4d4d4d;
+    --slds-c-button-brand-text-color : white;
+}
+.padding0{
+    padding: 0%;
+}
+.horizontal-radio-group {
+    display: flex; 
+    flex-wrap: wrap; 
+    gap: 10px;
+}
+.radio-item {
+    display: inline-block; 
+    margin-right: 10px; 
+    height: 14px;
+}
+.radio-item label {
+    margin-left: 5px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #4d4d4d;
+}
+input[type=radio] {
+    box-sizing: border-box;
+    height: 17px;
+    width: 17px;
+}
+.kbMessage{
+    margin-left: -18px;
+    text-align: center;
+    padding: 0;
+    font-size: 11px;
+    color: #191970;
+    margin-bottom: -11px;
+}

@@ -1,0 +1,21 @@
+.headerTitle{
+    font-size: 14px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 10px;
+}
+.contentBody{
+    padding-top: 7px;
+    padding-bottom: 7px;
+    padding-left: 10px;
+}
+.receiptCss{
+    text-align: center;
+    padding: 20px;
+    font-size: 16px;
+    font-weight: 700;
+}
+.receiptInNextTab{
+    color: #b8860b;
+    font-weight: 600;
+}

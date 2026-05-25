@@ -1,0 +1,130 @@
+<apex:page showHeader="false" standardStylesheets="false" sidebar="false" docType="html-5.0" cache="false">
+    <style>
+        @media(max-width:1024px){
+            .col-md-6{
+                width: 100% !important;
+            }
+        }
+        .modal-body{
+            color: black;
+            padding-top: 0 !important;
+        }
+        .modal-content{
+            border-radius: 16px !important;
+        }
+        .modal-header{
+            padding-top: 0 !important;
+        }
+        input{
+            /* border-radius: 8px !important; */
+        }
+        .btn-danger{
+            color: #fff !important;
+            border-radius: 8px !important;
+            width: 100%;
+            max-width: 380px;
+            height: 48px;
+        }
+        .form-label{
+            margin-bottom: 12px !important;
+        }
+        .form-group{
+            margin-bottom: 24px !important;
+        }
+        input{
+            height: 38px !important;
+        }
+    </style>
+        
+        
+
+    <div class="modal fade" id="addNewMemberModal" tabindex="-1" aria-labelledby="addNewMemberModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addNewMemberModalLabel" style="display:block;text-align:center;font-size:28px;font-weight:600;">Add Team Member</h5>
+                    <button type="button" class="btn-close" ng-click="closeModal()" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body ">
+                    <p style="text-align:justify;">Expand your team by adding new members to your SNN Estates Pvt. Ltd. channel partner portal. Simply provide their details, enhance productivity and manage your projects efficiently. Keep your team aligned and focused on achieving your goals.</p>
+                    <form>
+                        <div class="row" style="text-align:left;">
+                            <!-- <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="firstName" class="form-label">First Name</label>
+                                    <input type="text" class="form-control" id="firstName" placeholder="John" ng-model="accObj.First_Name__c"/>
+                                </div>
+                            </div> -->
+                            <div class="col-md-6" style="text-align:left;">
+                                <div class="form-group">
+                                    <label for="lastName" class="form-label">Name</label>
+                                    <input type="text" class="form-control" id="lastName" placeholder="Doe" ng-model="accObj.Name"/>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="email" class="form-label">Email ID</label>
+                                    <input type="email" class="form-control" id="email" placeholder="john@gmail.com" ng-model="accObj.Email__c"/>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="phoneNumber" class="form-label">Phone Number</label>
+                                    <div class="input-group">
+                                        <div class="input-group-text" style="height: 48px; border-top-left-radius:8px; border-bottom-left-radius:8px;">+91</div>
+                                        <input type="tel" class="form-control" style="border-top-left-radius:0 !important;border-bottom-left-radius:0 !important;" id="phoneNumber" placeholder="9876543210" ng-model="accObj.Phone"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="role" class="form-label">Role</label>
+                                    <input type="text" class="form-control" id="role" placeholder="Senior Sales Manager" ng-model="accObj.Role__c"/>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="uploadImage" class="form-label">Upload Image</label>
+                                    <input type="file" class="form-control" id="uploadImage"/>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-danger mt-4" ng-click="addTeanMember()">Add Team Member</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include the Success Modal Page with parameters -->
+    <div id="successModalContainer" style="display:none;">
+        <apex:include pageName="ChannelPartner_BulkLeadSuccessflagPage">
+            <apex:param name="title" value="Team Member Added Successfully!" />
+            <apex:param name="content" value="Your team member has been added successfully to the SNN Estates Pvt. Ltd. channel partner portal." />
+        </apex:include>
+    </div>
+
+    <script>
+        function handleAddTeamMember() {
+            // Close the addNewMemberModal
+            var addNewMemberModalEl = document.getElementById('addNewMemberModal');
+            var addNewMemberModal = bootstrap.Modal.getInstance(addNewMemberModalEl);
+            addNewMemberModal.hide();
+
+            // Ensure the modal is fully closed before opening the success modal
+            addNewMemberModalEl.addEventListener('hidden.bs.modal', function () {
+                // Display the success modal container
+                document.getElementById('successModalContainer').style.display = 'block';
+
+                // Trigger the success modal to open
+                var successModalEl = document.getElementById('bulkLeadUploadSuccessModal');
+                if (successModalEl) {
+                    var successModal = new bootstrap.Modal(successModalEl);
+                    successModal.show();
+                } else {
+                    console.error("Success modal element not found.");
+                }
+            });
+        }
+    </script>
+</apex:page>

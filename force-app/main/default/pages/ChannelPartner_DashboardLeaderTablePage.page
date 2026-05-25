@@ -1,0 +1,261 @@
+<apex:page showHeader="false" standardStylesheets="false" sidebar="false" docType="html-5.0">
+
+    <style>
+        .title-color {
+            color: #0B1E35;
+        }
+        .nav-tabs {
+            border-bottom: 1px solid #dee2e6 !important;
+        }
+        .nav-tabs .nav-link {
+            border: none !important;
+            color: #000 !important;
+        }
+        .nav-tabs .nav-link.active {
+            color: #000 !important;
+            border-bottom: 3px solid #dc3545 !important;
+        }
+        .table th, .table td {
+            vertical-align: middle;
+            font-size: 14px;
+        }
+        .table-header-custom th:first-child {
+            border-top-left-radius: 10px; /* Round top-left corner */
+        }
+        .table-header-custom th:last-child {
+            border-top-right-radius: 10px; /* Round top-right corner */
+        }
+        .table-header-custom {
+            background-color: #6886AA;
+            color: white;
+        }
+        .leaderboard-rank-icon {
+            font-size: 20px;
+        }
+    </style>
+
+    <div class="container-fluid my-5">
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a class="nav-link active" id="site-visits-tab" data-bs-toggle="tab" href="#site-visits" role="tab">Basis Site Visits</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="no-of-units-tab" data-bs-toggle="tab" href="#no-of-units" role="tab">Basis No of Units</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="revenue-tab" data-bs-toggle="tab" href="#revenue" role="tab">Basis Revenue</a>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content mt-4">
+            <!-- Basis Site Visits Tab -->
+            <div class="tab-pane fade show active" id="site-visits" role="tabpanel">
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <thead class="table-header-custom">
+                            <tr>
+                                <th scope="col">Rank</th>
+                                <th scope="col">Channel Partner ID</th>
+                                <th scope="col">Channel Partner/company name</th>
+                                <th scope="col">Project Name</th>
+                                <th scope="col">Total Site Visits</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><i class="fas fa-trophy leaderboard-rank-icon" style="color: gold;"></i></td>
+                                <td>CP001</td>
+                                <td>SNN Estates</td>
+                                <td>SNN Heights</td>
+                                <td>150</td>
+                            </tr>
+                            <tr>
+                                <td><i class="fas fa-trophy leaderboard-rank-icon" style="color: silver;"></i></td>
+                                <td>CP002</td>
+                                <td>SNN Estates</td>
+                                <td>SNN Villas</td>
+                                <td>140</td>
+                            </tr>
+                            <tr>
+                                <td><i class="fas fa-trophy leaderboard-rank-icon" style="color: #cd7f32;"></i></td>
+                                <td>CP003</td>
+                                <td>SNN Estates</td>
+                                <td>SNN Greens</td>
+                                <td>130</td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>CP004</td>
+                                <td>SNN Estates</td>
+                                <td>SNN Residency</td>
+                                <td>120</td>
+                            </tr>
+                            <tr>
+                                <td>5</td>
+                                <td>CP005</td>
+                                <td>SNN Estates</td>
+                                <td>SNN Towers</td>
+                                <td>110</td>
+                            </tr>
+                            <tr>
+                                <td>6</td>
+                                <td>CP006</td>
+                                <td>SNN Estates</td>
+                                <td>SNN Towers</td>
+                                <td>108</td>
+                            </tr>
+                            <tr>
+                                <td>7</td>
+                                <td>CP007</td>
+                                <td>SNN Estates</td>
+                                <td>SNN Towers</td>
+                                <td>100</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Basis No of Units Tab -->
+            <div class="tab-pane fade" id="no-of-units" role="tabpanel">
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <thead class="table-header-custom">
+                            <tr>
+                                <th scope="col">Rank</th>
+                                <th scope="col">Channel Partner ID</th>
+                                <th scope="col">Channel Partner/company name</th>
+                                <th scope="col">Project Name</th>
+                                <th scope="col">Total Units Sold</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><i class="fas fa-trophy leaderboard-rank-icon" style="color: gold;"></i></td>
+                                <td>CP001</td>
+                                <td>SNN Estates</td>
+                                <td>SNN Heights</td>
+                                <td>35</td>
+                            </tr>
+                            <tr>
+                                <td><i class="fas fa-trophy leaderboard-rank-icon" style="color: silver;"></i></td>
+                                <td>CP002</td>
+                                <td>SNN Estates</td>
+                                <td>SNN Villas</td>
+                                <td>30</td>
+                            </tr>
+                            <tr>
+                                <td><i class="fas fa-trophy leaderboard-rank-icon" style="color: #cd7f32;"></i></td>
+                                <td>CP003</td>
+                                <td>SNN Estates</td>
+                                <td>SNN Greens</td>
+                                <td>28</td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>CP004</td>
+                                <td>SNN Estates</td>
+                                <td>SNN Residency</td>
+                                <td>26</td>
+                            </tr>
+                            <tr>
+                                <td>5</td>
+                                <td>CP005</td>
+                                <td>SNN Estates</td>
+                                <td>SNN Towers</td>
+                                <td>25</td>
+                            </tr>
+                            <tr>
+                                <td>6</td>
+                                <td>CP006</td>
+                                <td>SNN Estates</td>
+                                <td>SNN Towers</td>
+                                <td>24</td>
+                            </tr>
+                            <tr>
+                                <td>7</td>
+                                <td>CP007</td>
+                                <td>SNN Estates</td>
+                                <td>SNN Towers</td>
+                                <td>21</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Basis Revenue Tab -->
+            <div class="tab-pane fade" id="revenue" role="tabpanel">
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <thead class="table-header-custom">
+                            <tr>
+                                <th scope="col">Rank</th>
+                                <th scope="col">Channel Partner ID</th>
+                                <th scope="col">Channel Partner/company name</th>
+                                <th scope="col">Project Name</th>
+                                <th scope="col">Total Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><i class="fas fa-trophy leaderboard-rank-icon" style="color: gold;"></i></td>
+                                <td>CP001</td>
+                                <td>Sarah Clark</td>
+                                <td>SNN Heights</td>
+                                <td>₹1,20,00,000</td>
+                            </tr>
+                            <tr>
+                                <td><i class="fas fa-trophy leaderboard-rank-icon" style="color: silver;"></i></td>
+                                <td>CP002</td>
+                                <td>Jack Wilson</td>
+                                <td>SNN Villas</td>
+                                <td>₹1,15,00,000</td>
+                            </tr>
+                            <tr>
+                                <td><i class="fas fa-trophy leaderboard-rank-icon" style="color: #cd7f32;"></i></td>
+                                <td>CP003</td>
+                                <td>Olivia Patel</td>
+                                <td>SNN Greens</td>
+                                <td>₹1,10,00,000</td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>CP004</td>
+                                <td>Alice Lee</td>
+                                <td>SNN Residency</td>
+                                <td>₹1,05,00,000</td>
+                            </tr>
+                            <tr>
+                                <td>5</td>
+                                <td>CP005</td>
+                                <td>Emma Brown</td>
+                                <td>SNN Towers</td>
+                                <td>₹1,00,00,000</td>
+                            </tr>
+                            <tr>
+                                <td>6</td>
+                                <td>CP006</td>
+                                <td>Jack Wilson</td>
+                                <td>SNN Towers</td>
+                                <td>₹95,00,000</td>
+                            </tr>
+                            <tr>
+                                <td>7</td>
+                                <td>CP007</td>
+                                <td>John Doe</td>
+                                <td>SNN Towers</td>
+                                <td>₹94,00,000</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+</apex:page>

@@ -1,0 +1,276 @@
+<apex:page controller="CustomerPortalController" showHeader="false" standardStylesheets="false" sidebar="false">
+    <c:Libraries ></c:Libraries>
+
+    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous"/>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" rel="stylesheet" crossorigin="anonymous"/>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script> -->
+    <!-- SweetAlert CSS -->
+    <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/sweetalert2@7.12.15/dist/sweetalert2.min.css'></link>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@7.12.15/dist/sweetalert2.all.min.js"></script>
+
+    <style>
+        .custom-btn {
+            background-color: #9D6200 !important;
+            color: white !important;
+            font-weight: 500 !important;
+        }
+
+        .bg-image-vertical {
+            position: relative;
+            overflow: hidden;
+            background-repeat: no-repeat;
+            background-position: right center;
+            background-size: auto 100%;
+        }
+        .otp-inputs {
+            gap: 8px;
+        }
+        .otp-input-box {
+            width: 70px;
+            height: 70px;
+            border: 1px solid #C7C4C4;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 24px;
+        }
+
+        @media (min-width: 1025px) {
+            .h-custom-2 {
+                height: 100%;
+            }
+        }
+
+        /* Hide the left-side image on mobile view */
+        @media (max-width: 767.98px) {
+            .left-side-image {
+                display: none;
+            }
+        }
+
+        .left-side-image-container {
+            background-color: #0B1E35; /* Background color of your choice */
+            height: 100vh; /* Ensure it takes the full height */
+            display: flex;
+            align-items: center; /* Center the image vertically */
+            justify-content: center; /* Center the image horizontally if it's not full width */
+        }
+
+        .left-side-image-container img {
+            opacity: 0.85; /* Optional: Adjust the opacity to make the background color visible through the image */
+        }
+    </style>
+
+<div ng-app="customerPortalApp" ng-controller="CustomerPortalController">
+    <section id="app" class="vh-100">
+        <div class="container-fluid">
+            <div class="row">
+                
+                <!-- Left Side - Image with Background Color -->
+                <div class="col-sm-6 px-0 d-none d-md-block left-side-image-container">
+                    <img src="{!URLFOR($Resource.Login_Image)}"
+                         alt="Login image" class="w-100 vh-100" style="object-fit: fill; object-position: left;"/>
+                </div>
+
+                <!-- Right Side - Form -->
+                <div class="col-sm-12 col-md-6 d-flex align-items-center justify-content-center text-black">
+
+                    <div class="w-75" style="text-align:center;">
+                        <img src="{!URLFOR($Resource.SnnLogo)}" alt="SNN Logo" class="img-fluid mb-4" style="width: 42%; height: 25%;" />
+
+                        <!-- Login Form -->
+                        <div ng-show="showLogin" id="loginForm">
+                            <div class="mb-4">
+                                <div class="d-flex flex-column gap-3 mt-4">
+                                    <div class="d-flex gap-1" style="justify-content:center;">
+                                        <span class="fw-bold fs-1" style="color: #9D6200;">Welcome</span>
+                                        <span class="fw-bold fs-1" style="color: #1F1E1E;">Back!</span>
+                                    </div>
+                                    <div class="text-dark fs-6">Unlock the door to a seamless real estate experience with our exclusive customer portal. Access now and let's navigate your property journey together!</div>
+                                </div>
+                            </div>
+
+                            <!-- Phone Number Input Section -->
+                            <div class="form-group text-start">
+                                <label class="form-label fw-bold">Phone Number</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">+91</span>
+                                    <input ng-model="phoneNumber" class="form-control phone-number-input" type="text" placeholder="Enter Phone Number" />
+                                </div>
+                                <!-- Error message display -->
+    							<div ng-if="ctrl.errorMessage" class="text-danger mt-1">{{ ctrl.errorMessage }}</div>
+                            </div>
+                            <button class="btn custom-btn w-100 mt-3" type="button" ng-click="loginUser()">Get OTP</button>
+                        </div>
+                        
+                        <!-- Verify Mobile Number Form -->
+                        <div ng-hide="showLogin" id="verifyForm" class="w-100">
+                            <div class="d-flex justify-content-center align-items-center mt-4">
+                                <i class="fa fa-arrow-left me-3" ng-click="toggleForm('login')"></i>
+                                <h2 class="mb-0">Verify Mobile Number</h2>
+                            </div>
+                            <div class="d-flex flex-column align-items-center gap-3">
+                                <div class="d-flex flex-column align-items-center">
+                                    <div class="text-center">Enter the verification code sent to </div>
+                                    <div class="text-center">{{ maskedPhoneNumber }}</div>
+                                </div>
+                                <div class="d-flex otp-inputs mt-4">
+                                    <input ng-model="otp[0]" type="text" maxlength="1" class="otp-input-box" placeholder="0" />
+                                    <input ng-model="otp[1]" type="text" maxlength="1" class="otp-input-box" placeholder="0" />
+                                    <input ng-model="otp[2]" type="text" maxlength="1" class="otp-input-box" placeholder="0" />
+                                    <input ng-model="otp[3]" type="text" maxlength="1" class="otp-input-box" placeholder="0" />
+                                    <input ng-model="otp[4]" type="text" maxlength="1" class="otp-input-box" placeholder="0" />
+                                    <input ng-model="otp[5]" type="text" maxlength="1" class="otp-input-box" placeholder="0" />
+                                </div>
+                                <button class="btn custom-btn w-100 mt-3" ng-click="verifyOtp()">Verify OTP</button>
+                                <div>Didn’t get the code? <a href="#" ng-click="loginUser()" class="a-verify-text" style="cursor: pointer;">Resend</a></div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </section>
+</div>
+   
+    <script>
+        var app = angular.module('customerPortalApp', []);
+        app.controller('CustomerPortalController', ['$scope', function($scope){
+            debugger;
+            $scope.showLogin = true;
+            $scope.otp = ['', '', '', '', '', ''];
+            $scope.phoneNumber = '';
+            $scope.maskedPhoneNumber = '';
+            $scope.generatedOTP = '';
+            // $scope.toggleForm = function() {
+            //     $scope.showLogin = !$scope.showLogin;
+            // }
+        //     var self = this;
+
+        //     self.showLogin = true;
+        //     self.phoneNumber = '';
+            // self.otp = ['', '', '', '', '', ''];
+        //     self.maskedPhoneNumber = '';
+        //     self.errorMessage = ''; // To store the error message
+
+        //     self.toggleForm = function() {
+        //         self.showLogin = !self.showLogin;
+        //     };
+
+        //     self.getOtp = function() {
+        //         debugger;
+        //         const phoneNumber = self.phoneNumber.trim(); // Trim any spaces
+        //         console.log('phoneNumber:', phoneNumber); // Log the phone number for debugging
+        //         self.errorMessage = ''; // Clear any previous error messages
+            
+        //         // Call Apex method via Visualforce remoting
+        //         Visualforce.remoting.Manager.invokeAction(
+        //             '{!$RemoteAction.CustomerPortalController.checkContact}',
+        //             phoneNumber,
+        //             function(result, event) {
+        //                 if (event.status) {
+        //                     if (result) {
+        //                         // Contact exists, proceed to OTP verification
+        //                         self.maskedPhoneNumber = `+91 ${phoneNumber.substring(0, 2)}XXXXXX${phoneNumber.substring(8)}`;
+        //                         self.contactId = result;
+        //                         self.showLogin = false;
+        //                     } else {
+        //                         // Show error message instead of alert
+        //                         self.errorMessage = 'Contact not found!';
+        //                         //self.contactId = '003Im000002EAwNIAW';
+        //                         //self.showLogin = false;
+        //                     }
+        //                 } else {
+        //                     // Show error message if there's a remoting error
+        //                     self.errorMessage = 'Error occurred while verifying contact.';
+        //                 }
+        //                 $scope.$apply(); // Apply scope changes
+        //             },
+        //             { escape: false }
+        //         );
+        //     };
+
+        $scope.verifyOtp = function(){
+            // var enteredOtp = $scope.otp.join('');
+            // if (enteredOtp === $scope.generatedOTP){
+                CustomerPortalController.checkContact($scope.phoneNumber,function(result,event){
+                    debugger;
+                    if(event.status && result != 'failed'){
+                        $scope.contactId = result;
+                        localStorage.setItem('hashCode', $scope.contactId);
+                        let value = localStorage.getItem('hashCode');
+                        // console.log(value); // Output: 'value'
+                        // $scope.showLogin = false; 
+                        localStorage.setItem('phoneNumber', self.phoneNumber); // Store phone number in localStorage
+                        swal("Login Successful!", "You have logged in successfully!", "success");
+                        var sitePrefix = window.location.href.includes('/apex') ? '/apex' : '/CustomerPortal';
+                        console.log('encodeURIComponent(self.contactId)',encodeURIComponent(self.contactId));
+                        window.location.replace(window.location.origin + sitePrefix + '/CustomerPortal_Sidebar?id=' + $scope.contactId + '#/CustomerPortal_ListingsPage');
+                    }
+                    else if(event.status && result == 'failed') {
+                        swal("Login Failed!", "No details found with the provided phone number!", "error");
+                    }
+                    $scope.$apply();
+                })
+            // }else {
+            //     swal('Error', 'Please enter correct OTP!', 'error');
+            // }
+        }
+
+        $scope.toggleForm = function(form) {
+            debugger;
+            $scope.showLogin = false;
+            if (form === 'login') {
+                $scope.generatedOTP = '';
+                $scope.showLogin = true;
+            }
+        };
+
+
+        $scope.loginUser = function(){
+            debugger;
+            const phoneNumber = $scope.phoneNumber;
+            $scope.maskedPhoneNumber = `+91 ${phoneNumber.substring(0, 2)}XXXXXX${phoneNumber.substring(8)}`;
+            $scope.toggleForm('verify');
+            if($scope.phoneNumber.length == 10){
+                // CustomerPortalController.sendOTP($scope.phoneNumber, function(result, event){
+                //     debugger;
+                //     if(event.status && result){
+                //         if($scope.generatedOTP == ''){
+                //             $scope.generatedOTP = result;
+                //         }else{
+                            $scope.generatedOTP = '000000';
+                //             swal('Info', 'OTP has been resent to your phone number!', 'info');
+                //         }
+                //     }
+                //     $scope.$apply();
+                // })
+            }else {
+                swal('Info', 'Please enter valid phone number!', 'info');
+            }
+        }
+    }]);
+    document.addEventListener('DOMContentLoaded', function() {
+        const otpInputs = document.querySelectorAll('.otp-input-box');
+        
+        otpInputs.forEach((input, index) => {
+            input.addEventListener('input', () => {
+                if (input.value.length === 1 && index < otpInputs.length - 1) {
+                    otpInputs[index + 1].focus();
+                }
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && input.value.length === 0 && index > 0) {
+                    otpInputs[index - 1].focus();
+                }
+            });
+        });
+    });
+    </script>
+</apex:page>

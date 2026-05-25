@@ -1,0 +1,30 @@
+<template>
+    <lightning-card style="height: 450px;">
+        <div class="slds-p-horizontal_medium slds-p-vertical_medium">
+            <h2 style="padding: 12px;background-color: #906a09; color:white; border-radius:5px;" class="slds-text-heading_medium slds-text-align_center">CRM Approval Process</h2>
+            <div class="slds-p-vertical_small" style="font-weight: 600; color:green;">
+                <ul style="list-style-type: disc; padding-left: 20px;">
+                    <li>The system automatically assigns a CRM User using the Round Robin mechanism to ensure fair task distribution.</li>
+                    <li>Click 'Submit for Approval' to initiate the approval process.</li>
+                    <li>The approval process first routes to the Sales Head for initial review.</li>
+                    <li>Once approved by the Sales Head, the assigned CRM User conducts the final review and approval.</li>
+                    <li>The submission is finalized only after approvals from both the Sales Head and the CRM User.</li>
+                </ul>
+            </div>
+            <!-- <lightning-combobox label="Select CRM User"
+                placeholder="Select CRM User" 
+                value={selectedUserId} 
+                options={userOptions} 
+                onchange={handleUserChange} disabled>
+            </lightning-combobox> -->
+        </div>
+        <footer class="slds-card__footer slds-p-top_medium">
+            <lightning-button 
+                variant="brand" 
+                label="Assign &amp; Submit For Approval" 
+                onclick={handleSubmit}
+                disabled={isDisabled}>
+            </lightning-button>
+        </footer>
+    </lightning-card>
+</template>

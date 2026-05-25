@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>OTP Config</label>
+    <protected>false</protected>
+    <values>
+        <field>EndPoint__c</field>
+        <value xsi:type="xsd:string">https://smsapi1.ozonetel.com/OzonetelSMS/api.php?action=sendSMS</value>
+    </values>
+    <values>
+        <field>apiKey__c</field>
+        <value xsi:type="xsd:string">snn.trans</value>
+    </values>
+    <values>
+        <field>entityId__c</field>
+        <value xsi:type="xsd:string">1101505990000082914</value>
+    </values>
+    <values>
+        <field>senderId__c</field>
+        <value xsi:type="xsd:string">KK0c709b5e8095488c4dd94dcf6e08e06b</value>
+    </values>
+    <values>
+        <field>smsType__c</field>
+        <value xsi:type="xsd:string">SMS_TRANS</value>
+    </values>
+    <values>
+        <field>userName__c</field>
+        <value xsi:type="xsd:string">SNN</value>
+    </values>
+</CustomMetadata>

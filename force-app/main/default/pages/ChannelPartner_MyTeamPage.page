@@ -1,0 +1,717 @@
+<apex:page showHeader="false" standardStylesheets="false" sidebar="false" docType="html-5.0" controller="ChannelPartner_Controller">
+    <html>
+        <div ng-controller="cppmyteam_ctrl">
+            <head>
+                <style>
+                    .team-header {
+                        font-weight: 600;
+                        color: #0B1E35;
+                        margin-bottom: 10px;
+                    }
+            
+                    .team-subtitle {
+                        font-size: 16px;
+                        color: #666666;
+                        margin-bottom: 40px;
+                    }
+            
+                    /* .team-member-card {
+                        text-align: center;
+                        margin-bottom: 30px;
+                    } */
+
+                    .team-member-card {
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: space-between;
+                        padding: 5px;
+                        border-radius: 10px;
+                        text-align: center;
+                        margin-bottom: 30px;
+                    }
+
+                    .footer1 {
+                        margin-top: auto; /* Pushes buttons to the bottom */
+                        text-align: center;
+
+                    }
+            
+                    .team-member-card img {
+                        width: 128px;
+                        height: 128px;
+                        border-radius: 50%;
+                        object-fit: cover;
+                        margin-bottom: 15px;
+                    }
+            
+                    .team-member-card h5 {
+                        font-size: 16px;
+                        font-weight: 600;
+                        color: #0B1E35;
+                        margin-bottom: 5px;
+                        flex-direction: column;
+                    }
+
+                    .team-member-card p {
+                        font-size: 14px;
+                        color: #0B1E35;
+                        margin-bottom: 15px;
+                    }
+
+                    .btn-custom {
+                        background-color: #9D6200!important;
+                        color: white!important;
+                        padding: 10px 20px;
+                        border-radius: 5px;
+                        font-size: 14px;
+                        font-weight: 600;
+                    }
+
+                    .btn-edit {
+                        border: 1px solid #0B1E35!important;
+                        color: #0B1E35!important;
+                        background-color: white!important;
+                    }
+
+                    .back-link {
+                        font-weight: 600;
+                        color: #0B1E35;
+                        text-decoration: none;
+                        margin-bottom: 20px;
+                    }
+
+                    .back-link p {
+                        margin-right: 8px;
+                        cursor: pointer;
+                    }
+
+                    .profile-card {
+                        display: flex;
+                        border: 1px solid #e0e0e0;
+                        background-color: #fff;
+                        margin: 20px;
+                        font-family: 'Arial', sans-serif;
+                    }
+
+                    .profile-details {
+                        display: flex;
+                        flex-direction: column;
+                    }
+
+                    .profile-details .row {
+                        display: flex;
+                        flex-wrap: wrap;
+                    }
+
+                    .profile-details .col-md-6 {
+                        flex: 1;
+                    }
+
+                    .profile-details {
+                        font-size: 20px;
+                    }
+
+                    .profile-details p {
+                        font-size: 20px;
+                        color: #333;
+                    }
+
+                    .table th, .table td {
+                        vertical-align: middle;
+                        font-size: 14px;
+                        border-color: gainsboro;
+                    }
+
+                    .profile-img-css {
+                        border-radius: 50%;
+                        width: 160px;
+                        height: 160px !important;
+                        object-fit: cover;
+                        border: 3px solid #ffffff;
+                        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+                    }
+
+                    .profile-pic {
+                        width: 160px !important;
+                        height: 160px !important;
+                    }
+
+                    .table-header-custom {
+                        background-color: #6886AA;
+                        color: white;
+                    }
+
+                    .lead-stage {
+                        text-align: center;
+                        width: 100px;
+                        font-size: 12px;
+                        font-weight: 600;
+                        padding: 5px 10px;
+                        border-radius: 20px;
+                        display: inline-block;
+                    }
+            
+                    .stage-New {
+                        background-color: #2D6ECF;
+                        color: white;
+                    }
+            
+                    .stage-SV_Planned {
+                        background-color: #07ffde;
+                        color: white;
+                    }
+            
+                    /* .stage-Accepted {
+                        background-color: #28a745;
+                        color: white;
+                    } */
+            
+                    /* .stage-SV_Prospect {
+                        background-color: #0B1E35;
+                        color: white;
+                    } */
+            
+                    .stage-Dropped {
+                        background-color: #ff0000;
+                        color: white;
+                    }
+            
+                    .stage-Contacted {
+                        background-color: #7700ff;
+                        color: white;
+                    }
+                    .stage-Assigned {
+                        background-color: #ffc400;
+                        color: white;
+                    }
+                    .stage-Re-Enquiry {
+                        background-color: #ff7b00;
+                        color: white;
+                    }
+                    .stage-Qualified {
+                        background-color: #28a745;
+                        color: white;
+                    }
+
+                    /* Custom styles for floating button */
+                    .floating-button {
+                        position: fixed;
+                        bottom: 20px;
+                        right: 20px;
+                        z-index: 1000;
+                        border-radius: 50%;
+                        background-color: #fff;
+                        padding: 10px;
+                        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                    }
+
+                    .floating-button img {
+                        width: 40px;
+                        height: 40px;
+                    }
+                    .loadingSection {
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        z-index: 9999;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                    }
+
+                    .loadingBackground {
+                        position: absolute;
+                        width: 100%;
+                        height: 100%;
+                        background-color: rgba(0, 0, 0, 0.5); /* Dark semi-transparent background */
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                    }
+
+                    .loadingWrapper {
+                        position: relative;
+                        z-index: 10000; /* Ensures the loader is above the background */
+                    }
+                    .loader {
+                        width: 48px;
+                        height: 48px;
+                        border: 5px solid #FFF;
+                        border-bottom-color: transparent;
+                        border-radius: 50%;
+                        display: inline-block;
+                        box-sizing: border-box;
+                        animation: rotation 1s linear infinite;
+                    }
+
+                    @keyframes rotation {
+                        0% {
+                            transform: rotate(0deg);
+                        }
+                        100% {
+                            transform: rotate(360deg);
+                        }
+                    }
+
+                    .add-member{
+                        min-width: 200px !important;
+                        flex: 0 !important;
+                    }
+
+                        .profile-card {
+                            flex-direction: column !important; /* Stack image and details vertically on mobile */
+                            align-items: flex-start !important; /* Align items to the start */
+                        }
+                        
+                        .profile-img-container {
+                            margin-bottom: 20px !important; /* Add space between image and details */
+                            margin-right: 0 !important; /* Remove margin on right in mobile view */
+                            text-align: center !important;
+                        }
+
+                        .profile-img {
+                            width: 120px !important; /* Adjust image size for mobile */
+                        }
+
+                        .profile-card {
+                            background-color: #fff !important; /* Background for card */
+                            border: 1px solid #ddd !important; /* Card border */
+                            border-radius: 16px !important; /* Rounded corners */
+                            padding: 20px !important; /* Padding inside card */
+                            display: flex !important; /* Flex layout to align image and details side by side */
+                            align-items: center !important; /* Align image and details vertically */
+                            max-width: 100% !important; /* Limit card width */
+                            margin: 20px auto !important; /* Center card horizontally */
+                        }
+
+                        /* Container for the profile image */
+                        .profile-img-container {
+                            flex: 0 0 120px; /* Fixed width for the profile image */
+                            margin-right: 20px; /* Space between image and details */
+                        }
+
+                        /* Profile image */
+                        .profile-img {
+                            width: 100%; /* Full width for the image container */
+                            height: auto; /* Maintain aspect ratio */
+                            border-radius: 50%; /* Circular image */
+                        }
+
+                        /* Profile details section */
+                        .profile-details {
+                            flex-grow: 1; /* Take up remaining space */
+                        }
+
+                        .col-md-4 {
+                            flex: 0 0 100%; /* Full-width cards for smaller screens */
+                        }
+
+                        .profile-info{
+                            width: 100%;
+                            margin-bottom: 5px !important;
+                        }
+
+                    @media (min-width: 1024px){
+                        .card-container1{
+                            display: none !important;
+                        }
+                    }
+
+                    @media (max-width: 1024px) {
+                        .edit-row{
+                            width: 100% !important;
+                        }
+                    }
+
+                    @media (max-width: 1080px){
+                        .col-md-4, .profile-edit-form{
+                            width: 100% !important;
+                        }
+                        .profile-details{
+                            width: 100% !important;
+                        }
+                        .profile-detail{
+                            width: 100% !important;
+                        }
+                    }
+
+                    /* @media (max-width : 1024px){
+                        .table-responsive1{
+                            display: none !important;
+                        }
+                    } */
+
+                    th{
+                        color: white !important;
+                    }
+
+                    .card-container {
+                        display: flex;
+                        flex-wrap: wrap; /* Allow wrapping to the next line */
+                        margin: 20px; /* Margin around the container */
+                    }
+
+                    .lead-card {
+                        background-color: #fff; /* Card background */
+                        border: 1px solid #ddd; /* Border for the card */
+                        border-radius: 8px; /* Rounded corners */
+                        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional shadow */
+                        margin-bottom: 20px; /* Space between cards */
+                        padding: 15px; /* Inner padding for card content */
+                        transition: transform 0.2s ease-in-out;
+                    }
+
+                    .lead-card:hover {
+                        transform: scale(1.05); /* Slight zoom on hover */
+                    }
+
+                    .card-title {
+                        font-size: 18px;
+                        font-weight: bold;
+                        margin-bottom: 10px;
+                    }
+
+                    .lead-stage {
+                        padding: 5px 10px;
+                        border-radius: 5px;
+                        font-weight: bold;
+                    }
+
+                    .profile-img{
+                        height:200px;
+                        width:200px; 
+                        margin-right:70px !important;
+                        margin-left:80px;
+                    }
+
+                    .scrollable-profiles {
+                        display: contents;
+                        /* flex-direction: row; */
+                        overflow-x: auto;
+                        max-width: 100%;
+                        margin-top: 20px;
+                        padding: 10px;
+                        scroll-snap-type: x mandatory;
+                    }
+
+                    @media (max-width: 768px) {
+                        .scrollable-profiles {
+                            display: flex;
+                            flex-direction: row; /* Stack vertically on larger screens */
+                            overflow: visible; /* Remove scrolling on larger screens */
+                            overflow-x: auto;
+                            max-width: 100%;
+                            margin-top: 20px;
+                            padding: 10px;
+                            scroll-snap-type: x mandatory;
+                        }
+                        .team-member-card{
+                            margin-right:25px;
+                        }
+                    }
+
+                    @media(max-width:1024px){
+                        .col-md-6{
+                            width: 100%;
+                        }
+                    }
+
+                    .upload-icon {
+                        position: absolute;
+                        bottom: 2px;
+                        right: 8px;
+                        background-color: #9D6200;
+                        color: white;
+                        border-radius: 50%;
+                        padding: 5px;
+                        cursor: pointer;
+                        border: 2px solid #ffffff;
+                        width: 48px;
+                        height: 48px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
+
+                    .edit-profile-header{
+                        font-size: 20px !important;
+                        font-weight: 600 !important;
+                        margin-bottom: 16px !important;
+                    }
+
+                    .role{
+                        height: 24px;
+                    }
+                </style>
+            </head>
+
+            <body>
+                <div class="loadingSection" ng-show="showSpinner">
+                    <div class="loadingBackground">
+                        <div class="loadingWrapper">
+                            <div class="loader"></div>
+                        </div>
+                    </div>
+                </div>
+                <div ng-show="myTeam">
+                    <div id="myteamPageContent" class="container-fluid">
+                        <!-- Header -->
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h2 class="team-header">My Team</h2>
+                            </div>
+                            <!-- Add the button for desktop view -->
+                            <button class="btn btn-custom add-member d-none d-md-inline-block" id="addTeamMemberBtn">
+                                Add Team Member
+                            </button>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <p class="team-subtitle">
+                                Explore the profiles of our expert agents at SNN Estates who are ready to assist you. 
+                                Get to know their experience, areas of specialization, and contact information to make your real estate journey smoother.
+                                Our dedicated team is here to provide you with exceptional support and guidance throughout your property search.
+                            </p>
+                            
+                            <!-- Add the button for mobile view below the subtitle -->
+                            <button class="btn btn-custom add-member d-md-none" id="addTeamMemberBtnMobile">
+                                Add Team Member
+                            </button>
+                        </div>
+                        
+                        <!-- Team Members -->
+                        <div class="row">
+                            <div class="scrollable-profiles">
+                                <div class="col-md-3 team-member-card" ng-repeat="teamMember in teamMembers">
+                                    <div ng-if="teamMember.Profile_Pic_Attachment_Id__c != undefined" class="image-previewIF d-flex align-items-center justify-content-center">
+                                        <img class="mr-2 mb-2" src="{{profileUrl + teamMember.Profile_Pic_Attachment_Id__c}}" alt="avatar" />
+                                    </div>
+                                    <div ng-show="teamMember.Profile_Pic_Attachment_Id__c == undefined" class="image-previewIF d-flex align-items-center justify-content-center" style="background-color:#ddd;height:85%;">
+                                        <i class="fa-solid fa-circle-user fa-8x"></i>
+                                    </div>
+                                    <h5>{{teamMember.Name}}</h5>
+                                    <p class="role">{{teamMember.Role__c}}</p>
+                                    <div class="footer1">
+                                        <button class="btn btn-edit" ng-click="showEditProfile(teamMember)" style="margin-top: 10px;">Edit Profile</button>
+                                        <button class="btn btn-custom" ng-click="showTeamDetail(teamMember)" style="margin-top: 10px;">View Details</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>                    
+                    <!-- Include the Add New Member Modal -->
+                    <apex:include pageName="ChannelPartner_AddNewMemberPage" />
+                        
+                    <div id="editProfileContent" style="display:none;">
+                        <a href="#" class="mb-4 back-link" onclick="showMyTeamsPage()"><i class="bi bi-arrow-left"></i>Edit Profile</a>
+                        <apex:include pageName="ChannelPartner_MyTeamEditProfilePage"/>
+                    </div>  
+                    <div id="viewDetailsContent" style="display:none;">
+                        <a href="#" class="mb-4 back-link" onclick="showMyTeamsPage()"><i class="bi bi-arrow-left"></i>Back</a>
+                        <apex:include pageName="ChannelPartner_MyTeamViewDetailsPage"/>
+                    </div>
+                </div>
+                <div ng-show="teamMemberDetails">
+                    <div class="container-fluid">
+                        <span class="mb-4 back-link"><p class="bi bi-arrow-left" ng-click="showMainPage()">&nbsp;&nbsp;&nbsp;Back</p></span>
+                        <div class="profile-card">
+                            <div class="row profile-info">
+                                <!-- <div class="col-md-4 d-flex justify-content-center">
+                                    <div  ng-if="memberRecord.Profile_Pic_Attachment_Id__c != undefined" class="profile-img d-flex align-items-center justify-content-center">
+                                        <img class="profile-img-css profile-pic mr-2 mb-2" src="{{profileUrl + memberRecord.Profile_Pic_Attachment_Id__c}}" alt="avatar" />
+                                    </div>
+                                    <div ng-show="memberRecord.Profile_Pic_Attachment_Id__c == undefined" class="profile-img d-flex align-items-center justify-content-center" style="background-color:#ddd;height:85%;">
+                                        <i class="fa-solid fa-circle-user fa-10x"></i>
+                                    </div>
+                                </div> -->
+                                <div class="col-md-4 d-flex justify-content-center">
+                                    <div class="profile-img-css profile-pic" ng-if="memberRecord.Profile_Pic_Attachment_Id__c != undefined">
+                                        <img class="profile-img-css" src="{{profileUrl + memberRecord.Profile_Pic_Attachment_Id__c}}" alt="avatar" />
+                                    </div>
+                                    <div class="profile-img-css profile-pic" ng-show="memberRecord.Profile_Pic_Attachment_Id__c == undefined">
+                                        <i class="fa-solid fa-circle-user fa-10x"></i>
+                                    </div>
+                                </div>
+                                <!-- <img src="{!URLFOR($Resource.personProfile)}" alt="Profile Image" class="profile-img" style=""/> -->
+                                <div class="col-md-8 profile-details">
+                                    <div class="row">
+                                        <div class="col-md-6 profile-detail">
+                                            <p style="text-align: left;"><strong>Name: </strong>{{memberRecord.Name}}</p>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 profile-detail">
+                                            <p><strong>Email ID: </strong>{{memberRecord.Email__c}}</p>
+                                        </div>
+                                        <div class="col-md-6 profile-detail">
+                                            <p><strong>Phone Number: </strong>{{memberRecord.Phone}}</p>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 profile-detail">
+                                            <p><strong>Department: </strong>{{memberRecord.Department__c}}</p>
+                                        </div>
+                                        <div class="col-md-6 profile-detail">
+                                            <p><strong>Role: </strong>{{memberRecord.Role__c}}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>                        
+
+                        <div ng-if = "paginatedLeads.length > 0" class="table-responsive1">
+                            <table class="table">
+                                <thead class="table-header-custom">
+                                    <tr>
+                                        <th scope="col">Sr.</th>
+                                        <th scope="col">Customer name</th>
+                                        <th scope="col">Email ID</th>
+                                        <th scope="col">Mobile Number</th>
+                                        <th scope="col">Submission Date</th>
+                                        <th scope="col">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="border:none;">
+                                    <tr ng-repeat = "lead in paginatedLeads">
+                                        <td>{{index+1}}</td>
+                                        <td>{{lead.LastName}}</td>
+                                        <td>{{lead.Email}}</td>
+                                        <td>{{lead.Phone}}</td>
+                                        <td>04 Aug 2024</td>
+                                        <td><span class="lead-stage {{statusClassMapping[lead.Status]}}">{{lead.Status}}</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div ng-if="paginatedLeads.length == 0" class="no-payment-card">
+                            <div class="card-body">
+                                <h5 class="card-title">Customers Not Found</h5>
+                                <p class="card-text">No Customers are available. Please contact support for further assistance.</p>
+                            </div>
+                        </div>
+
+
+                        <div class="card-container1">
+                            <div ng-if = "paginatedLeads.length > 0" class="row mobile-cards1">
+                                <div class="col-md-4 col-sm-12" ng-repeat="lead in paginatedLeads">
+                                    <div class="card lead-card">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Lead {{ $index + 1 }}</h5>
+                                            <p><strong>Customer Name:</strong> {{lead.LastName}}</p>
+                                            <p><strong>Email ID:</strong> {{lead.Email}}</p>
+                                            <p><strong>Mobile Number:</strong> {{lead.Phone}}</p>
+                                            <p><strong>Submission Date:</strong> 04 Aug 2024</p>
+                                            <p><strong>Status:</strong> 
+                                                <span class="lead-stage {{statusClassMapping[lead.Status]}}">
+                                                    {{lead.Status}}
+                                                </span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+
+                        <!--Pagination-->
+                        <div ng-if = "paginatedLeads.length > 0" class="d-flex justify-content-between align-items-center mt-4">
+                            <div>
+                                <span>Showing {{getDisplayedRange()}} of {{totalItems}} entries</span>
+                            </div>
+                            <nav>
+                                <ul class="pagination">
+                                    <li class="page-item" ng-class="{disabled: currentPage == 1}">
+                                        <a class="page-link" href="" ng-click="prevPages()">
+                                            <i class="bi bi-arrow-left"></i> Prev
+                                        </a>
+                                    </li>
+                
+                                    <!-- Dynamically displayed page numbers -->
+                                    <li class="page-item" ng-repeat="page in getPageRange()" ng-class="{active: currentPage == page}">
+                                        <a class="page-link" href="" ng-click="goToPage(page)">
+                                            {{page}}
+                                        </a>
+                                    </li>
+                
+                                    <li class="page-item" ng-class="{disabled: currentPage == totalPages}">
+                                        <a class="page-link" href="" ng-click="nextPages()">
+                                            Next <i class="bi bi-arrow-right"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+                <div ng-show="editProfile">
+                    <div class="container-fluid">
+                        <span class="mb-4 back-link"><p class="bi bi-arrow-left" ng-click="showMainPage()">&nbsp;&nbsp;&nbsp;Edit Profile</p></span>
+                        <div class="row">
+                            <div class="col-md-4 text-center">
+                                <div class="profile-container">
+                                    <div class="profile-img-css" ng-if="memberRecord.Profile_Pic_Attachment_Id__c != undefined">
+                                        <span ng-show="imageSrc == undefined">
+                                            <img class="profile-img-css" src="{{profileUrl + memberRecord.Profile_Pic_Attachment_Id__c}}" alt="avatar" />
+                                        </span>
+                                        <span ng-hide="imageSrc == undefined">
+                                            <img class="profile-img-css" id="profileImg" src="{{imageSrc}}" alt="avatar" />
+                                        </span>
+                                    </div>
+                                    <div class="profile-img-css" ng-show="memberRecord.Profile_Pic_Attachment_Id__c == undefined">
+                                        <!-- Replace this URL with your Salesforce static resource URL -->
+                                        <span ng-show="imageSrc == undefined">
+                                            <i class="fa-solid fa-circle-user fa-10x"></i>
+                                        </span>
+                                        <span ng-hide="imageSrc == undefined">
+                                            <img class="profile-img-css" id="profileImg" src="{{imageSrc}}" alt="avatar" />
+                                        </span>
+                                    </div>
+                                    <!-- <img src="{!URLFOR($Resource.personProfile)}" alt="Profile Image" class="profile-img-css" id="profileImg"/> -->
+                                    <div class="upload-icon" onclick="document.getElementById('uploadProfile')?.click();">
+                                        <i class="bi bi-plus"></i>
+                                    </div>
+                                </div>
+                                <!-- <input type="file" accept=".jpg,.jpeg" id="uploadInput" style="display: none;" ng-file-select="onFileSelect($files)" ng-model="imageSrc"/> -->
+                                <input type="file" accept=".jpg,.jpeg" id="uploadProfile" ng-file-select="onFileSelect($files)" ng-model="imageSrc" style="display: none;" />
+                                <div class="profile-info-css">
+                                    <h4>{{memberRecord.Name}}</h4>
+                                    <button type="submit" class="btn btn-custom" ng-click="saveChanges()">Save Profile</button>
+                                    <!-- <button type="button" class="btn btn-edit">Remove Profile</button> -->
+                                </div>
+                            </div>
+                            <div class="col-md-8 profile-edit-form">
+                                <h3 class="edit-profile-header">Personal Information</h3>
+                                <form class="edit-profile-form">
+                                    <div class="row mb-3">
+                                        <div class="col-md-6 edit-row">
+                                            <label for="firstName">Name</label>
+                                            <input type="text" class="form-control" id="firstName" ng-model="memberRecord.Name"/>
+                                        </div>
+                                        <div class="col-md-6 edit-row">
+                                            <label for="email">Email ID</label>
+                                            <input type="email" class="form-control" id="email" ng-model="memberRecord.Email__c"/>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-6 edit-row">
+                                            <label for="phone">Phone Number</label>
+                                            <input type="tel" class="form-control" id="phone" ng-model="memberRecord.Phone"/>
+                                        </div>
+                                        <div class="col-md-6 edit-row">
+                                            <label for="role">Role</label>
+                                            <input type="text" class="form-control" id="role" ng-model="memberRecord.Role__c"/>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </body>
+        </div>
+    </html>
+    
+</apex:page>

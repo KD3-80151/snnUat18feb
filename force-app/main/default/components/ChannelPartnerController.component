@@ -1,0 +1,121 @@
+<apex:component >
+    <script> 
+        angular.module('number', [])
+            .directive('number', function () {
+                return {
+                    require: 'ngModel',
+                    restrict: 'A',
+                    link: function (scope, element, attrs, ctrl) {
+                        ctrl.$parsers.push(function (input) {
+                            if (input == undefined) return ''
+                            var inputNumber = input.toString().replace(/[^0-9]/g, '');
+                            if (inputNumber != input) {
+                                ctrl.$setViewValue(inputNumber);
+                                ctrl.$render();
+                            }
+                            return inputNumber;
+                        });
+                    }
+                };
+            });
+
+        angular.module('decimal', [])
+            .directive('decimal', function () {
+                return {
+                    require: 'ngModel',
+                    restrict: 'A',
+                    link: function (scope, element, attrs, ctrl) {
+                        ctrl.$parsers.push(function (input) {
+                            if (input == undefined) return ''
+                            var inputNumber = input.toString().replace(/[^0-9/.]/g, '');
+                            if (inputNumber != input) {
+                                ctrl.$setViewValue(inputNumber);
+                                ctrl.$render();
+                            }
+                            return inputNumber;
+                        });
+                    }
+                };
+            });
+        angular.module('specialChar', [])
+            .directive('specialChar', function () {
+                return {
+                    require: 'ngModel',
+                    restrict: 'A',
+                    link: function (scope, element, attrs, ctrl) {
+                        ctrl.$parsers.push(function (input) {
+                            if (input == undefined) return ''
+                            var inputNumber = input.toString().replace(/[^0-9/.]/g, '');
+                            if (inputNumber != input) {
+                                ctrl.$setViewValue(inputNumber);
+                                ctrl.$render();
+                            }
+                            return inputNumber;
+                        });
+                    }
+                };
+            });
+        angular.module('text', [])
+            .directive('text', function () {
+                return {
+                    require: 'ngModel',
+                    restrict: 'A',
+                    link: function (scope, element, attrs, ctrl) {
+                        ctrl.$parsers.push(function (input) {
+                            if (input == undefined) return ''
+                            var inputText = input.toString();
+                            inputText = inputText ? inputText.replace(/&amp;/g, '&').replace(/&#39;/g, '\'').replaceAll('&amp;amp;', '&').replaceAll('&amp;gt;', '>').replaceAll('&lt;', '<').replaceAll('lt;', '<').replaceAll('&gt;', '>').replaceAll('gt;', '>').replaceAll('&amp;', '&').replaceAll('amp;', '&').replaceAll('&quot;', '\'') : inputText;
+                            if (inputText != input) {
+                                ctrl.$setViewValue(inputText);
+                                ctrl.$render();
+                            }
+                            return inputText;
+                        });
+                    }
+                };
+            });
+        angular.module('textarea', [])
+            .directive('textarea', function () {
+                return {
+                    require: 'ngModel',
+                    restrict: 'A',
+                    link: function (scope, element, attrs, ctrl) {
+
+                        ctrl.$parsers.push(function (input) {
+                            if (input == undefined) return ''
+
+                            var inputText = input.toString().replace(/[^a-zA-Z\.\s]/g, '');
+                            if (inputText != input) {
+
+                                ctrl.$setViewValue(inputText);
+                                ctrl.$render();
+                            }
+                            return inputText;
+                        });
+                    }
+                };
+            });
+
+
+        angular.module('channelpartner_app', ['ngRoute', 'number', 'text', 'textarea', 'decimal', 'specialChar']);
+
+    </script>
+
+    <!-- Channel Partner -->
+    <script src="{!$Resource.ChannelPartner_SidebarPage}" />
+    <script src="{!$Resource.ChannelPartner_DashboardPage}" />
+    <script src="{!$Resource.ChannelPartner_LeadPage}" />
+    <script src="{!$Resource.ChannelPartner_SiteVisit}" />
+    <script src="{!$Resource.ChannelPartner_MyTeamPage}" />
+    <script src="{!$Resource.ChannelPartner_MarketingPage}" />
+    <script src="{!$Resource.ChannelPartner_BrokerageCalculatorPage}" />
+    <script src="{!$Resource.ChannelPartner_ProjectsPage}" />
+    <script src="{!$Resource.ChannelPartner_AvailabilityPage}" />
+    <script src="{!$Resource.ChannelPartner_EventsPage}" />
+    <script src="{!$Resource.ChannelPartner_AboutUsPage}" />
+    <script src="{!$Resource.ChannelPartner_TermsConditionPage}" />
+    <script src="{!$Resource.ChannelPartner_HeaderPage}" />
+    <script src="{!$Resource.ChannelPartner_TicketsPage}" />
+    <script src="{!$Resource.ChannelPartner_ProfileDetailsPage}" />
+    <script src="{!$Resource.ChannelPartner_MyInvoicesPage}" />
+</apex:component>

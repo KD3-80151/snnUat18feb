@@ -1,0 +1,160 @@
+<apex:page showHeader="false" standardStylesheets="false" sidebar="false" docType="html-5.0" controller="ChannelPartner_Controller">
+    <html>
+        <div ng-controller="cppmyinvoices_ctrl">
+            <head>
+                <!-- Include Bootstrap CSS -->
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous"/>
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+                <!-- Include Font Awesome -->
+                <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" rel="stylesheet" crossorigin="anonymous"/>
+                <!-- Include Bootstrap Icons -->
+                <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css" rel="stylesheet" crossorigin="anonymous"/>
+                <style>
+                    .title-color {
+                        color: #0B1E35;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container-fluid">
+                    <h2 class="title-color">My Invoices</h2>
+                    <div ng-if = "myInvoices.length > 0" class="table-responsive1" style="margin-top: 20px;">
+                        <table class="table">
+                            <thead class="table-header-custom">
+                                <tr>
+                                    <th scope="col">Sr.</th>
+                                    <th scope="col">CP ID</th>
+                                    <th scope="col">CP Name</th>
+                                    <th scope="col">Project Name</th>
+                                    <th scope="col">Unit Name</th>
+                                    <th scope="col">Invoice No.</th>
+                                    <th scope="col">Invoice Submission Date</th>
+                                    <th scope="col">Transaction Details</th>
+                                    <th scope="col">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody style="border:none;">
+                                <tr ng-repeat = "invoice in myInvoices">
+                                    <td>{{$index+1}}</td>
+                                    <td>{{invoice.Channel_Partner__r.Channel_Partner_Id__c}}</td>
+                                    <td>{{invoice.Channel_Partner__r.Name}}</td>
+                                    <td>{{invoice.Project__r.Name}}</td>
+                                    <td>{{invoice.Unit__r.Unit_Name__c}}</td>
+                                    <td>{{invoice.Name}}</td>
+                                    <td>{{invoice.CreatedDate}}</td>
+                                    <td><button class="btn1" ng-click="openPreview(invoice)"><i class="bi bi-eye"></i></button></td>
+                                    <td><span class="approval-status {{statusClassMapping[invoice.Approval_Status__c]}}">{{invoice.Approval_Status__c}}</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Pagination -->
+                        <div ng-if = "myInvoices.length > 0" class="d-flex justify-content-between align-items-center mt-4">
+                            <div>
+                                <span>Showing {{getDisplayedRange()}} of {{totalAllInvoicePages}} entries</span>
+                            </div>
+                            <nav>
+                                <ul class="pagination">
+                                    <li class="page-item" ng-class="{disabled: currentAllInvoicePage == 1}">
+                                        <a class="page-link" href="" ng-click="prevPages()">
+                                            <i class="bi bi-arrow-left"></i> Prev
+                                        </a>
+                                    </li>
+                                    <!-- Dynamically displayed page numbers -->
+                                    <li class="page-item" ng-repeat="page in getPageRange()" ng-class="{active: currentAllInvoicePage == page}">
+                                        <a class="page-link" href="" ng-click="goToPage(page)">
+                                            {{page}}
+                                        </a>
+                                    </li>
+                                    <li class="page-item" ng-class="{disabled: currentAllInvoicePage == totalAllInvoicePages}">
+                                        <a class="page-link" href="" ng-click="nextPages()">
+                                            Next <i class="bi bi-arrow-right"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                    <div class="modal fade" id="detailInvoiceModal" tabindex="-1" role="dialog" aria-labelledby="detailInvoiceModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title text-center w-100" id="detailInvoiceModalLabel">Transaction Details</h5>
+                                    <button type="button" class="close" data-dismiss="modal" ng-click="closeModal()" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <p style="text-align:justify;">Easily view all your transaction details with SNN Estates Access a comprehensive summary of your transactions, including dates, amounts, and statuses. Stay informed and manage your financial records efficiently.</p>
+                                    <form>
+                                        <div class="row" style="text-align:left;">
+                                            <div class="col-md-6" style="text-align:left;">
+                                                <div class="form-group">
+                                                    <strong>Invoice Id: </strong>{{invoiceRec.Name}}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6" style="text-align:left;">
+                                                <div class="form-group">
+                                                    <strong>Invoice Submission Date: </strong>{{invoiceRec.CreatedDate}}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6" style="text-align:left;">
+                                                <div class="form-group">
+                                                    <strong>Agreement Value: </strong>₹{{invoiceRec.Agreement_Value__c}}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6" style="text-align:left;">
+                                                <div class="form-group">
+                                                    <strong>Invoice Value Without GST: </strong>₹{{invoiceRec.Invoice_value_without_GST__c}}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6" style="text-align:left;">
+                                                <div class="form-group">
+                                                    <strong>GST %: </strong>{{invoiceRec.GST__c}}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6" style="text-align:left;">
+                                                <div class="form-group">
+                                                    <strong>GST Amount: </strong>₹{{invoiceRec.GST_Amount__c}}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6" style="text-align:left;">
+                                                <div class="form-group">
+                                                    <strong>Invoice Value With GST: </strong>₹{{invoiceRec.Invoice_value_with_GST__c}}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6" style="text-align:left;">
+                                                <div class="form-group">
+                                                    <strong>Status: </strong>{{invoiceRec.Approval_Status__c}}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6" style="text-align:left;">
+                                                <div class="form-group">
+                                                    <strong>Buyer Name: </strong>{{invoiceRec.Customer__r.Name}}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6" style="text-align:left;">
+                                                <div class="form-group">
+                                                    <strong>Seller Name: </strong>{{invoiceRec.Project__r.Company__r.Name}}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal" ng-click="closeModal()">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div ng-if="myInvoices.length == 0" class="no-payment-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Invoices Not Found</h5>
+                            <p class="card-text">No Invoices are available. Please contact support for further assistance.</p>
+                        </div>
+                    </div>
+                </div>
+            </body>
+        </div>
+    </html>
+</apex:page>

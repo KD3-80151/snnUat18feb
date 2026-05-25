@@ -1,0 +1,83 @@
+<template>
+    <lightning-card>
+        <!-- Display No Records Available message if no paymentSchedules -->
+        <template if:true={paymentSchedules}>
+            <div class="slds-m-bottom_medium">
+                <!-- Custom Title -->
+                <h1 class="center-title">Payment Schedule</h1>
+            </div>
+            <template if:false={paymentSchedules.length}>
+                <div class="slds-text-align_center slds-p-around_medium">
+                    <p>No Payment Schedule records are available.</p>
+                </div>
+            </template>
+
+            <!-- Custom Table for Payment Schedule -->
+            <template if:true={paymentSchedules.length}>
+                <div class="slds-box slds-box_xx-small">
+                    <table class="slds-table slds-table_striped">
+                        <thead>
+                            <tr>
+                                <th><div>Installment</div></th>
+                                <th><div>% Installment</div></th>
+                                <th><div>Agreement Value</div></th>
+                                <th><div>Tax Amount</div></th>
+                                <th><div>Demand Date</div></th>
+                                <th><div>Due Date</div></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template for:each={paymentSchedules} for:item="schedule">
+                                <tr key={schedule.Id}>
+                                    <td>{schedule.Name}</td>
+                                    <td>{schedule.Installment__c}%</td>
+                                    <td>{schedule.Agreement_Value__c}</td>
+                                    <td>{schedule.Tax_Amount__c}</td>
+                                    
+                                    <!-- Editable Pay Date field -->
+                                    <td>
+                                        <lightning-input 
+                                            type="date" 
+                                            value={schedule.Pay_Date__c} 
+                                            onchange={handleDateChange} 
+                                            data-id={schedule.Id} 
+                                            data-field="Pay_Date__c">
+                                        </lightning-input>
+                                    </td>
+
+                                    <!-- Editable Due Date field -->
+                                    <!-- <td>
+                                        <lightning-input 
+                                            type="date" 
+                                            value={schedule.Due_Date__c} 
+                                            onchange={handleDateChange} 
+                                            data-id={schedule.Id} 
+                                            data-field="Due_Date__c">
+                                        </lightning-input>
+                                    </td> -->
+                                    <td>{schedule.Due_Date__c}</td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </template>
+        </template>
+        <!-- Save Button below the table -->
+        <template if:true={paymentSchedules.length}>
+            <div class="slds-p-around_medium slds-text-align_right">
+                <lightning-button 
+                    variant="Neutral" 
+                    label="Cancel" 
+                    class="slds-m-right_small"
+                    onclick={handleCancel}>
+                </lightning-button>
+                <lightning-button 
+                    variant="brand" 
+                    label="Save" 
+                    onclick={handleSave}>
+                </lightning-button>
+            </div>
+        </template>
+    </lightning-card>
+</template>

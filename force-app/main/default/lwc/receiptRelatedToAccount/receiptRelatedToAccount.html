@@ -1,0 +1,66 @@
+<template>
+    <template if:true={noRecipts}>
+        <div class="receiptCss">
+            No Receipts Related to this Client!!!!
+        </div>
+    </template>
+    <template if:true={showReceiptSearch}>
+        <div class="slds-p-around_medium">
+            <table class="slds-table slds-table_bordered slds-table_striped">
+                <thead>
+                    <tr>
+                        <th scope="col">
+                            <div class="slds-truncate headerTitle" title="receipt">SL No</div>
+                        </th>
+                        <th scope="col">
+                            <div class="slds-truncate headerTitle" title="receipt">Receipt Number</div>
+                        </th>
+                        <th scope="col">
+                            <div class="slds-truncate headerTitle" title="Total">Receipt Date</div>
+                        </th>
+                        <th scope="col">
+                            <div class="slds-truncate headerTitle" title="Allocated">Unit</div>
+                        </th>
+                        <th scope="col">
+                            <div class="slds-truncate headerTitle" title="Balance">Client</div>
+                        </th>
+                        <th scope="col">
+                            <div class="slds-truncate headerTitle" title="Total Tax">Total Amount</div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template for:each={paginatedList} for:item="receipt">
+                        <tr key={receipt.Id}>
+                            <td>
+                                <div class="slds-truncate contentBody" title={receipt.Name}>{receipt.index}</div>
+                            </td>
+                            <td>
+                                <div class="slds-truncate contentBody" title={receipt.Name}>
+                                    <a href="javascript:void(0);" target="_blank" data-id={receipt.Id} onclick={handleClickReceipt} class="receiptInNextTab">{receipt.Name}</a>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="slds-truncate contentBody" title={receipt.Total__c}>{receipt.Receipt_Date__c}</div>
+                            </td>
+                            <td>
+                                <div class="slds-truncate contentBody" title={receipt.Allocated__c}>{receipt.Unit__r.Name}</div>
+                            </td>
+                            <td>
+                                <div class="slds-truncate contentBody" title={receipt.Balance__c}>{receipt.Account__r.Name}</div>
+                            </td>
+                            <td>
+                                <div class="slds-truncate contentBody" title={receipt.Total_Tax__c}>{receipt.Amount__c}</div>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+    
+        <div class="Paginationfoooter">
+            <c-dynamic-pagination class="jobPagination" list={receiptsRelatedToAccList} onpagechanged={jobPaginationCallback}></c-dynamic-pagination>
+        </div>
+    </template>
+    
+</template>

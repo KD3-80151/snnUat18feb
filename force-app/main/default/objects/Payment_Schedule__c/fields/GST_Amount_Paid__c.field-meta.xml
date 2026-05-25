@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>GST_Amount_Paid__c</fullName>
+    <label>GST Amount Paid</label>
+    <summarizedField>Tax_Invoice__c.Tax_Paid__c</summarizedField>
+    <summaryFilterItems>
+        <field>Tax_Invoice__c.GST_Paid__c</field>
+        <operation>equals</operation>
+        <value>True</value>
+    </summaryFilterItems>
+    <summaryForeignKey>Tax_Invoice__c.Payment_Schedule__c</summaryForeignKey>
+    <summaryOperation>sum</summaryOperation>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Summary</type>
+</CustomField>

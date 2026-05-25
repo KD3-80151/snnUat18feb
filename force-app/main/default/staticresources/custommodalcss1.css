@@ -1,0 +1,12 @@
+.slds-modal__container {
+    width: 96% !important;
+    max-width: 50% !important;
+    height: auto;
+    max-height: auto;
+}
+
+.slds-modal__content {
+     height: 100%;
+    max-height: unset; /* Remove default max-height */
+    overflow: hidden; /* Prevent scrolling */
+}

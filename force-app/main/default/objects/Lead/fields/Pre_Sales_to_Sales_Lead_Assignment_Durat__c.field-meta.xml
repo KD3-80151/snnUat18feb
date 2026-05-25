@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Pre_Sales_to_Sales_Lead_Assignment_Durat__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF(
+AND(NOT(ISNULL(Lead_Assigned_Date_Time__c)), NOT(ISNULL(Sales_Lead_Assigned_Date_Time__c))),
+(Sales_Lead_Assigned_Date_Time__c - Lead_Assigned_Date_Time__c),
+NULL
+)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Pre-Sales to Sales Lead Assignment Durat</label>
+    <precision>18</precision>
+    <required>false</required>
+    <scale>2</scale>
+    <trackHistory>false</trackHistory>
+    <type>Number</type>
+    <unique>false</unique>
+</CustomField>

@@ -1,0 +1,295 @@
+<apex:page showHeader="false" standardStylesheets="false" lightningStylesheets="false" sidebar="false" docType="html-5.0" controller="ChannelPartner_Controller">
+    <html>
+        <div ng-controller="cppbrokerage_ctrl">
+            <head>
+                <style>
+                    .title-color {
+                        color: #0B1E35;
+                    }
+                    .calculator-card {
+                        background-color: #f8f9fa;
+                        border-radius: 15px;
+                        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+                        margin-bottom: 30px;
+                        max-height: 95%;
+                    }
+            
+                    .calculator-header {
+                        background-color: #6886AA;
+                        color: white!important;
+                        padding: 15px;
+                        border-top-left-radius: 15px;
+                        border-top-right-radius: 15px;
+                        font-size: 20px;
+                        font-weight: 600;
+                        color: #333;
+                        text-align: center;
+                    }
+            
+                    .form-label {
+                        font-weight: 600;
+                        color: #333;
+                    }
+            
+                    .form-select,
+                    .form-control {
+                        border-radius: 8px;
+                        padding: 10px;
+                        font-size: 14px;
+                        margin-bottom: 20px;
+                    }
+            
+                    .btn-clear,
+                    .btn-calculate {
+                        border-radius: 8px;
+                        padding: 10px 20px;
+                        font-weight: 600;
+                        font-size: 14px;
+                    }
+                    
+                    .btn-edit {
+                        border: 1px solid #0B1E35!important;
+                        color: #0B1E35!important;
+                        background-color: white!important;
+                    }
+                    .btn-edit:hover {
+                        background-color: #f1f1f1;
+                    }
+                    .btn-custom {
+                        background-color: #9D6200!important;
+                        color: white!important;
+                        padding: 10px 20px;
+                        border-radius: 5px;
+                        font-size: 14px;
+                        font-weight: 600;
+                    }
+            
+                    .btn-custom:hover {
+                        background-color: #724906;
+                    }
+            
+                    .result-section {
+                        background-color: #f8f9fa;
+                        border-radius: 15px;
+                        padding: 20px;
+                        margin-top: 20px;
+                        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+                        display: none; /* Hidden by default */
+                    }
+            
+                    .result-text {
+                        font-size: 16px;
+                        color: #666;
+                    }
+            
+                    .result-value {
+                        font-size: 24px;
+                        font-weight: 600;
+                        color: #333;
+                    }
+            
+                    .calculator-image {
+                        max-width: 100%;
+                        height: auto; /* Maintain aspect ratio */
+                    }
+                    .noData-image {
+                        max-width: 30%;
+                        height: auto;
+                    }
+            
+                    .no-data-message {
+                        text-align: center;
+                        font-size: 16px;
+                        color: #666;
+                        margin-top: 20px;
+                    }
+            
+                    .no-data-section {
+                        display: block; /* Visible by default */
+                        text-align: center;
+                    }
+
+                    /* Responsive Styles */
+                    @media(max-width: 1080px) {
+                        .commission {
+                            width: 100% !important;
+                        }
+
+                        .form-select {
+                            width: 100% !important;
+                        }
+
+                        .d-flex {
+                            flex-direction: row;
+                            justify-content: space-between;
+                        }
+                        .btn-edit, .btn-custom {
+                            flex: 1;
+                            margin-right: 5px; /* Adjust margin to create a gap between buttons */
+                        }
+                        .me-3 {
+                            margin-right: 5px; /* Adjust right margin for smaller screens */
+                        }
+
+                        .calculator-image {
+                            display: none !important; /* Hide the default image for small screens */
+                        }
+
+                        .calculator-image1 {
+                            max-width: 100%; /* Adjust this based on your layout */
+                            height: auto; /* Maintain aspect ratio */
+                        }
+                    }
+
+                    @media(min-width: 1080px) {
+                        .calculator-image1 {
+                            display: none !important; /* Hide mobile image on larger screens */
+                        }
+
+                        .calc-img {
+                            display: block !important; /* Show calculator image on larger screens */
+                        }
+                    }
+
+                    @media (min-width : 768px) and (max-width : 1024px) and (min-height :1024px) and (max-height : 1368px){
+                        .calculator-card{
+                            width: 140% !important;
+                            position: relative;
+                            margin-left: 30% !important; 
+                            padding: 0;
+                            
+                        }
+                        
+                        .cal-tab{
+                            max-width: 100% !important;
+                            position: center !important;
+                        }
+
+                        
+                    }
+
+                    
+
+                    @media(width : 1024px) and (height : 600px){
+                        .calculator-card{
+                            width: 140% !important;
+                            position: relative;
+                            margin-left: 30%; 
+                            padding: 0;
+                            
+                        }
+                        
+                        .cal-tab{
+                            max-width: 100% !important;
+                            position: center;
+                        }
+                    }
+
+                    /* Additional Media Queries for exact dimensions */
+                    @media(max-width: 1620px) {
+                        .calculator-image {
+                            width: 100%; /* Scale image on smaller screens */
+                            height: auto; /* Maintain aspect ratio */
+                        }
+                    }
+
+                    @media(min-width: 1620px ) {
+                        .calculator-image {
+                            max-width: 1620px; /* Set max width for larger screens */
+                            max-height: 2160px; /* Set max height for larger screens */
+                        }
+
+                        .calc-img{
+                            display: none !important;
+                        }
+                    }
+
+                    input::-webkit-outer-spin-button,
+                        input::-webkit-inner-spin-button {
+                        -webkit-appearance: none;
+                        margin: 0;
+                    }
+
+                </style> 
+            </head>
+
+            <body>
+                <div class="container-fluid">
+                    <h2 class="title-color">Brokerage Calculator</h2>
+                    <p>Easily calculate your brokerage with our intuitive tool. Simply enter the property value and select your commission rate. Our system will instantly compute your brokerage amount, helping you manage and track your earnings efficiently. Empower your business with precise and quick brokerage calculations from SNN Estates</p>
+                    <div class="row mt-5">
+                        <!-- Right Side: Calculator Form -->
+                        <div class="calc-img">
+                            <div class=" d-flex align-items-center justify-content-center">
+                                <img src="{!URLFOR($Resource.calculatoreImage)}" alt="Calculator Image" class="calculator-image1"/>
+                            </div>
+                        </div>
+    
+                        <!-- Left Side: Calculator Form -->
+                
+                        <div class=" col-12 col-sm-12 col-md-12 col-lg-6">
+                            <div class="calculator-card">
+                                <div class="calculator-header">Brokerage Calculator</div>
+                                <div class="p-4">
+                                    <form id="brokerageForm">
+                                        <div class="mb-3 row">
+                                            <label for="propertyValue" class="col-sm-4 col-form-label form-label">Property Value</label>
+                                            <div class="col-sm-8">
+                                                <div class="input-group">
+                                                    <select class="form-select" id="currency" style="max-width: 30%;">
+                                                        <option value="INR">INR</option>
+                                                    </select>
+                                                    <input type="number" class="form-control" id="propertyValue" placeholder="Ex: 27000000" ng-model="propertyValue"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3 row">
+                                            <label for="commissionRate" class="col-sm-4 col-form-label form-label">Commission rate</label>
+                                            <div class="col-sm-8 commission">
+                                                <select class="form-select" id="commissionRate" ng-model="commissionRate">
+                                                    <option ng-repeat="value in commissionRatesList">{{value}}%</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex flex-wrap">
+                                            <button type="reset" class="btn btn-edit me-3 mb-2" ng-click="clearFormAndReset()">Clear</button>
+                                            <button type="button" class="btn btn-custom mb-2" ng-click="calculateBrokerage()">Calculate</button>
+                                        </div>
+                                    </form>
+                                    <div></div>
+                                    <!-- No Data Section -->
+                                    <div class="no-data-section" ng-show="noDataSection">
+                                        <img src="{!URLFOR($Resource.calculatoreNoDataImage)}" alt="Calculator Image" style="width: 60%;" class="noData-image"/>
+                                        <p class="no-data-message">Please enter data for Brokerage calculation</p>
+                                    </div>
+                                    <!-- Result Section -->
+                                    <div ng-show="resultSectionboolean">
+                                         <p><strong>Agreement Value:</strong> ₹<span>{{propertyValue}}</span></p>
+                                        <p><strong>Commission@{{commissionRate}}:</strong> <span>{{invoiceValue}}</span></p>
+                                   
+                                        <p></p>
+                                        <p></p>
+                                         <p><strong>Invoice Basic Value:</strong> ₹<span>{{invoiceValue}}</span></p>
+                                     
+                                       
+                                        <p><strong>GST@{{gstValue * 100}}% :</strong><span>{{gst}}</span> </p>
+                                          <p><strong>Invoice Value:</strong> ₹<span>{{invoiceWithGST}}</span></p>
+                                        <p><strong>TDS@{{tdsValue * 100}}% :</strong><span>-{{tds}}</span> </p>
+                                    
+                                        <p><strong>Total Amount:</strong> ₹<span>{{totalAmount}}</span></p>
+                                    </div>
+                                </div>
+                            </div>                 
+                        </div>
+                        
+    
+                        <!-- Right Side: Image -->
+                        <div class="col-md-6 d-flex align-items-center justify-content-center calcimg">
+                            <img src="{!URLFOR($Resource.calculatoreImage)}" alt="Calculator Image" style="width: 80%; height: auto;" class="calculator-image"/>
+                        </div>
+                    </div>
+                </div>
+            </body>
+        </div>
+    </html>
+</apex:page>

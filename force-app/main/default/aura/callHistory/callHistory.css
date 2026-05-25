@@ -1,0 +1,20 @@
+.THIS .call-log {
+    cursor: pointer; /* Changes cursor to pointer (finger) */
+}
+.THIS .blue-text {
+    color: #0070d2; /* Default blue color */
+    transition: color 0.3s; /* Smooth transition */
+}
+
+.THIS .blue-text:hover {
+    color: rgb(1, 68, 134); /* Hover color */
+}
+.THIS .slds_incoming .slds-icon {
+    fill: rgb(59, 167, 85);/*green*/
+}
+.THIS .slds_missed .slds-icon {
+    fill: rgb(194, 42, 42); /*red*/
+}
+.THIS .slds_outgoing .slds-icon {
+    fill: rgb(53, 93, 150); /*blue*/
+}

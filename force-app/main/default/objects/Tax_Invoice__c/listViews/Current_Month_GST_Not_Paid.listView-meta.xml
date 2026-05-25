@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Current_Month_GST_Not_Paid</fullName>
+    <columns>NAME</columns>
+    <columns>CGST__c</columns>
+    <columns>Account__c</columns>
+    <columns>GST_Paid__c</columns>
+    <columns>Receipt__c</columns>
+    <columns>Payment_Schedule__c</columns>
+    <columns>Received_Amount__c</columns>
+    <columns>SGST__c</columns>
+    <columns>Tax_Paid__c</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>CREATED_DATE</field>
+        <operation>equals</operation>
+        <value>THIS_MONTH</value>
+    </filters>
+    <filters>
+        <field>GST_Paid__c</field>
+        <operation>equals</operation>
+        <value>0</value>
+    </filters>
+    <label>Current Month GST Not Paid</label>
+</ListView>

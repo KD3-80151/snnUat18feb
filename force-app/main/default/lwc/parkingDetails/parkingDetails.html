@@ -1,0 +1,96 @@
+<template>
+  <lightning-card title= "Parking Details" icon-name="custom:custom63">
+    <template if:true={noRelatedUnitMessage}>
+      <div class="slds-text-color_error slds-p-around_medium">
+          {noRelatedUnitMessage}
+      </div>
+      <div class="slds-grid slds-grid_align-spread slds-p-top_medium">
+        <!-- Close Button on the Left -->
+        <div class="slds-col">
+            <lightning-button variant="brand" label="Back" onclick={handleClose}></lightning-button>
+        </div>
+        
+    </div>
+  </template>
+  <template if:false={noRelatedUnitMessage}>
+    <div class="slds-scrollable_y" style="max-height: 400px;">
+      <div class="slds-scrollable_y" style="max-height: 400px;">
+          <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+              <thead>
+                  <tr>
+                      <th scope="col" style="width: 200px;">Parking Type</th>
+                      <th scope="col" style="width: 150px;">Rate</th>
+                      <th scope="col" style="width: 150px;">Quantity</th>
+                      <th scope="col" style="width: 300px;">Actual Amount</th>
+                      <th scope="col">Add/Delete</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  <template for:each={rows} for:item="row" for:index="index">
+                      <tr key={row.id}>
+                          <!-- Parking Type Dropdown -->
+                          <td>
+                              <lightning-combobox
+                                  name="parkingType"
+                                  label="Parking Type"
+                                  value={row.type}
+                                  options={parkingTypeOptions}
+                                  data-id={row.id}
+                                  data-index={index}
+                                  onchange={handleParkingTypeChange}>
+                              </lightning-combobox>
+                          </td>
+
+                          <!-- Rate Column -->
+                          <td>{row.rate}</td> <!-- Displaying Rate (Amount__c) -->
+
+                          <!-- Quantity Input (Now Manual Entry) -->
+                          <td>
+                              <lightning-input
+                                  label="Quantity"
+                                  type="number"
+                                  value={row.quantity}
+                                  data-id={row.id}
+                                  data-index={index}
+                                  onchange={handleQuantityChange}>
+                              </lightning-input>
+                          </td>
+
+                          <!-- Actual Amount -->
+                          <td>{row.finalAmount}</td> <!-- Displaying Calculated Actual Amount -->
+
+                          <!-- Add/Delete Buttons -->
+                          <td>
+                              <lightning-button-icon
+                                  icon-name="utility:add"
+                                  alternative-text="Add"
+                                  onclick={handleAddRow}>
+                              </lightning-button-icon>
+                              <lightning-button-icon
+                                  icon-name="utility:delete"
+                                  alternative-text="Delete"
+                                  data-index={index}
+                                  onclick={handleDeleteRow}>
+                              </lightning-button-icon>
+                          </td>
+                      </tr>
+                  </template>
+              </tbody>
+          </table>
+      </div>
+
+      <!-- Buttons section -->
+      <div class="slds-grid slds-grid_align-spread slds-p-top_medium">
+          <!-- Close Button on the Left -->
+          <div class="slds-col">
+              <lightning-button variant="brand" label="Close" onclick={handleClose}></lightning-button>
+          </div>
+          <!-- Save Button on the Right -->
+          <div class="slds-col slds-text-align_right">
+              <lightning-button variant="brand" label="Save" onclick={handleSave}></lightning-button>
+          </div>
+      </div>
+    </div>
+  </template>
+  </lightning-card>
+</template>

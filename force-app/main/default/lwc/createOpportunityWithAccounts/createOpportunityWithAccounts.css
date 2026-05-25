@@ -1,0 +1,28 @@
+.custom-title {
+    text-align: center;
+    font-size: 1.0rem;
+	margin-top: 10px;
+	font-weight: 500;
+}
+
+.custom-body {
+    margin-top: -36px;
+	padding: 1rem 1rem 0rem 1rem; 
+}
+
+
+.custom-card {
+    --slds-c-card-color-background: #f9f9f9;
+}
+
+.custom-radio-group {
+    margin-bottom: 1rem;
+}
+
+.custom-form lightning-input-field {
+    margin-bottom: 1rem;
+}
+
+.custom-button {
+    padding: 0.5rem 1.5rem;
+}

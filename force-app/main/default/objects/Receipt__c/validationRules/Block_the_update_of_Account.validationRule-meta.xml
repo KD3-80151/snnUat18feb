@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Block_the_update_of_Account</fullName>
+    <active>true</active>
+    <description>You cannot change the Account once the Approval Status is Approved.</description>
+    <errorConditionFormula>AND(
+    ISPICKVAL(Approval_Status__c, &quot;Approved&quot;),
+    ISCHANGED(Account__c)
+)</errorConditionFormula>
+    <errorMessage>You cannot change the Account once the Receipt is Approved</errorMessage>
+</ValidationRule>

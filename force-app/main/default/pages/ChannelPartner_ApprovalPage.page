@@ -1,0 +1,46 @@
+<apex:page showHeader="false" standardStylesheets="false" sidebar="false" docType="html-5.0" cache="false">
+    <style>
+        div{
+            font-family: Hind, sans-serif;
+        }
+        /* .btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        } */
+        .btn-custom {
+            background-color: #9D6200 !important;
+            color: white!important;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 10px;
+        }
+    </style>
+    <body>
+        <div style="background-color:#1F1E1E;display:flex;justify-content:space-between;align-items:center;">
+            <img src="{!URLFOR($Resource.SnnLogo)}" alt="Logo Image" class="img-fluid mb-2" style="width:6%;"/>
+            <button type="button" class="btn btn-custom" onclick="logOut()">Log Out</button>
+        </div>
+        <div style="text-align:center;align-items:center;margin:auto;">
+            <img src="{!URLFOR($Resource.UnderApproval)}" alt="Under Approval Image" class="img-fluid mb-2"/>
+            <h1>Registration Under Review</h1>
+            <p>Thank you for registering with us! Your application is currently under approval. Please wait while we complete the review process.</p>
+        </div>
+    </body>
+    <script>
+        var logOut = function(){
+            debugger;
+            window.location.replace(
+                window.location.href.includes('/apex') ? '/apex' : '/ChannelPartnerPortal'
+            );
+        }
+    </script>
+</apex:page>

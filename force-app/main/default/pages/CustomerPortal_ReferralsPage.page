@@ -1,0 +1,291 @@
+<apex:page showHeader="false" standardStylesheets="false" sidebar="false" docType="html-5.0" controller="CustomerPortalController">
+    <html>
+        <div ng-controller="referral_ctrl">
+            <head>
+                <!-- Include Bootstrap CSS -->
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous"/>
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+                <!-- Include Font Awesome -->
+                <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" rel="stylesheet" crossorigin="anonymous"/>
+                <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+            </head>
+        
+            <style>
+                .title-color {
+                    color: #1F1E1E !important;
+                }
+                .modal-backdrop {
+                    opacity: 0.5 !important;
+                }
+                .btn-custom {
+                    background-color: #9D6200 !important;
+                    color: white !important;
+                    border-radius: 8px !important;
+                    border: none !important;
+                    width: auto !important; /* Adjust to the natural width */
+                    padding: 10px 24px !important;
+                }
+                .contact-sales-button {
+                    background-color: white;
+                    border-radius: 8px !important;
+                    border: 1px solid !important;
+                    width: auto !important; /* Adjust to the natural width */
+                    padding: 10px 24px !important;
+
+                }
+                .btn-custom:hover {
+                    background-color: #724906 !important;
+                }
+                .modal-title-color {
+                    color: #232323 !important;
+                    font-size: 25px !important;
+                    font-weight: 600 !important;
+                }
+
+                .more-text {
+                    display: none;
+                }
+                    .read-more-button {
+                    color: #b27b15;
+                    background: none;
+                    border: none;
+                    cursor: pointer;
+                    font-weight: bold;
+                    padding: 0;
+                }
+
+                .lead-stage {
+                    text-align: center;
+                    width: 100px;
+                    font-size: 12px;
+                    font-weight: 600;
+                    padding: 5px 10px;
+                    border-radius: 20px;
+                    display: inline-block;
+                }
+        
+                .stage-New {
+                    background-color: #2D6ECF;
+                    color: white;
+                }
+        
+                .stage-SV_Planned {
+                    background-color: #07ffde;
+                    color: white;
+                }
+        
+                /* .stage-Accepted {
+                    background-color: #28a745;
+                    color: white;
+                } */
+        
+                /* .stage-SV_Prospect {
+                    background-color: #0B1E35;
+                    color: white;
+                } */
+        
+                .stage-Dropped {
+                    background-color: #ff0000;
+                    color: white;
+                }
+        
+                .stage-Contacted {
+                    background-color: #7700ff;
+                    color: white;
+                }
+                .stage-Assigned {
+                    background-color: #ffc400;
+                    color: white;
+                }
+                .stage-Re-Enquiry {
+                    background-color: #ff7b00;
+                    color: white;
+                }
+                .stage-Qualified {
+                    background-color: #28a745;
+                    color: white;
+                }
+                .stage-Converted {
+                    background-color: #f700ff;
+                    color: white;
+                }
+
+                #mobileNumber {
+                    width: 100%; /* Set to 100% of the container */
+                    padding: 10px; /* Add padding for better appearance */
+                    border-radius: 5px; /* Round the corners */
+                    border: 1px solid #ccc; /* Border styling */
+                }
+
+                /* Media query for mobile adjustments */
+                @media (max-width: 767.98px) {
+                    .title-color {
+                        text-align: left; /* Ensure title is left-aligned */
+                    }
+                    .d-flex {
+                        flex-direction: column; /* Stack elements vertically */
+                        align-items: flex-start; /* Align items to the left */
+                    }
+                    .btn-custom {
+                        margin-top: 15px; /* Space above the button */
+                        width: auto; /* Natural width for button */
+                    }
+                }
+
+                /* New styles for desktop */
+                @media (min-width: 768px) {
+                    .d-flex {
+                        flex-direction: row; /* Keep elements in a row for desktop */
+                        justify-content: space-between; /* Space between heading and button */
+                    }
+                }
+            </style>
+        
+            <body>
+                <div id="appReferral" class="container-fluid">
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <h2 class="title-color">Referrals</h2>
+                        <button type="button" class="btn-custom d-none d-md-block" ng-click="openReferral()">Refer Now</button>
+                    </div>
+                    <p>
+                        SNN Estates Referral Program is designed to help you earn some amazing rewards. Unlike most reward programs, we’ve taken great care to ensure that the rewards you receive are in keeping with your fondness for life’s finer indulgences.
+                        All you have to do is<span id="dots">...</span>
+                        <span id="more" class="more-text">
+                           recommend us to any of your friends, members of your family or colleagues.
+                          If any of them book in SNN Estates projects, you will be fittingly rewarded.
+                          SNN Estates Referral is our way of keeping in touch with you. It’s our way of acknowledging your patronage.
+                          And of course, it’s our way of bringing together all our prestigious customers to benefit from an even more rewarding relationship.
+                          To start with, let us introduce you to the very first initiatives.
+                        </span>
+                      </p>
+                      
+                      <button ng-click="toggleReadMore()" class="read-more-button" id="readMoreBtn">Read More</button>
+                                          
+                    <button type="button" class="btn-custom d-block d-md-none" style="margin-bottom: 5px;" ng-click="openReferral()">Refer Now</button>
+                    
+                    <div class="d-flex flex-column justify-content-center align-items-center">
+                        <!-- <img src="{!URLFOR($Resource.noReferrals)}" class="img-fluid" alt="No Referrals"/> -->
+                        <img src="{!URLFOR($Resource.ReferralImg)}" style="margin-bottom: 5px;" class="img-fluid" alt="Referral Image"/>
+                        <img src="{!URLFOR($Resource.ReferralSteps)}" style="margin-bottom: 5px;" class="img-fluid" alt="Referral Steps"/>
+                        <!-- <p class="mt-3 text-muted">No Referrals</p> -->
+                    </div>
+                    <div ng-if = "referredLeads.length > 0" class="table-responsive1">
+                        <table class="table">
+                            <thead class="table-header-custom">
+                                <tr>
+                                    <th scope="col">Sr.</th>
+                                    <th scope="col">Property Name</th>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Mobile Number</th>
+                                    <th scope="col">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody ng-repeat = "lead in referredLeads" style="border:none;">
+                                <tr>
+                                    <td>{{$index+1}}</td>
+                                    <td>{{lead.Project__r.Name}}</td>
+                                    <td>{{lead.Name}}</td>
+                                    <td>{{lead.Phone}}</td>
+                                    <td><span class="lead-stage {{statusClassMapping[lead.Status]}}">{{lead.Status}}</span></td>
+                                </tr>
+                                <tr ng-show="opp.showDoc" style="background-color:#F4F4F4; border-color:#F4F4F4;" ng-if="!opp.Documents__r">
+                                    <td></td>
+                                    <td style="color:#ff0000"><strong>No related documents found!!</strong></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                <tr ng-show="opp.showDoc" style="background-color:#F4F4F4; border-color:#F4F4F4;" ng-repeat="doc in opp.Documents__r">
+                                    <td></td>
+                                    <td>{{doc.Name}}</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>
+                                        <div style="width:fit-content;margin-left:auto;">
+                                            <button class="btn-blue" ng-if="doc.Sub_Documents__r" ng-click="openPreview(doc.Sub_Documents__r[0].File_URL__c)"><i class="bi bi-eye"></i></button>
+                                            <button class="btn-red" ng-if="doc.Sub_Documents__r" ng-click="download(doc.Sub_Documents__r[0].File_URL__c)"><i class="fa-solid fa-download"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- <div ng-if="referredLeads.length == 0" class="no-payment-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Referrals Not Found</h5>
+                            <p class="card-text">No referrals are available. Please contact support for further assistance.</p>
+                        </div>
+                    </div> -->
+                </div>
+        
+                <!-- Modal -->
+                <div class="modal" id="inviteModal_r" tabindex="-1" aria-labelledby="inviteModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-xl"> <!-- Center the modal -->
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title modal-title-color" id="inviteModalLabel">Invite friends</h5>
+                                <button type="button" class="btn-close" ng-click="closeModal()" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form>
+                                    <div class="row" style="text-align:left;">
+                                        <div class="col-md-6" style="text-align:left;">
+                                            <div class="form-group">
+                                                <label for="firstName" class="form-label">First Name<span class="required-asterisk" style="color:red;">*</span></label>
+                                                <input type="text" class="form-control" id="firstName" placeholder="Doe" ng-model="newLead.FirstName"/>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6" style="text-align:left;">
+                                            <div class="form-group">
+                                                <label for="lastName" class="form-label">Last Name<span class="required-asterisk" style="color:red;">*</span></label>
+                                                <input type="text" class="form-control" id="lastName" placeholder="Doe" ng-model="newLead.LastName"/>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="email" class="form-label">Email ID</label>
+                                                <input type="text" class="form-control" id="email" placeholder="john@gmail.com" ng-model="newLead.Email"/>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="phoneNumber" class="form-label">Phone Number</label>
+                                                <div class="input-group">
+                                                    <div class="input-group-text" style="border-top-left-radius:8px; border-bottom-left-radius:8px;">+91</div>
+                                                    <input type="tel" class="form-control" style="border-top-left-radius:0 !important;border-bottom-left-radius:0 !important;" id="phoneNumber" placeholder="Enter your friend's mobile number" ng-model="newLead.Phone"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="project" class="form-label">Project<span class="required-asterisk" style="color:red;">*</span></label>
+                                                <select class="form-control" id="project" ng-model = "newLead.Project__c">
+                                                    <option ng-repeat = "project in projects" value="{{project.Id}}">{{project.Name}}</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                                <div class="button-container mt-5">
+                                    <button type="button" class="contact-sales-button" ng-click="closeModal()">
+                                        Cancel
+                                    </button>
+                                    <button type="button" class="schedule-visit-button" id="sendInviteButton" ng-click="sendInvite()">
+                                        Send Invite
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </body>
+        </div>
+    </html>
+</apex:page>

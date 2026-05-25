@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Profile_Picture__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF( ISBLANK( Profile_Pic_Attachment_Id__c ) , IMAGE(&quot;/resource/1727337328000/personProfile&quot;, &quot;No Image&quot;, 250, 281), IMAGE(&quot;/sfc/servlet.shepherd/version/download/&quot;&amp;Profile_Pic_Attachment_Id__c, &quot;Profile Pic&quot;, 250, 281))</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Profile Picture</label>
+    <required>false</required>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

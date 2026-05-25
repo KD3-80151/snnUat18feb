@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Require_SV_Planned_Future_Dates</fullName>
+    <active>true</active>
+    <errorConditionFormula>AND(
+  ISPICKVAL( Status , &quot;SV Planned&quot;) ,
+ OR(
+ ISBLANK( Site_Visit_Planned_Date__c) ,
+ ISBLANK( Next_Follow_Up_Date_Time__c ) ,
+ Site_Visit_Planned_Date__c &lt;= Today(),
+ Next_Follow_Up_Date_Time__c &lt;= now() 
+  )
+ )</errorConditionFormula>
+    <errorDisplayField>Status</errorDisplayField>
+    <errorMessage>SV Planned Date and Next Follow Up Date must be filled and set in the future when the stage is SV Planned.</errorMessage>
+</ValidationRule>

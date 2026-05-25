@@ -1,0 +1,45 @@
+<template>
+    <div class="body">
+        <lightning-card class="custom-card">
+            <!-- <template if:false={IsQualified}>
+                <div class="error-message-container">
+                    <div class="slds-text-color_error slds-text-align_center">
+                        Please qualify the lead before assigning the sales team member.
+                    </div>
+                </div>
+            </template> -->
+            <!-- <template if:true={IsQualified}>
+                <div class="slds-card__header custom-header slds-text-align_center slds-m-around_medium">
+                    <h2 class="slds-text-heading_medium">Assign to Sales Team</h2>
+                </div>
+                <div class="slds-m-around_medium">
+                    <lightning-combobox 
+                        name="userDropdown" 
+                        label="Select User" 
+                        value={selectedUserId}
+                        placeholder="Select a User" 
+                        options={userOptions} 
+                        onchange={handleUserChange}>
+                    </lightning-combobox>
+                    
+                    <div class="slds-m-top_medium"> 
+                        <div class="slds-modal__footer">
+                            <button 
+                                class="slds-button slds-button_neutral" 
+                                aria-label="Cancel and close" 
+                                onclick={handleSaveCancelled}>
+                                Cancel
+                            </button>
+                            <button 
+                                onclick={handleSave} 
+                                class="slds-button slds-button_brand" 
+                                aria-label="Save changes">
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </template> -->
+        </lightning-card>
+    </div>
+</template>

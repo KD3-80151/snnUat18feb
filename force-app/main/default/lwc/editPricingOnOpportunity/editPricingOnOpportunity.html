@@ -1,0 +1,112 @@
+<template>
+    <lightning-card>
+        <template if:true={pricingElements}>
+            <div class="slds-m-bottom_medium">
+                <!-- Custom Title -->
+                <h1 class="center-title">Edit Pricing Elements</h1>
+            </div>
+      
+            <template if:true={description}>>
+                <div class="slds-text-align_center slds-p-around_medium">
+                    <p>{description}</p>
+                </div>
+            </template>
+            
+            <template if:false={description}>
+            <template if:false={pricingElements.length}>
+                <div class="slds-text-align_center slds-p-around_medium">
+                    <p>No Pricing Elelment records are available.</p>
+                </div>
+            </template>
+        </template>
+
+            <template if:true={pricingElements.length}>
+                <div class="slds-box slds-box_xx-smal slds-scrollable_x" style="max-height: 400px; overflow: auto;">
+                    <table class="slds-table slds-table_striped">
+                        <thead>
+                            <tr>
+                                <th><div>Pricing Element Name</div></th>
+                                <th><div class="large-inputOutput">UCM</div></th>
+                                <th><div>QTY</div></th>
+                                <th><div>Rate</div></th>
+                                <th><div class="large-input">Amount</div></th>
+                                <th><div>Discount Amount</div></th>
+                                <th><div class="large-input">Tax Amount</div></th>
+                                <th><div  class="large-input">Total Amount</div></th>
+                                <th><div class="large-inputOutput">Tax</div></th>
+                                <th><div class="large-inputOutput">PE Type</div></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template for:each={pricingElements} for:item="pricingElement">
+                                <tr key={pricingElement.Id} class={pricingElement.rowClass}>
+                                    <td>{pricingElement.Pricing_Element_Master__r.Name}</td>
+                                    <td>{pricingElement.Unit__c}</td>
+                                    <!-- Editable Quantity field -->
+                                    <td>
+                                        <lightning-input 
+                                            type="number" 
+                                            value={pricingElement.Quantity__c} 
+                                            onchange={handleValueChange} 
+                                            data-id={pricingElement.Id} 
+                                            data-field="Quantity__c"
+                                            class="large-input">
+                                        </lightning-input>
+                                    </td>
+                                    <!-- Editable Rate field -->
+                                    <td>
+                                        <lightning-input 
+                                            type="number" 
+                                            value={pricingElement.Rate__c} 
+                                            onchange={handleValueChange} 
+                                            data-id={pricingElement.Id} 
+                                            data-field="Rate__c"
+                                            class="large-input">
+                                        </lightning-input>
+                                    </td>
+                                    <td>{pricingElement.amount}</td>
+                                    <td>{pricingElement.discountAmount}</td>
+                                    <td>{pricingElement.taxAmount}</td>
+                                    <td>{pricingElement.totalAmounts}</td>
+                                    <td>%</td>
+                                    <td>{pricingElement.PE_Type__c}</td>
+                                </tr>
+                            </template>
+                        </tbody>
+                         <tfoot class="slds-text-align_right" style="height: 60px !important;">
+                            <tr>
+                                <td class="slds-text-align_right"  style="color: red;font-size: 18px; "><strong>Total Of Amount:</strong></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td><strong>{totalAmountSum}</strong></td> 
+                                <td><strong>{totalDiscountAmount}</strong></td>  
+                                <td><strong>{totalTaxAmount}</strong></td>  
+                                <td><strong>{totalAmount}</strong></td>                             
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </template>
+        </template>
+        <!-- Save Button below the table -->
+          <template if:true={pricingElements.length}>
+            <div class="slds-p-around_medium slds-text-align_right">
+                <lightning-button 
+                    variant="Neutral" 
+                    label="Cancel" 
+                    class="slds-m-right_small"
+                    onclick={handleCancel}>
+                </lightning-button>
+                <lightning-button 
+                    variant="brand" 
+                    label="Save" 
+                    onclick={handleSave}>
+                </lightning-button>
+            </div>
+        </template>
+        
+       
+       
+    </lightning-card>
+</template>

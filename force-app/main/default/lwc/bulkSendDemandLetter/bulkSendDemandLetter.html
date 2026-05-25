@@ -1,0 +1,79 @@
+<template>
+    <div class="bulk-send-demand-letter white-background">
+        <!-- Header Section -->
+        <div class="slds-m-bottom_medium">
+            <h1 class="center-title">Bulk Send Demand Letter</h1>
+        </div>
+
+        <!-- Filters Section -->
+        <div class="slds-grid slds-gutters slds-wrap filters-section">
+            <div class="slds-col slds-size_1-of-4">
+                <lightning-combobox label="Select Project" value={selectedProject} options={projectOptions}
+                    onchange={handleProjectChange} required="true">
+                </lightning-combobox>
+            </div>
+            <div class="slds-col slds-size_1-of-4">
+                <lightning-combobox label="Select Block" value={selectedTower} options={towerOptions}
+                    onchange={handleTowerChange} required="=true">
+                </lightning-combobox>
+            </div>
+            <div class="slds-col slds-size_2-of-4">
+                <!-- <lightning-combobox 
+                    label="Select Installment" 
+                    value={selectedInstallment} 
+                    options={installmentOptions} 
+                    onchange={handleInstallmentChange}
+                    required="true">
+                </lightning-combobox> -->
+                <lightning-dual-listbox source-label="Available Installments" selected-label="Selected Installments"
+                    options={installmentOptions} value={selectedInstallments} onchange={handleInstallmentChange}>
+                </lightning-dual-listbox>
+            </div>
+            <div class="slds-col slds-size_1-of-4 slds-align_absolute-center slds-grid slds-grid_align-end">
+                <lightning-button label="Search" onclick={handleSearch} class="slds-m-right_small slds-m-top_medium">
+                </lightning-button>
+                <lightning-button label="Clear" onclick={handleClear} class="slds-m-top_medium">
+                </lightning-button>
+            </div>
+        </div>
+
+        <!-- Table Section -->
+        <template if:true={showTable}>
+            <div class="scrollable-x slds-m-top_medium table-container">
+                <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                    <thead>
+                        <tr>
+                            <th>
+                                <input type="checkbox" onchange={handleSelectAll} />
+                            </th>
+                            <th>Contact Name</th>
+                            <th>Unit Name</th>
+                            <th>Installment Name</th>
+                            <th>Installment Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template if:true={opportunityData}>
+                            <template for:each={opportunityData} for:item="row">
+                                <tr key={row.Id}>
+                                    <td>
+                                        <input type="checkbox" data-id={row.Id} data-installment-id={row.InstallmentId}
+                                            onchange={handleRowSelection} checked={row.isSelected} />
+                                    </td>
+                                    <td>{row.ContactName}</td>
+                                    <td>{row.UnitName}</td>
+                                    <td>{row.InstallmentName}</td>
+                                    <td>{row.InstallmentAgreementAmount}</td>
+                                </tr>
+                            </template>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+            <div class="slds-align_absolute-center slds-m-top_medium">
+                <lightning-button label="Send to Customer" variant="brand" onclick={handleSendToCustomer}>
+                </lightning-button>
+            </div>
+        </template>
+    </div>
+</template>

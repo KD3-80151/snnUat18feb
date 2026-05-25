@@ -1,0 +1,33 @@
+<template>
+    <lightning-card title="Update Receipt's Opportunity">
+        <div class="slds-m-around_medium">
+            
+            <template if:true={isSaving}>
+                <lightning-spinner alternative-text="Saving..."></lightning-spinner>
+            </template>
+
+            
+            <template if:false={isSaving}>
+                <lightning-record-edit-form
+                    object-api-name="Receipt__c"
+                    record-id={recordId}
+                    onsuccess={handleSuccess}
+                    onsubmit={handleSubmit}
+                    onerror={handleError}
+                    onload={handleSaveFinished}
+                >
+                   
+                    <lightning-input-field field-name="Opportunity__c" onchange={handleLookupChange}></lightning-input-field>
+
+                    
+                    <lightning-button
+                        class="slds-m-top_medium"
+                        label="Save"
+                        variant="brand"
+                        onclick={handleSave}
+                    ></lightning-button>
+                </lightning-record-edit-form>
+            </template>
+        </div>
+    </lightning-card>
+</template>

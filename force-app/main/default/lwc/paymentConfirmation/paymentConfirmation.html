@@ -1,0 +1,17 @@
+<template>
+    <lightning-card title="Opportunity Stage Update" icon-name="standard:opportunity" class="custom-card">
+        <div class="slds-m-around_medium">
+            <h2 style="padding: 12px;background-color: #906a09; color:white; border-radius:5px;"
+                class="slds-text-heading_medium slds-text-align_center">Payment Confirmation</h2>
+            <h2 class="custom-heading">Please generate the token amount and proceed to move the stage to 'Payment
+                Confirmation'.</h2>
+            <p class="custom-paragraph">Click on the button below to change the stage to "Payment Confirmation".</p>
+            <!-- Button to move stage -->
+            <footer class="slds-card__footer slds-p-top_medium">
+                <lightning-button label={buttonLabel} onclick={handleMoveToPaymentConfirmation} variant="brand"
+                    disabled={isLoading}>
+                </lightning-button>
+            </footer>
+        </div>
+    </lightning-card>
+</template>

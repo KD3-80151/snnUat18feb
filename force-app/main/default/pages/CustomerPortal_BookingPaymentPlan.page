@@ -1,0 +1,163 @@
+<apex:page showHeader="false" standardStylesheets="false" sidebar="false" docType="html-5.0">
+    <!-- Include Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous"/>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+
+    <!-- Include Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" rel="stylesheet" crossorigin="anonymous"/>
+    <!-- Include Bootstrap Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css" rel="stylesheet" crossorigin="anonymous"/>
+
+    <style>
+        .title-color {
+            color: #0B1E35;
+        }
+        .btn-custom {
+            background-color: #9D6200;
+            color: white;
+            border: none;
+            font-size: 14px; /* Small size for buttons */
+        }
+        .btn-custom:hover {
+            background-color: #724906;
+        }
+        .table th, .table td {
+            vertical-align: middle;
+            font-size: 14px; /* Set font size to 14px */
+        }
+        .table-header-custom {
+            background-color: #A3A3A3;
+            color: white;
+            border-radius: 10px 10px 0 0; /* Rounded corners for the header */
+        }
+        .table-header-custom th {
+            border-top: none;
+            border-left: none;
+            border-right: none;
+        }
+        .table-header-custom th:first-child {
+            border-top-left-radius: 10px; /* Round top-left corner */
+        }
+        .table-header-custom th:last-child {
+            border-top-right-radius: 10px; /* Round top-right corner */
+        }
+        .table-body-gap {
+            margin-top: 10px;
+        }
+        .table-container {
+            border-radius: 10px; /* Rounded corners for the entire table */
+            overflow: hidden;
+            background-color: #fff; /* Background color for better visibility of corners */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Shadow effect for the table */
+        }
+        .status-paid, .status-partial, .status-unpaid {
+            color: white;
+            border-radius: 10px;
+            padding: 5px 10px;
+            display: inline-block;
+            text-align: center;
+            width: 100px; /* Set fixed width for all status labels */
+        }
+        .status-paid {
+            background-color: #28a745;
+        }
+        .status-partial {
+            background-color: #ffc107;
+        }
+        .status-unpaid {
+            background-color: #dc3545;
+        }
+        .amount-info {
+            font-weight: bold;
+        }
+        .back-link {
+            font-size: 24px; 
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            color: black; /* Set font color to black */
+            font-weight: 500; /* Set font weight to 500 */
+        }
+        .back-link i {
+            margin-right: 8px;
+        }
+        @media (max-width: 768px) {
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+
+    <div class="container-fluid my-5">
+        <div class="d-flex justify-content-between mb-4">
+            <div class="amount-info">Total Amount: ₹ 29,91,774</div>
+            <div class="amount-info">Amount Paid: ₹ 7,66,255</div>
+            <div class="amount-info">Amount Due: ₹ 22,25,519</div>
+        </div>
+        
+        <div class="table-responsive table-container">
+            <table class="table mb-0">
+                <thead class="table-header-custom">
+                    <tr>
+                        <th scope="col">Sr.</th>
+                        <th scope="col">Payment Schedule</th>
+                        <th scope="col">Amount</th>
+                        <th scope="col">Due Date</th>
+                        <th scope="col">Payment Date</th>
+                        <th scope="col">Unpaid Amount</th>
+                        <th scope="col">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">1</th>
+                        <td>Booking Amount</td>
+                        <td>₹ 5,66,255</td>
+                        <td>25/5/2023</td>
+                        <td>25/5/2023</td>
+                        <td>₹ 0</td>
+                        <td><span class="status-paid">Realised</span></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">2</th>
+                        <td>30 Days from booking</td>
+                        <td>₹ 2,83,127</td>
+                        <td>27/5/2023</td>
+                        <td>25/5/2023</td>
+                        <td>₹ 83,127</td>
+                        <td><span class="status-partial">Partial Paid</span></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">3</th>
+                        <td>On completion of Basement Slab of respective block</td>
+                        <td>₹ 2,83,127</td>
+                        <td>25/5/2023</td>
+                        <td>-</td>
+                        <td>₹ 0</td>
+                        <td><span class="status-unpaid">Unpaid</span></td>
+                    </tr>
+                    <!-- Repeat similar rows for other data -->
+                    <tr>
+                        <th scope="row">4</th>
+                        <td>On completion of Foundation Slab of respective block</td>
+                        <td>₹ 2,83,127</td>
+                        <td>25/5/2023</td>
+                        <td>-</td>
+                        <td>₹ 0</td>
+                        <td><span class="status-unpaid">Unpaid</span></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">5</th>
+                        <td>On completion of First Floor Slab of respective block</td>
+                        <td>₹ 1,41,564</td>
+                        <td>25/5/2023</td>
+                        <td>-</td>
+                        <td>₹ 0</td>
+                        <td><span class="status-unpaid">Unpaid</span></td>
+                    </tr>
+                    <!-- Add other rows as necessary -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</apex:page>

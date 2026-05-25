@@ -1,0 +1,1050 @@
+<apex:page showHeader="false" standardStylesheets="false" sidebar="false" docType="html-5.0">
+    <html>
+        <div ng-controller="cppdashboard_ctrl">
+            <head>
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <style>
+
+                    @media (min-width: 768px)and (max-width :1024px){
+
+
+                        .second-dash{
+                            width : 100% !important;                   
+                        }
+
+                        .score-mobile{
+                            width : 154% !important;                         
+                        }
+
+                        .card-info{
+                            width: 30% !important;
+                        }
+                    }
+
+
+                    @media (min-width: 768px) and (max-width: 1024px) {
+
+                        .score-mobile{
+                            width : 100% !important;                         
+                        }
+
+                        .tablet-card {
+                            width: 100% !important; /* Make sure it takes 100% width */
+                            max-width: 100% !important; /* Remove any max-width limitation */
+                        }
+
+                        .card-tablet {
+                        display: flex;
+                        justify-content: space-around; /* Ensure cards are evenly spaced */
+                        flex-wrap: wrap; /* Allows cards to wrap if necessary */
+                        
+                        margin: 0; /* Remove any margins */
+                        padding: 0; /* Remove any paddings */
+                    }
+
+                    .card-info {
+                        flex: 0 0 33%; /* Each card takes up 33% of the row */
+                        box-sizing: border-box; /* Ensures padding and borders are included in width */
+                        padding: 10px; /* Adjust spacing between cards */
+                    }
+
+                    .dashboard-card {
+                        display: flex; /* Enables flex layout */
+                        flex-direction: column; /* Stacks children vertically */
+                        border-radius: 10px;
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                        padding: 20px;
+                        background-color: #EBEAEA;
+                        min-height: 220px;
+                        /* text-align: center; Centers content horizontally */
+                        position: relative;
+                    }
+
+                    .dashboard-card-footer {
+                        margin-top: auto; /* Pushes footer to the bottom */
+                        text-align: center;
+                    }
+
+                    /* .dashboard-card-footer .btn {
+                        background-color: #4CAF50;
+                        color: white;
+                        border: none;
+                        padding: 10px 20px;
+                        border-radius: 5px;
+                        cursor: pointer;
+                    }
+
+                    .dashboard-card-footer .btn:hover {
+                        background-color: #45a049;
+                    } */
+
+                    .dashboard-card-titel {
+                        font-size: 24px !important;
+                        font-weight: bold;
+                    }
+
+                    .row {
+                        margin: 0 !important; /* Remove any extra margin from the row */
+                    }
+
+                    .btn {
+                        background-color: #4CAF50; /* Optional styling for buttons */
+                        color: white;
+                        border: none;
+                        padding: 10px 20px;
+                        border-radius: 5px;
+                        cursor: pointer;
+                    }
+
+                    .btn:hover {
+                        background-color: #45a049;
+                    }
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card-info {
+        flex: 0 0 100%; /* Full width on smaller screens */
+        margin-bottom: 20px;
+    }
+}
+}
+
+
+
+                    @media (max-width: 768px;){
+                        
+                        
+                        .card-info {
+                            width: 46% !important;
+                        }
+                    }
+                    
+                    .dashboard-header {
+                        font-weight: 600;
+                        color: #0B1E35 !important;
+                    }
+            
+                    .dashboard-subheader {
+                        font-size: 1rem;
+                        margin-bottom: 20px;
+                    }
+            
+                    
+                    .dashboard-card {
+                        border-radius: 10px;
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                        padding: 20px;
+                        background-color: #EBEAEA;
+                        min-height: 220px;
+                        width : 100%;
+                        margin-right: 0% !important;
+                        align-items: start !important;
+                    }
+            
+                    .dashboard-card h4 {
+                        font-size: 2rem;
+                        font-weight: bold;
+                        color: #0B1E35;
+                    }
+                    .dashboard-card-titel{
+                        font-size: 1.75rem;
+                        font-weight: bold;
+                        color: #0B1E35;
+                        word-break: break-word;
+                    }
+            
+                    .dashboard-card p {
+                        font-size: 0.875rem;
+                        margin-bottom: 10px;
+                    }
+            
+                    .dashboard-card .btn {
+                        background-color: #9D6200;
+                        color: #fff;
+                        font-weight: 500;
+                    }
+            
+                    .dashboard-card-blue {
+                        background-color: #0B1E35;
+                        border-radius: 10px;
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                        color: #fff;
+                        display: flex;
+                        align-items: center;
+                        padding: 15px;
+                        overflow: hidden; /* Ensures that the content stays within the card */
+                    }
+            
+                    .dashboard-card-blue .btn {
+                        background-color: #9D6200;
+                        color: #fff;
+                        font-weight: 500;
+                    }
+            
+                    .offers-schemes-heading {
+                        font-size: 24px !important;
+                        font-weight: 600;
+                        text-align: start;
+                    }
+            
+                    .score-image {
+                        width: 100%; /* Ensures the image stays within the container */
+                        max-width: 250px; /* Sets a maximum width for the image */
+                        height: auto;
+                        border-radius: 0%; /* Make sure the image is circular */
+                    }
+            
+                    .circle-image {
+                        background-color: white;
+                        border-radius: 50%;
+                        padding: 10px;
+                        width: 80px;
+                        height: 80px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        margin-right: 15px;
+                    }
+            
+                    .circle-image img {
+                        width: 60px;
+                        height: 60px;
+                    }
+            
+                    /* Custom styles for the text alignment, bold text, and font sizes */
+                    .reward-text {
+                        text-align: left;
+                    }
+            
+                    .reward-text .m-0 {
+                        font-weight: bold;
+                        font-size: 16px; /* Set the font size to 16px for the title */
+                    }
+            
+                    .reward-text p:not(.m-0) {
+                        font-size: 14px; /* Set the font size to 14px for the description */
+                    }
+
+                   
+
+                     
+                    /* For tablets (768px to 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+    /*
+    .dashboard-card {
+        min-height: 200px; 
+        padding: 15px;
+        margin-bottom: 15px;
+        width : 220%;
+        max-height : 400px;
+       
+    }
+
+    .dashboard-card-titel {
+        font-size: 1.5rem;
+    }
+
+    .dashboard-header {
+        font-size: 1.75rem;
+    }
+
+    .dashboard-card p {
+        font-size: 1rem; 
+    }
+
+    .score-image {
+        max-width: 150px;
+    }
+        */
+
+    .dashboard-card-blue {
+        padding: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-direction: row;
+        flex-wrap: nowrap; 
+        /*width: 150% ;*/
+        
+    }
+
+    /* Ensure 'Your Score' card image is on the right */
+    .dashboard-card-blue .col-md-7 {
+        flex: 0 0 70%;
+        max-width: 70%;
+    }
+
+    .dashboard-card-blue img {
+        flex: 0 0 30%;
+        max-width: 150px;
+        margin-left: 20px; /* Add margin to move image away from text */
+    }
+
+/*
+    .row {
+        display: flex;
+        flex-wrap: wrap;
+        margin-left: -15px;
+        margin-right: -15px;
+    }
+
+    .col-md-4, .col-md-6 {
+        flex: 0 0 50%;
+        max-width: 50%;
+        padding: 15px;
+        box-sizing: border-box;
+    }
+
+
+    .col-md-8 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+   
+    .col-md-4, .col-md-6 {
+        margin-bottom: 20px; /* Add space between rows 
+    }
+*/
+    
+}
+
+
+
+    /* For mobile screens (up to 768px) */
+@media (max-width: 768px) {
+    .dashboard-header {
+        font-size: 1.25rem;
+        
+    }
+
+    .dashboard-subheader {
+        font-size: 0.9rem;
+        text-align: left;
+        margin-bottom: 10px;
+    }
+
+    .dashboard-card {
+        padding: 10px;
+        
+    }
+
+    .dashboard-card h4,
+    .dashboard-card-title {
+        font-size: 1.25rem;
+    }
+
+    .dashboard-card p {
+        font-size: 0.75rem;
+    }
+
+    .dashboard-card-blue {
+        flex-wrap: wrap;
+        padding: 10px;
+    }
+
+    /* Image adjustments */
+    .score-image {
+        max-width: 150px;
+        display: block;
+        margin: 0 auto;
+    } 
+}
+            .table td{
+                text-align: start;
+            }
+            .btn1{
+                background-color: #9D6200;
+                color: #fff !important;
+                font-weight: 500;
+                display: inline-block;
+                align-self: center;
+                line-height: 1.5;
+                text-align: center;
+                text-decoration: none;
+                vertical-align: middle;
+                user-select: none;
+                border: 1px solid transparent;
+                padding: .375rem .75rem;
+                font-size: 1rem;
+                border-radius: .25rem;
+                transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+            }
+            .btn1:hover{
+                color: black !important;
+            }
+            .stage-Pending{
+                background-color: #ffc107;
+                color: white;
+            }
+            .stage-Sent{
+                background-color: #0B1E35;
+                color: white;
+            }
+            .stage-Approved{
+                background-color: #28a745;
+                color: white;
+            }
+            .stage-Rejected{
+                background-color: #ff0000;
+                color: white;
+            }
+            .approval-status {
+                text-align: center;
+                width: 100px;
+                font-size: 12px;
+                font-weight: 600;
+                padding: 5px 10px;
+                border-radius: 20px;
+                display: inline-block;
+            }
+
+            .no-payment-card {
+                max-width: 400px;
+                margin: 20px auto; /* Centers the card */
+                padding: 20px;
+                border: 1px solid #ff0000;
+                border-radius: 8px;
+                background-color: #fff4f4;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                text-align: center; /* Centers the text inside */
+            }
+ 
+            .no-payment-card .card-body {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+ 
+            .no-payment-card .card-title {
+                color: #ff0000;
+                font-size: 18px;
+                font-weight: bold;
+                margin-bottom: 10px;
+            }
+ 
+            .no-payment-card .card-text {
+                color: #333;
+                font-size: 14px;
+            }
+                </style>
+            </head>
+
+            <body>
+                <div ng-show = "mainPage">
+                    <div id="bookingPageContent" class="container-fluid">
+                        <h2 class="dashboard-header">Dashboard</h2>
+                        <p class="dashboard-subheader">
+                            Welcome to the SNN Estates Channel Partner Portal Dashboard. Gain real-time insights into your sales performance, access exclusive training materials, and explore new project opportunities. Enhance your efficiency and collaboration with our comprehensive tools and resources for unparalleled success!
+                        </p>
+                        
+                        <div class="row mt-5">
+                            <!-- Three Main Cards Section -->
+                            <div class="col-md-12 tablet-card">
+                                <div class="row card-tablet">
+                                    <div class="col-lg-4 col-md-3 col-sm-6 col-6 mb-3 card-info">
+                                        <div class="dashboard-card d-flex flex-column">
+                                            <div class="dashboard-card-titel">{{totalAllInvoiceItems}}</div>
+                                            <p>Invoices</p>
+                                            <div class="dashboard-card-footer mt-auto">
+                                                <button class="btn" ng-click="showAllInvoices()">View More</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-lg-4 col-md-3 col-sm-6 col-6 mb-3 card-info">
+                                        <div class="dashboard-card d-flex flex-column">
+                                            <div class="dashboard-card-titel">{{formattedTotalApprovedAmount}}</div>
+                                            <p>Invoices approved by SNN</p>
+                                            <div class="dashboard-card-footer mt-auto">
+                                                <button class="btn" ng-click="showInvoiceAmountApprovedPage()">View More</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-3 col-sm-6 col-6 mb-3 card-info">
+                                        <div class="dashboard-card d-flex flex-column">
+                                            <div class="dashboard-card-titel">{{formattedTotalAmount}}</div>
+                                            <p>Total Earnings</p>
+                                            <div class="dashboard-card-footer mt-auto">
+                                                <button class="btn" ng-click="showInvoiceTotalAmountPage()">View More</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                </div>
+                                
+                                
+                                <!-- Your Score Section -->
+                                <!-- <div class="dashboard-card-blue p-4 d-flex justify-content-between align-items-center score-mobile" style="margin-top:2%;">
+                                    <div class="col-md-7">
+                                        <h4>Your Score</h4>
+                                        <div class="d-flex justify-content align-items-center" style="flex-wrap: wrap;">
+                                            <div style="margin-right: 30px">
+                                                <h5 ng-if="visitRank < 1">0</h5>
+                                                <h5 ng-if="visitRank == 1">{{visitRank}}st</h5>
+                                                <h5 ng-if="visitRank == 2">{{visitRank}}nd</h5>
+                                                <h5 ng-if="visitRank == 3">{{visitRank}}rd</h5>
+                                                <h5 ng-if="visitRank > 3">{{visitRank}}th</h5>
+                                                <p>Site Visits</p>
+                                            </div>
+                                            <div style="margin-right: 30px">
+                                                <h5 ng-if="unitRank < 1">0</h5>
+                                                <h5 ng-if="unitRank == 1">{{unitRank}}st</h5>
+                                                <h5 ng-if="unitRank == 2">{{unitRank}}nd</h5>
+                                                <h5 ng-if="unitRank == 3">{{unitRank}}rd</h5>
+                                                <h5 ng-if="unitRank > 3">{{unitRank}}th</h5>
+                                                <p>No of Units</p>
+                                            </div>
+                                            <div style="margin-right: 30px">
+                                                <h5 ng-if="amountRank < 1">0</h5>
+                                                <h5 ng-if="amountRank == 1">{{amountRank}}st</h5>
+                                                <h5 ng-if="amountRank == 2">{{amountRank}}nd</h5>
+                                                <h5 ng-if="amountRank == 3">{{amountRank}}rd</h5>
+                                                <h5 ng-if="amountRank > 3">{{amountRank}}th</h5>
+                                                <p>Basis Revenue</p>
+                                            </div>
+                                        </div>
+                                        <button class="btn mt-3" ng-click="showLeaderboardPage()">View Leaderboard</button>
+                                    </div>
+                                    <div>
+                                        <img src="{!URLFOR($Resource.TrophyImage)}" alt="Trophy Image" class="score-image"/>
+                                    </div>
+                                </div> -->
+                            </div>
+                
+                            <!-- Offers & Schemes Section -->
+                            <!-- <div class="col-md-4 mb-3">
+                                <div class="dashboard-card second-dash">
+                                    <div class="offers-schemes-heading">Offers &amp; Schemes</div>
+                                    <div class="mb-2 mt-3 offer">
+                                        <div class="dashboard-card-blue p-2 mb-2">
+                                            <div class="d-flex align-items-center">
+                                                <div class="circle-image">
+                                                    <img src="{!URLFOR($Resource.offersAndSchemes)}" alt="Tier Based Rewards Image"/>
+                                                </div>
+                                                <div class="reward-text">
+                                                    <p class="m-0">Tier Based Rewards Plan</p>
+                                                    <p>Earn more with every milestone achieved!</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="dashboard-card-blue p-2">
+                                            <div class="d-flex align-items-center">
+                                                <div class="circle-image">
+                                                    <img src="{!URLFOR($Resource.offersAndSchemes)}" alt="Referral Reward Image"/>
+                                                </div>
+                                                <div class="reward-text">
+                                                    <p class="m-0">Referral Reward</p>
+                                                    <p>Each Successful channel partner referral</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div> -->
+                        </div>
+                    </div>
+                </div>
+                <div ng-show = "allInvoicesPage">
+                    <div class="container-fluid">
+                        <span class="mb-4 back-link"><p class="bi bi-arrow-left" ng-click="showMainPage()">&nbsp;&nbsp;&nbsp;Back</p></span>
+                        <div ng-if = "paginatedAllInvoices.length > 0" class="table-responsive1">
+                            <table class="table">
+                                <thead class="table-header-custom">
+                                    <tr>
+                                        <th scope="col">Sr.</th>
+                                        <th scope="col">CP ID</th>
+                                        <th scope="col">CP Name</th>
+                                        <th scope="col">Project Name</th>
+                                        <th scope="col">Unit Name</th>
+                                        <th scope="col">Invoice No.</th>
+                                        <th scope="col">Invoice Submission Date</th>
+                                        <th scope="col">Transaction Details</th>
+                                        <th scope="col">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="border:none;">
+                                    <div>
+                                    <tr ng-repeat = "invoice in paginatedAllInvoices">
+                                        <td>{{$index+1}}</td>
+                                        <td>{{invoice.Channel_Partner__r.Channel_Partner_Id__c}}</td>
+                                        <td>{{invoice.Channel_Partner__r.Name}}</td>
+                                        <td>{{invoice.Project__r.Name}}</td>
+                                        <td>{{invoice.Unit__r.Unit_Name__c}}</td>
+                                        <td>{{invoice.Name}}</td>
+                                        <td>{{invoice.CreatedDate}}</td>
+                                        <td><button class="btn1" ng-click="openPreview(invoice)"><i class="bi bi-eye"></i></button></td>
+                                        <td><span class="approval-status {{statusClassMapping[invoice.Approval_Status__c]}}">{{invoice.Approval_Status__c}}</span></td>
+                                    </tr>
+                                </div>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div ng-if="paginatedAllInvoices.length == 0" class="no-payment-card">
+                            <div class="card-body">
+                                <h5 class="card-title">Invoices Not Found</h5>
+                                <p class="card-text">No Invoices is available. Please contact support for further assistance.</p>
+                            </div>
+                        </div>
+             
+                       
+                        <div ng-if = "paginatedAllInvoices.length > 0" class="row mobile-cards1">
+                            <div class="col-12" ng-repeat="invoice in paginatedAllInvoices">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <p>CP Id: <strong>{{invoice.Channel_Partner__r.Channel_Partner_Id__c}}</strong></p>
+                                        <p>CP Name: <strong>{{invoice.Channel_Partner__r.Name}}</strong></p>
+                                        <p>Project Name: <strong>{{invoice.Project__r.Name}}</strong></p>
+                                        <p>Unit Name: <strong>{{invoice.Unit__r.Unit_Name__c}}</strong></p>
+                                        <p>Invoice No.: <strong>{{invoice.Name}}</strong></p>
+                                        <p>Invoice Submission Date: <strong>{{invoice.CreatedDate}}</strong></p>
+                                        <p>Transaction Details: <button class="btn1" ng-click="openPreview(invoice)"><i class="bi bi-eye"></i></button></p>
+                                        <p>Status: <strong>{{invoice.Approval_Status__c}}</strong></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Pagination -->
+                        <div  ng-if = "paginatedAllInvoices.length > 0" class="d-flex justify-content-between align-items-center mt-4">
+                            <div>
+                                <span>Showing {{getDisplayedRange()}} of {{totalAllInvoicePages}} entries</span>
+                            </div>
+                            <nav>
+                                <ul class="pagination">
+                                    <li class="page-item" ng-class="{disabled: currentAllInvoicePage == 1}">
+                                        <a class="page-link" href="" ng-click="prevPages()">
+                                            <i class="bi bi-arrow-left"></i> Prev
+                                        </a>
+                                    </li>
+                                    <!-- Dynamically displayed page numbers -->
+                                    <li class="page-item" ng-repeat="page in getPageRange()" ng-class="{active: currentAllInvoicePage == page}">
+                                        <a class="page-link" href="" ng-click="goToPage(page)">
+                                            {{page}}
+                                        </a>
+                                    </li>
+                                    <li class="page-item" ng-class="{disabled: currentAllInvoicePage == totalAllInvoicePages}">
+                                        <a class="page-link" href="" ng-click="nextPages()">
+                                            Next <i class="bi bi-arrow-right"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+
+                
+
+
+                <div ng-show = "invoiceAmountApprovedPage">
+                    <div class="container-fluid">
+                        <span class="mb-4 back-link"><p class="bi bi-arrow-left" ng-click="showMainPage()">&nbsp;&nbsp;&nbsp;Back</p></span>
+                        <div ng-if = "paginatedApprovedInvoices.length > 0" class="table-responsive1">
+                            <table class="table">
+                                <thead class="table-header-custom">
+                                    <tr>
+                                        <th scope="col">Sr.</th>
+                                        <th scope="col">CP ID</th>
+                                        <th scope="col">CP Name</th>
+                                        <th scope="col">Project Name</th>
+                                        <th scope="col">Unit Name</th>
+                                        <th scope="col">Invoice No.</th>
+                                        <th scope="col">Invoice Submission Date</th>
+                                        <th scope="col">Transaction Details</th>
+                                        <th scope="col">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="border:none;">
+                                    <tr ng-repeat = "invoice in paginatedApprovedInvoices">
+                                        <td>{{$index+1}}</td>
+                                        <td>{{invoice.Channel_Partner__r.Channel_Partner_Id__c}}</td>
+                                        <td>{{invoice.Channel_Partner__r.Name}}</td>
+                                        <td>{{invoice.Project__r.Name}}</td>
+                                        <td>{{invoice.Unit__r.Unit_Name__c}}</td>
+                                        <td>{{invoice.Name}}</td>
+                                        <td>{{invoice.CreatedDate}}</td>
+                                        <td><button class="btn1" ng-click="openPreview(invoice)"><i class="bi bi-eye"></i></button></td>
+                                        <td><span class="approval-status {{statusClassMapping[invoice.Approval_Status__c]}}">{{invoice.Approval_Status__c}}</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div ng-if="paginatedApprovedInvoices.length == 0" class="no-payment-card">
+                            <div class="card-body">
+                                <h5 class="card-title">Approved Invoices Not Found</h5>
+                                <p class="card-text">No Aproved Invoices is available. Please contact support for further assistance.</p>
+                            </div>
+                        </div>
+
+                        <div ng-if = "paginatedApprovedInvoices.length > 0" class="row mobile-cards1">
+                            <div class="col-12" ng-repeat="invoice in paginatedApprovedInvoices">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <p>CP Id: <strong>{{invoice.Channel_Partner__r.Channel_Partner_Id__c}}</strong></p>
+                                        <p>CP Name: <strong>{{invoice.Channel_Partner__r.Name}}</strong></p>
+                                        <p>Project Name: <strong>{{invoice.Project__r.Name}}</strong></p>
+                                        <p>Unit Name: <strong>{{invoice.Unit__r.Unit_Name__c}}</strong></p>
+                                        <p>Invoice No.: <strong>{{invoice.Name}}</strong></p>
+                                        <p>Invoice Submission Date: <strong>{{invoice.CreatedDate}}</strong></p>
+                                        <p>Transaction Details: <button class="btn1" ng-click="openPreview(invoice)"><i class="bi bi-eye"></i></button></p>
+                                        <p>Status: <strong>{{invoice.Approval_Status__c}}</strong></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Pagination -->
+                        <div ng-if = "paginatedApprovedInvoices.length > 0" class="d-flex justify-content-between align-items-center mt-4">
+                            <div>
+                                <span>Showing {{getDisplayedRange()}} of {{totalApprovedInvoicePages}} entries</span>
+                            </div>
+                            <nav>
+                                <ul class="pagination">
+                                    <li class="page-item" ng-class="{disabled: currentApprovedInvoicePage == 1}">
+                                        <a class="page-link" href="" ng-click="prevPages()">
+                                            <i class="bi bi-arrow-left"></i> Prev
+                                        </a>
+                                    </li>
+                                    <!-- Dynamically displayed page numbers -->
+                                    <li class="page-item" ng-repeat="page in getPageRange()" ng-class="{active: currentApprovedInvoicePage == page}">
+                                        <a class="page-link" href="" ng-click="goToPage(page)">
+                                            {{page}}
+                                        </a>
+                                    </li>
+                                    <li class="page-item" ng-class="{disabled: currentApprovedInvoicePage == totalApprovedInvoicePages}">
+                                        <a class="page-link" href="" ng-click="nextPages()">
+                                            Next <i class="bi bi-arrow-right"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+                <div ng-show = "invoiceTotalAmountPage">
+                    <div class="container-fluid">
+                        <span class="mb-4 back-link"><p class="bi bi-arrow-left" ng-click="showMainPage()">&nbsp;&nbsp;&nbsp;Back</p></span>
+                        <div ng-if = "paginatedAllInvoices2.length > 0" class="table-responsive1">
+                            <table class="table">
+                                <thead class="table-header-custom">
+                                    <tr>
+                                        <th scope="col">Sr.</th>
+                                        <th scope="col">CP ID</th>
+                                        <th scope="col">CP Name</th>
+                                        <th scope="col">Project Name</th>
+                                        <th scope="col">Unit Name</th>
+                                        <th scope="col">Invoice No.</th>
+                                        <th scope="col">Invoice Submission Date</th>
+                                        <th scope="col">Transaction Details</th>
+                                        <th scope="col">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="border:none;">
+                                    <tr ng-repeat = "invoice in paginatedAllInvoices2">
+                                        <td>{{$index+1}}</td>
+                                        <td>{{invoice.Channel_Partner__r.Channel_Partner_Id__c}}</td>
+                                        <td>{{invoice.Channel_Partner__r.Name}}</td>
+                                        <td>{{invoice.Project__r.Name}}</td>
+                                        <td>{{invoice.Unit__r.Unit_Name__c}}</td>
+                                        <td>{{invoice.Name}}</td>
+                                        <td>{{invoice.CreatedDate}}</td>
+                                        <td><button class="btn1" ng-click="openPreview(invoice)"><i class="bi bi-eye"></i></button></td>
+                                        <td><span class="approval-status {{statusClassMapping[invoice.Approval_Status__c]}}">{{invoice.Approval_Status__c}}</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div ng-if="paginatedAllInvoices2.length == 0" class="no-payment-card">
+                            <div class="card-body">
+                                <h5 class="card-title">Invoices Not Found</h5>
+                                <p class="card-text">No Invoices is available. Please contact support for further assistance.</p>
+                            </div>
+                        </div>
+
+                        <div ng-if = "paginatedAllInvoices2.length > 0" class="row mobile-cards1">
+                            <div class="col-12" ng-repeat="invoice in paginatedAllInvoices2">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <p>CP Id: <strong>{{invoice.Channel_Partner__r.Channel_Partner_Id__c}}</strong></p>
+                                        <p>CP Name: <strong>{{invoice.Channel_Partner__r.Name}}</strong></p>
+                                        <p>Project Name: <strong>{{invoice.Project__r.Name}}</strong></p>
+                                        <p>Unit Name: <strong>{{invoice.Unit__r.Unit_Name__c}}</strong></p>
+                                        <p>Invoice No.: <strong>{{invoice.Name}}</strong></p>
+                                        <p>Invoice Submission Date: <strong>{{invoice.CreatedDate}}</strong></p>
+                                        <p>Transaction Details: <button class="btn1" ng-click="openPreview(invoice)"><i class="bi bi-eye"></i></button></p>
+                                        <p>Status: <strong>{{invoice.Approval_Status__c}}</strong></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Pagination -->
+                        <div ng-if = "paginatedAllInvoices2.length > 0" class="d-flex justify-content-between align-items-center mt-4">
+                            <div>
+                                <span>Showing {{getDisplayedRange()}} of {{totalAllInvoicePages2}} entries</span>
+                            </div>
+                            <nav>
+                                <ul class="pagination">
+                                    <li class="page-item" ng-class="{disabled: currentAllInvoicePage2 == 1}">
+                                        <a class="page-link" href="" ng-click="prevPages()">
+                                            <i class="bi bi-arrow-left"></i> Prev
+                                        </a>
+                                    </li>
+                                    <!-- Dynamically displayed page numbers -->
+                                    <li class="page-item" ng-repeat="page in getPageRange()" ng-class="{active: currentAllInvoicePage2 == page}">
+                                        <a class="page-link" href="" ng-click="goToPage(page)">
+                                            {{page}}
+                                        </a>
+                                    </li>
+                                    <li class="page-item" ng-class="{disabled: currentAllInvoicePage2 == totalAllInvoicePages2}">
+                                        <a class="page-link" href="" ng-click="nextPages()">
+                                            Next <i class="bi bi-arrow-right"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+                <div ng-show = "leaderboardPage">
+                    <div class="container-fluid">
+                        <span class="mb-4 back-link"><p class="bi bi-arrow-left" ng-click="showMainPage()">&nbsp;&nbsp;&nbsp;Back</p></span>
+                        <ul class="nav nav-tabs">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="siteVisit-tab" data-bs-toggle="tab" href="#siteVisit" role="tab">Basis Site Vists</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="unitSold-tab" data-bs-toggle="tab" href="#unitSold" role="tab">Basis no. of Units</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="revenue-tab" data-bs-toggle="tab" href="#revenue" role="tab">Basis Revenue</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content mt-3">
+                            <div class="tab-pane fade show active" id="siteVisit" role="tabpanel" aria-labelledby="siteVisit-tab">
+                                <div class="table-responsive1">
+                                    <table class="table">
+                                        <thead class="table-header-custom">
+                                            <tr>
+                                                <th scope="col">Rank</th>
+                                                <th scope="col">Channel Partner Id</th>
+                                                <th scope="col">Channel Partner</th>
+                                                <th scope="col">Project Name</th>
+                                                <th scope="col">Total Site Visits</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody style="border:none;">
+                                            <tr ng-repeat = "record in finalVisitArray">
+                                                <td ng-if="record.rank === 1"><img src="{!$Resource.Rank_1}" alt="1"></img></td>
+                                                <td ng-if="record.rank === 2"><img src="{!$Resource.Rank_2}" alt="2"></img></td>
+                                                <td ng-if="record.rank === 3"><img src="{!$Resource.Rank_3}" alt="3"></img></td>
+                                                <td ng-if="record.rank > 3">{{record.rank}}</td>
+                                                <td>{{record.Channel_Partner_Id__c}}</td>
+                                                <td>{{cpDataMap[record.id].Name}}</td>
+                                                <td>{{record.Opportunity__r.Project__r.Name}}</td>
+                                                <td>{{record.value}}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="row mobile-cards1">
+                                    <div class="col-12" ng-repeat="record in finalVisitArray">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <p ng-if="record.rank === 1"><img src="{!$Resource.Rank_1}" alt="1"> 1st</img></p>
+                                                <p ng-if="record.rank === 2"><img src="{!$Resource.Rank_2}" alt="2"> 2nd</img></p>
+                                                <p ng-if="record.rank === 3"><img src="{!$Resource.Rank_3}" alt="3"> 3rd</img></p>
+                                                <p ng-if="record.rank > 3">Rank: <strong>{{record.rank}}th</strong></p>
+                                                <p>Channel Partner Id: <strong>{{record.Channel_Partner_Id__c}}</strong></p>
+                                                <p>Channel Partner: <strong>{{cpDataMap[record.id].Name}}</strong></p>
+                                                <p>Project Name: <strong>{{record.Opportunity__r.Project__r.Name}}</strong></p>
+                                                <p>Total Site Visits: <strong>{{record.value}}</strong></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="unitSold" role="tabpanel" aria-labelledby="unitSold-tab">
+                                <div class="table-responsive1">
+                                    <table class="table">
+                                        <thead class="table-header-custom">
+                                            <tr>
+                                                <th scope="col">Rank</th>
+                                                <th scope="col">Channel Partner Id</th>
+                                                <th scope="col">Channel Partner</th>
+                                                <th scope="col">Project Name</th>
+                                                <th scope="col">Total Units Sold</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody style="border:none;">
+                                            <tr ng-repeat = "record in finalUnitArray">
+                                                <td ng-if="record.rank === 1"><img src="{!$Resource.Rank_1}" alt="1"></img></td>
+                                                <td ng-if="record.rank === 2"><img src="{!$Resource.Rank_2}" alt="2"></img></td>
+                                                <td ng-if="record.rank === 3"><img src="{!$Resource.Rank_3}" alt="3"></img></td>
+                                                <td ng-if="record.rank > 3">{{record.rank}}</td>
+                                                <td>{{record.Channel_Partner_Id__c}}</td>
+                                                <td>{{cpDataMap[record.id].Name}}</td>
+                                                <td>{{record.Opportunity__r.Project__r.Name}}</td>
+                                                <td>{{record.value}}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="row mobile-cards1">
+                                    <div class="col-12" ng-repeat="record in finalVisitArray">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <p ng-if="record.rank === 1"><img src="{!$Resource.Rank_1}" alt="1"> 1st</img></p>
+                                                <p ng-if="record.rank === 2"><img src="{!$Resource.Rank_2}" alt="2"> 2nd</img></p>
+                                                <p ng-if="record.rank === 3"><img src="{!$Resource.Rank_3}" alt="3"> 3rd</img></p>
+                                                <p ng-if="record.rank > 3">Rank: <strong>{{record.rank}}th</strong></p>
+                                                <p>Channel Partner Id: <strong>{{record.Channel_Partner_Id__c}}</strong></p>
+                                                <p>Channel Partner: <strong>{{cpDataMap[record.id].Name}}</strong></p>
+                                                <p>Project Name: <strong>{{record.Opportunity__r.Project__r.Name}}</strong></p>
+                                                <p>Total Site Visits: <strong>{{record.value}}</strong></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="revenue" role="tabpanel" aria-labelledby="revenue-tab">
+                                <div class="table-responsive1">
+                                    <table class="table">
+                                        <thead class="table-header-custom">
+                                            <tr>
+                                                <th scope="col">Rank</th>
+                                                <th scope="col">Channel Partner Id</th>
+                                                <th scope="col">Channel Partner</th>
+                                                <th scope="col">Project Name</th>
+                                                <th scope="col">Total Revenue</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody style="border:none;">
+                                            <tr ng-repeat = "record in finalAmountArray">
+                                                <td ng-if="record.rank === 1"><img src="{!$Resource.Rank_1}" alt="1"></img></td>
+                                                <td ng-if="record.rank === 2"><img src="{!$Resource.Rank_2}" alt="2"></img></td>
+                                                <td ng-if="record.rank === 3"><img src="{!$Resource.Rank_3}" alt="3"></img></td>
+                                                <td ng-if="record.rank > 3">{{record.rank}}</td>
+                                                <td>{{record.Channel_Partner_Id__c}}</td>
+                                                <td>{{cpDataMap[record.id].Name}}</td>
+                                                <td>{{record.Opportunity__r.Project__r.Name}}</td>
+                                                <td>{{record.value}}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="row mobile-cards1">
+                                    <div class="col-12" ng-repeat="record in finalVisitArray">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <p ng-if="record.rank === 1"><img src="{!$Resource.Rank_1}" alt="1"> 1st</img></p>
+                                                <p ng-if="record.rank === 2"><img src="{!$Resource.Rank_2}" alt="2"> 2nd</img></p>
+                                                <p ng-if="record.rank === 3"><img src="{!$Resource.Rank_3}" alt="3"> 3rd</img></p>
+                                                <p ng-if="record.rank > 3">Rank: <strong>{{record.rank}}th</strong></p>
+                                                <p>Channel Partner Id: <strong>{{record.Channel_Partner_Id__c}}</strong></p>
+                                                <p>Channel Partner: <strong>{{cpDataMap[record.id].Name}}</strong></p>
+                                                <p>Project Name: <strong>{{record.Opportunity__r.Project__r.Name}}</strong></p>
+                                                <p>Total Site Visits: <strong>{{record.value}}</strong></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="detailPreviewModal" tabindex="-1" role="dialog" aria-labelledby="detailPreviewModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title text-center w-100" id="detailPreviewModalLabel">Transaction Details</h5>
+                                <button type="button" class="close" data-dismiss="modal" ng-click="closeModal()" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <p style="text-align:justify;">Easily view all your transaction details with SNN Ventures Pvt.Ltd. Access a comprehensive summary of your transactions, including dates, amounts, and statuses. Stay informed and manage your financial records efficiently.</p>
+                                <form>
+                                    <div class="row" style="text-align:left;">
+                                        <div class="col-md-6" style="text-align:left;">
+                                            <div class="form-group">
+                                                <strong>Invoice Id: </strong>{{invoiceRec.Name}}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6" style="text-align:left;">
+                                            <div class="form-group">
+                                                <strong>Invoice Submission Date: </strong>{{invoiceRec.CreatedDate}}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6" style="text-align:left;">
+                                            <div class="form-group">
+                                                <strong>Agreement Value: </strong>₹{{invoiceRec.Agreement_Value__c}}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6" style="text-align:left;">
+                                            <div class="form-group">
+                                                <strong>Invoice Value Without GST: </strong>₹{{invoiceRec.Invoice_value_without_GST__c}}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6" style="text-align:left;">
+                                            <div class="form-group">
+                                                <strong>GST %: </strong>{{invoiceRec.GST__c}}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6" style="text-align:left;">
+                                            <div class="form-group">
+                                                <strong>GST Amount: </strong>₹{{invoiceRec.GST_Amount__c}}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6" style="text-align:left;">
+                                            <div class="form-group">
+                                                <strong>Invoice Value With GST: </strong>₹{{invoiceRec.Invoice_value_with_GST__c}}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6" style="text-align:left;">
+                                            <div class="form-group">
+                                                <strong>Status: </strong>{{invoiceRec.Approval_Status__c}}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6" style="text-align:left;">
+                                            <div class="form-group">
+                                                <strong>Buyer Name: </strong>{{invoiceRec.Customer__r.Name}}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6" style="text-align:left;">
+                                            <div class="form-group">
+                                                <strong>Seller Name: </strong>{{invoiceRec.Project__r.Company__r.Name}}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal" ng-click="closeModal()">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="paymentPlanContent" style="display:none;">
+                    <a href="#" class="mb-4 back-link" onclick="showBookingPage()"><i class="bi bi-arrow-left"></i>Dashboard/Invoices</a>
+                    <apex:include pageName="ChannelPartner_DashboardInvoiceTablePage"/>
+                </div>
+                
+                <div id="totalEarningContent" style="display:none;">
+                    <a href="#" class="mb-4 back-link" onclick="showBookingPage()"><i class="bi bi-arrow-left"></i>Dashboard/Total Earnings</a>
+                    <apex:include pageName="ChannelPartner_DashboardToEarnTablePage"/>
+                </div>
+                <div id="invoiceApprovedContent" style="display:none;">
+                    <a href="#" class="mb-4 back-link" onclick="showBookingPage()"><i class="bi bi-arrow-left"></i>Dashboard/Invoices approved by SNN</a>
+                    <apex:include pageName="ChannelPartner_DashboardInvAppTablePage"/>
+                </div>
+                <div id="leaderBoardContent" style="display:none;">
+                    <a href="#" class="mb-4 back-link" onclick="showBookingPage()"><i class="bi bi-arrow-left"></i>Dashboard/Invoices approved by SNN</a>
+                    <apex:include pageName="ChannelPartner_DashboardLeaderTablePage"/>
+                </div>
+            </body>
+        </div>
+    </html>
+
+</apex:page>

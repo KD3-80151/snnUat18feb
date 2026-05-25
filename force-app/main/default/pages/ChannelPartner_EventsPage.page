@@ -1,0 +1,206 @@
+<apex:page showHeader="false" sidebar="false" standardStylesheets="false" docType="html-5.0">
+    <html>
+        <div ng-controller="cppevents_ctrl">
+            <head>
+                <style>
+                    .title-color-event {
+                        color: #0B1E35 !important;
+                        font-weight: 600 !important;
+                        font-size: 32px !important;
+                        margin-left: 10px !important;
+                    }
+                    .title-body-event{
+                        font-weight: 400;
+                        font-size: 16px;
+                        color: #232323;
+                        margin-left:10px !important;
+                    }
+                    .events-section {
+                        padding: 20px;
+                    }
+
+                    /* Scrollable container for event cards */
+                    .scrollable-events {
+                        display: flex; /* Use flexbox for layout */
+                        overflow-x: auto; /* Enable horizontal scrolling for mobile */
+                        max-width: 100%; /* Ensure it takes full width */
+                        margin-top: 20px; /* Add some spacing above */
+                        padding: 10px; /* Optional: padding inside the scrollable area */
+                        scroll-snap-type: x mandatory; /* Snap scrolling */
+                    }
+
+                    .event-card {
+                        background-color: #EBEAEA;
+                        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+                        margin-right: 20px; /* Space between cards */
+                        flex: 0 0 auto; /* Prevent cards from shrinking */
+                        width: 300px; /* Fixed width for cards */
+                        scroll-snap-align: start; /* Snap alignment for scrolling */
+                        display: flex; /* Flexbox for card layout */
+                        flex-direction: row; /* Default to row for desktop */
+                        border-radius: 8px !important; /* No rounded corners by default */
+                    }
+
+                    .event-image {
+                        flex: 0 0 30%; /* Set image size */
+                        position: relative;
+                        clip-path: polygon(0 0, 100% 0, 80% 100%, 0 100%); /* Clip path for desktop */
+                        overflow: hidden; /* Hide overflow to maintain rounded corners */
+                    }
+
+                    .event-image img {
+                        width: 100%; /* Keep full width */
+                        height: auto; /* Maintain aspect ratio */
+                        max-height: 150px; /* Limit height if needed */
+                        border-top-left-radius: 8px;
+                        border-bottom-left-radius: 8px;
+                    }
+
+                    .event-details {
+                        flex: 1; /* Take remaining space */
+                        padding: 10px; /* Add padding for text */
+                    }
+
+                    .new-event-title {
+                        font-size: 24px;
+                        font-weight: 700;
+                        margin-bottom: 10px;
+                        color: #232323;
+                    }
+
+                    .event-info {
+                        font-size: 14px;
+                        margin-bottom: 10px;
+                        color: #4d4d4d;
+                        font-weight: 500;
+                    }
+
+                    .event-venue {
+                        font-weight: 600;
+                        color: #232323;
+                        font-size: 14px;
+                    }
+
+                    .view-button {
+                        background-color: #9D6200;
+                        color: white !important;
+                        border-radius: 8px;
+                        border: none;
+                        padding: 10px 20px;
+                        font-weight: 600;
+                        font-size: 14px;
+                        transition: background-color 0.3s ease;
+                    }
+
+                    .view-button:hover {
+                        background-color: #724906;
+                        color: white;
+                    }
+
+                    /* .custom-modal-dialog {
+                        max-width: 80% !important;
+                    }
+
+                    .modal-header .modal-title {
+                        width: 120% !important;
+                        text-align: center;
+                    } */
+
+                    .p-3{
+                        align-content: center;
+                    }
+
+                    /* Responsive Styles */
+                    @media (max-width: 768px) {
+                        .scrollable-events {
+                            flex-direction: row; /* Horizontal alignment for mobile */
+                        }
+
+                        .event-card {
+                            flex-direction: column; /* Stack image on top for mobile */
+                            width: 80%; /* Make the card smaller on mobile */
+                            margin-right: 10px; /* Adjust margin for spacing */
+                            border-radius: 15px; /* Rounded corners for mobile */
+                        }
+
+                        .event-image {
+                            flex: none; /* Reset flex for image */
+                            width: 100%; /* Image takes full width */
+                            clip-path: none; /* Disable clip-path for mobile */
+                            border-top-left-radius: 15px; /* Round top-left corner */
+                            border-top-right-radius: 15px; /* Round top-right corner */
+                        }
+
+                        .event-details {
+                            padding: 10px; /* Keep padding for details */
+                        }
+                    }
+
+                    @media (min-width: 769px) {
+                        .scrollable-events {
+                            flex-direction: column; /* Stack vertically on larger screens */
+                            overflow: visible; /* Remove scrolling on larger screens */
+                        }
+
+                        .event-card {
+                            margin-right: 0; /* Reset margin for vertical layout */
+                            margin-bottom: 20px; /* Add space between cards */
+                            width: auto; /* Allow cards to take full width */
+                            border-radius: 0; /* No rounded corners on larger screens */
+                        }
+
+                        .event-image {
+                            border-radius: 0; /* Ensure no rounded corners on desktop */
+                        }
+                    }
+
+                    .modal-content{
+                        width: 866px;
+                    }
+                </style>
+            </head>
+
+            <body>
+                <div class="container-fluid events-section">
+                    <h2 class="title-color-event">Events</h2>
+                    <p class="title-body-event">Stay updated on upcoming events hosted by SNN Estates Explore exclusive property showcases, seminars, and networking opportunities designed for our channel partners. Join us to connect, learn, and discover new ways to enhance your real estate business.</p>
+                    
+                    <div class="scrollable-events">
+                        <div class="event-card" ng-repeat="event in listOfEvents">
+                            <div class="event-image">
+                                <img ng-src="{{baseurl}}/servlet/servlet.FileDownload?file={{event.Image_Id__c}}" alt="{{event.Event_Name__c}}" />
+                            </div>
+                            <div class="event-details">
+                                <div class="new-event-title">{{event.Event_Name__c}}</div>
+                                <div class="event-info">Date &amp; Time: <span class="event-venue">{{event.Event_Date_Time__c | date:'d/M/yyyy, EEEE, h:mm a'}} Onwards</span></div>
+                                <div class="event-info">Venue: <span class="event-venue">{{event.Event_Venue__c}}</span></div>
+                            </div>
+                            <div class="p-3">
+                                <button class="view-button" ng-click="openPreview(event.File_Id__c)">View</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal fade" id="filePreviewModalEvents" tabindex="-1" role="dialog" aria-labelledby="filePreviewModalLabel" aria-hidden="true">
+                        <div class="modal-dialog custom-modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title text-center w-100" id="filePreviewModalLabel">File Preview</h5>
+                                    <button type="button" class="close" data-dismiss="modal" ng-click="closeModal()" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <iframe id="filePreviewFrameEvents" style="width: 100%; height: 500px;" frameborder="0"></iframe>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal" ng-click="closeModal()">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </body>
+        </div>
+    </html>
+</apex:page>

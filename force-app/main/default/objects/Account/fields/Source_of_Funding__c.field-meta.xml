@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Source_of_Funding__c</fullName>
+    <label>Source of Funding</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Self</fullName>
+                <default>false</default>
+                <label>Self</label>
+            </value>
+            <value>
+                <fullName>Capital Gains Offset</fullName>
+                <default>false</default>
+                <label>Capital Gains Offset</label>
+            </value>
+            <value>
+                <fullName>Home Loan</fullName>
+                <default>false</default>
+                <label>Home Loan</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

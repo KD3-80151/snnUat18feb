@@ -1,0 +1,174 @@
+<apex:page showHeader="false" standardStylesheets="false" sidebar="false" docType="html-5.0">
+    <html>
+        <div ng-controller="cpheader1_ctrl">
+            <head>
+                <!-- Include Bootstrap CSS -->
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous"/>
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+
+                <!-- Include Font Awesome -->
+                <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" rel="stylesheet" crossorigin="anonymous"/>
+
+                <!-- Include Bootstrap Icons -->
+                <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css" rel="stylesheet" crossorigin="anonymous"/>
+                <c:Controllers />
+                <style>
+                    .small-profile-photo {
+                        width: 100% !important;
+                        cursor: pointer !important;
+                    }
+                    .medium-bell-icon {
+                        font-size: 2rem !important; /* Adjust as needed for medium size */
+                    }
+                    .has-search .form-control {
+                        padding-left: 2.375rem !important;
+                        margin: 0 !important; /* Remove margin */
+                    }
+                    .has-search .form-control-feedback {
+                        position: absolute !important;
+                        z-index: 2 !important;
+                        display: block !important;
+                        width: 2.375rem !important;
+                        height: 2.375rem !important;
+                        line-height: 2.375rem !important;
+                        text-align: center !important;
+                        pointer-events: none !important;
+                        color: #aaa !important;
+                    }
+                    /* Hide elements on screens smaller than 1024px */
+                    @media (max-width: 992px) {
+                        .hide-on-ipad {
+                            display: none !important;
+                        }
+                    }
+                    .sales-member-card {
+                        display: flex;
+                        flex-wrap: wrap; /* Allows wrapping for smaller screens */
+                        flex-direction: column;
+                        justify-content: space-between;
+                        align-items: center; /* Align items vertically */
+                        line-height: normal;
+                        background-color: #EBEAEA;
+                        border-radius: 10px;
+                        padding: 10px; /* Adjusted for better spacing */
+                        gap: 5px; /* Add spacing between items */
+                        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Optional for a card-like appearance */
+                    }
+                    .sales-member-card > div {
+                        /* flex: 1 1 calc(33.33% - 10px); Each block takes up 33% space with gaps */
+                        text-align: start; /* Center the text */
+                        padding: 5px; /* Spacing inside each block */
+                        max-width: 100%; /* Ensures items don't overflow */
+                    }
+                    .sales-member-info { 
+                        margin: 0;
+                        color: #0B1E35;
+                        font-size: 12px;
+                        font-weight: 400;
+                    }
+                    .sales-member-head {
+                        margin: 0;
+                        color: #0B1E35;
+                        font-size: 18px;
+                        font-weight: 600;
+                    }
+                    /* Media Queries for Responsive Design */
+                    /* Small screens (mobile phones) */
+                    @media (max-width: 576px) {
+                        .sales-member-card {
+                            flex-direction: column; /* Stack items vertically */
+                            align-items: stretch; /* Stretch items to full width */
+                            gap: 10px; /* Smaller spacing for mobile */
+                        }
+                        .sales-member-card > div {
+                            /* flex: 1 1 100%; Each block takes up full width */
+                            text-align: left; /* Align text to the left */
+                        }
+                        .sales-member-head {
+                            font-size: 16px; /* Smaller font size for mobile */
+                        }
+                        .sales-member-info {
+                            font-size: 10px; /* Adjust for mobile screens */
+                        }
+                    }
+                    /* Medium screens (tablets) */
+                    @media (max-width: 768px) {
+                        .sales-member-card {
+                            flex-wrap: wrap; /* Wrap items for smaller screens */
+                            margin-left: 0 !important;
+                        }
+                        .sales-member-head {
+                            font-size: 18px;
+                        }
+                        .sales-member-info {
+                            font-size: 12px;
+                        }
+                    }
+                    @media (max-width: 992px) {
+                        .sales-member-card {
+                            margin-left: 270px;
+                            /* width: 100%; */
+                        }
+                    }
+                    /* Large screens (laptops/desktops) */
+                    @media (min-width: 992px) {
+                        .sales-member-card {
+                            justify-content: space-between; /*Spread items evenly*/
+                        }
+                        .sales-member-card > div {
+                            /* flex: 1 1 calc(33.33% - 10px); Three items per row */
+                        }
+                        .sales-member-head {
+                            font-size: 20px;
+                        }
+                        .sales-member-info {
+                            font-size: 14px;
+                        }
+                    }
+                    .profile-bell-container {
+                        display: flex;
+                        max-width: fit-content !important;
+                        align-items: center;
+                        padding: 0px !important;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="row align-items-center py-3 hide-on-ipad" style="justify-content:end;">
+                        <!-- <div class="col-12 col-md-10">
+                            <div class="sales-member-card" style="max-width: fit-content;">
+                                <p class="sales-member-head">{{con.Owner.Name}}</p>
+                                <p class="sales-member-info">Sales Member</p>
+                            </div> -->
+                            <!-- <div style="max-width: fit-content;">
+                                <p class="sales-member-head">+91 {{con.Owner.Phone}}</p>
+                                <p class="sales-member-info">Phone</p>
+                            </div>
+                            <div style="max-width: fit-content;">
+                                <p class="sales-member-head">{{con.Owner.Email}}</p>
+                                <p class="sales-member-info">Email</p>
+                            </div> -->
+                        <!-- </div> -->
+                        <div class="profile-bell-container">
+                            <!-- Bell icon (hidden on iPad Pro and similar devices) -->
+                            <div style="max-width:fit-content; padding:10px;">
+                                <i class="fa fa-bell medium-bell-icon"></i>
+                            </div>
+                            <!-- Profile image (hidden on iPad Pro and similar devices) -->
+                            <div class="col-12 col-md-1 text-end">
+                                <a ng-click="loadprofilePage('profileDetails')">
+                                    <img ng-if="profilePicId != ''" class="rounded-circle img-circle" style="height:50px;width:50px;" 
+                                        ng-src="{{profileUrl + profilePicId}}" width="40" height="40" alt="avatar"/>
+                                    <img ng-if="profilePicId == ''" class="rounded-circle img-circle" style="height:50px;width:50px;" 
+                                        src="{!URLFOR($Resource.personProfile)}" width="40" height="40" alt="avatar"/>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </body>
+        </div>
+    </html>
+    
+</apex:page>

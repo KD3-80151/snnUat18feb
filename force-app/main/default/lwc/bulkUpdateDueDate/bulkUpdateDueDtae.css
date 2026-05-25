@@ -1,0 +1,82 @@
+/* .custom-table-container {
+    margin: 20px;
+    padding: 10px;
+    background-color: #978f8f;
+} */
+
+.maincssDiv {
+        background-color: #f9f9f9; /* Light gray or white background */
+        border-radius: 10px; /* Rounded corners */
+        padding: 20px; /* Inner spacing */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for card effect */
+        margin: 20px; /* Outer spacing */
+    }
+.header-container {
+    width: 100%;
+}
+
+.custom-table-container {
+    flex-grow: 1; /* Take up remaining space to push footer to the bottom */
+    overflow-y: auto; /* Scroll if the table content is long */
+}
+
+.slds-grid_align-center {
+    margin-top: auto; /* Push the Save button to the bottom */
+}
+
+body {
+    margin: 0;
+    padding: 0;
+}
+
+
+/* Style the table */
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 16px;
+    text-align: left;
+}
+
+/* Style the header row */
+.custom-table thead tr {
+    background-color: #b9b2b2; /* Light gray background */
+    color: #333; /* Dark text color */
+}
+
+/* Style header cells */
+.custom-header {
+    padding: 10px 15px; /* Add padding inside header cells */
+    border: 1px solid #ddd; /* Add border to header cells */
+}
+
+/* Style table cells */
+.custom-cell {
+    padding: 10px 15px; /* Add padding inside table cells */
+    border: 1px solid #ddd; /* Add border to table cells */
+}
+
+/* Add spacing between columns (margin effect) */
+.custom-cell + .custom-cell {
+    padding-left: 20px;
+}
+.header {
+    font-size: 16px;
+    font-weight: 700;
+    padding: 12px;
+    text-align: center;
+     border-radius: 8px;
+    /*border-top-left-radius: 5px;
+    border-top-right-radius: 5px; */
+    width: 100%; /* Ensure it takes the full width */
+    
+}
+.borderRadiusLeft{
+	border-top-left-radius : 5px;
+	border-bottom-left-radius : 5px;
+}
+.borderRadiusRight{
+	border-top-right-radius: 5px;
+	border-bottom-right-radius: 5px;
+}

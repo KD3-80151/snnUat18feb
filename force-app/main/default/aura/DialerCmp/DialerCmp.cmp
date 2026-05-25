@@ -1,0 +1,289 @@
+<!--Created by - Avinash kumar
+ Created date - 01-10-2024
+ Modified Date - 03-10-2024
+ Purpose - Dailer Ui for Outbound call
+-->
+
+<aura:component controller ="DialerCmpCntrl" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction,lightning:utilityItem" access="global">
+    <!-- Attributes  -->
+    <aura:attribute name="phoneNumber" type="String" default="" />
+    <aura:attribute name="recordId" type="String" default="" />
+    <aura:attribute name="showDialer" type="boolean" default="true" />
+    <aura:attribute name="checked" type="Boolean" default="false"/>
+    <aura:attribute name="disabletoggle" type="boolean" default="false"/>
+    <aura:attribute name="callId" type="string" default="" /> 
+    <aura:attribute name="userRecord" type="User" />
+    <aura:attribute name="countryCodes" type="List" />
+    <aura:attribute name="callDetails" type="object"  />
+    <aura:attribute name="selectedCountryCode" type="String" default="91"/>
+    <aura:attribute name="showMcubeTask" type="boolean" default ="false" />
+    <aura:attribute name="disableLogin" type="boolean" default ="true" />
+    
+    <aura:attribute name="username" type="String" default=""/>
+    <aura:attribute name="password" type="String" default=""/>
+    <aura:attribute name="loggedIn" type="Boolean" default="false"/>
+    <aura:attribute name="hold" type="Boolean" default="false"/>
+    <aura:attribute name="isPasswordVisible" type="Boolean" default="false" />
+    
+    <!-- =====================Lightning Message channel====================== -->
+    <lightning:messageChannel type="outboundCommunication__c" onMessage="{!c.openDispositionScreen}"></lightning:messageChannel>
+    <!-- =================================================================== -->
+    
+    
+    <!-- =====================Call Transfer Attributes====================== -->
+    <aura:attribute name="agents" type="List" />
+    <aura:attribute name="filteredAgents" type="List" />
+    <aura:attribute name="searchKey" type="String" default="" />
+    <aura:attribute name="showDropdown" type="boolean" default="false" />
+    <aura:attribute name="showSearchAgent" type="boolean" default="false" />
+    <aura:attribute name="tranferAgentNo" type="String" default="" />
+    
+    <!-- =================================================================== -->
+
+    <aura:attribute name="pollingIntervalId" type="Integer" />
+    <aura:attribute name="isPolling" type="Boolean" default="false" />
+    
+    <!-- ====================================================================-->
+    
+    
+    <lightning:utilityBarAPI aura:id="utilitybar" />
+    <lightning:empApi aura:id="empApi" />
+    <lightning:overlayLibrary aura:id="overlayLib"/>
+    
+    <aura:handler event="c:parentMethodEvent" action="{!c.handleChildEvent}" />
+    
+    <aura:method name="closeUtility" action="{!c.closeUtility}"></aura:method>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" ></aura:handler>
+    <aura:handler event="force:refreshView" action="{!c.doInit}" />
+    
+    
+    <aura:if isTrue="{!NOT(v.loggedIn)}">    
+        <div style="padding-right:10px;padding-left:10px;">
+            <div class="slds-align_absolute-center"><img src="{!$Resource.McubeLogo}" alt="MCUBE" /></div>
+            <div class="slds-form-element" >
+                <label class="slds-form-element__label" for="username">Username</label>
+                <div class="slds-form-element__control">
+                    <ui:inputText aura:id="username" class="slds-input" value="{!v.username}" placeholder="Enter your username" />
+                </div>
+            </div>
+            
+            
+            <div class="slds-form-element">
+                <div style="position: relative; display: flex; flex-direction: column; align-items: flex-start; padding-top: 10px;">
+                    <label class="slds-form-element__label" for="password" style="margin-bottom: 5px;">Password</label>
+                    <div style="position: relative; width: 100%; display: flex; align-items: center;">
+                        <div style="flex: 1;">
+                            <aura:if isTrue="{!v.isPasswordVisible}">
+                                <ui:inputText class="passwordInput" value="{!v.password}" placeholder="Enter your password"/>
+                                <aura:set attribute="else">
+                                    <ui:inputSecret class="passwordInput" value="{!v.password}" placeholder="Enter your password"/>
+                                </aura:set>
+                            </aura:if>
+                        </div>
+                        <div style="position: absolute; right: 10px; cursor: pointer; top: 50%; transform: translateY(-50%);">
+                            <lightning:icon iconName="{!v.isPasswordVisible ? 'utility:hide' : 'utility:preview'}" size="small" class="password-toggle-icon" onclick="{!c.togglePasswordVisibility}" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            
+            <div style="padding-top: 10px; padding-bottom: 10px;">
+                <lightning:button label="Login" variant="brand" onclick="{!c.handleLogin}" disabled="{!v.disableLogin}"/>
+            </div>
+            
+        </div>
+    </aura:if>
+    
+    <aura:if isTrue="{!v.loggedIn}">
+        <aura:if isTrue="{!v.showDialer}">
+            <div class="slds-clearfix">
+                <!-- Country Code and Phone Input -->
+                <div class="slds-float_left">
+                    <div style="padding-right:5px;padding-left:5px;" >
+                        <table class="inputTable slds-m-right_xxx-small custom-shadow1" >
+                            <tr style="border: 1px solid #ccc;">
+                                <!-- Country Code Dropdown -->
+                                <td class="dropdownCell">
+                                    <ui:inputSelect class="countryCodeDropdown" aura:id="countryCode" value="{!v.selectedCountryCode}">
+                                        <!-- Iterate over the countryCodes list and create options dynamically -->
+                                        <aura:iteration items="{! v.countryCodes }" var="code">
+                                            <ui:inputSelectOption text="{! code }" label="{! code }"/>
+                                        </aura:iteration>
+                                    </ui:inputSelect>
+                                </td>
+                                
+                                <td class="inputCell">
+                                    <ui:inputText class="phoneInput" value="{!v.phoneNumber}" placeholder="Enter phone number"/>
+                                </td>
+                                <!--
+            <td class="clearButtonCell">
+                <button class="clearButton" onclick="{!c.clearNumber}"><b>X</b></button>
+            </td> -->
+                                <td class="clearButtonCell" style ="padding-right : 8px">
+                                    <button style="{!'background-image:url(' + $Resource.delete + '); background-size: cover; width: 20px; height: 12px; border: none;'}" onclick="{!c.clearNumber}"></button>
+                                </td>
+                                
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="slds-float_right">
+                    <div class="btnDiv">
+                        <lightning:buttonIcon iconName="utility:refresh" alternativeText="sync" title="sync" class="btnn" size="large" onclick="{!c.recUpdated1}"/>
+                    </div>
+                </div>
+            </div>
+            <!-- Dial Pad -->
+            <div class="dialpad">
+                <div class="row">
+                    <div class="dial-button" data-value="1" onclick="{!c.addNumber}">
+                        <div class="number">1</div>
+                        <div class="letters"></div>
+                    </div>
+                    <div class="dial-button" data-value="2" onclick="{!c.addNumber}">
+                        <div class="number">2</div>
+                        <div class="letters">ABC</div>
+                    </div>
+                    <div class="dial-button" data-value="3" onclick="{!c.addNumber}">
+                        <div class="number">3</div>
+                        <div class="letters">DEF</div>
+                    </div>
+                </div>
+                
+                
+                <div class="row">
+                    <div class="dial-button" data-value="4" onclick="{!c.addNumber}">
+                        <div class="number">4</div>
+                        <div class="letters">GHI</div>
+                    </div>
+                    <div class="dial-button" data-value="5" onclick="{!c.addNumber}">
+                        <div class="number">5</div>
+                        <div class="letters">JKL</div>
+                    </div>
+                    <div class="dial-button" data-value="6" onclick="{!c.addNumber}">
+                        <div class="number">6</div>
+                        <div class="letters">MNO</div>
+                    </div>
+                </div>
+                
+                
+                
+                <div class="row">
+                    <div class="dial-button" data-value="7" onclick="{!c.addNumber}">
+                        <div class="number">7</div>
+                        <div class="letters">PQRS</div>
+                    </div>
+                    <div class="dial-button" data-value="8" onclick="{!c.addNumber}">
+                        <div class="number">8</div>
+                        <div class="letters">TUV</div>
+                    </div>
+                    <div class="dial-button" data-value="9" onclick="{!c.addNumber}">
+                        <div class="number">9</div>
+                        <div class="letters">WXYZ</div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="dial-button " data-value="*" onclick="{!c.addNumber}">
+                        <div class="number" style="font-size: 40px;font-weight: bold; line-height: 1;padding-top: 7px;">*</div>
+                        <div class="letters"></div>
+                    </div>
+                    <div class="dial-button" data-value="0" onclick="{!c.addNumber}">
+                        <div class="number">0</div>
+                        <div class="letters">+</div>
+                    </div>
+                    <div class="dial-button" data-value="#" onclick="{!c.addNumber}">
+                        <div class="number">#</div>
+                        <div class="letters"></div>
+                    </div>
+                </div>
+                
+                
+                <div class="row" style="padding-top: 7px;">
+                    <div class="call-button1 ">
+                        
+                    </div>
+                    <div class="call-button" onclick="{!c.createRecord}">
+                        <lightning:icon iconName="standard:voice_call" alternativeText="Phone" size="medium" class="phone-icon"/>
+                    </div>
+                    <div class="call-button1" >
+                        
+                    </div>
+                </div>
+                
+            </div>
+            <aura:set attribute="else">
+                
+               
+                <div class="slds-p-around_x-small" aura:id="parentComp">
+                    
+                    <div class="button-container">
+                        <!-- Call Summary Section -->
+                        <div class="scrollable-card">
+                            
+                            <div class="buttoncard">
+                                <div class="slds-grid slds-wrap slds-p-bottom_xxx-small>">
+                                    <div class="slds-size_1-of-4">
+                                        <lightning:buttonIcon iconName="utility:back" alternativeText="back" size="large" onclick="{!c.openDialer}" />
+                                    </div>
+                                    <div class="slds-size_1-of-4">
+                                        <aura:if isTrue="{!v.hold}">
+                                            <lightning:button label="Hold" variant="base" onclick="{!c.handleHold}" />
+                                            <aura:set attribute="else">
+                                                <lightning:button label="Unhold" variant="base" onclick="{!c.handleUnhold}" />
+                                            </aura:set>
+                                        </aura:if>
+                                    </div>
+                                    <div class="slds-size_1-of-4">
+                                        <lightning:buttonIcon iconName="utility:questions_and_answers" alternativeText="Get Available agents" size="large" onclick="{!c.fetchAgents}" />
+                                    </div>
+                                    <div class="btnDiv slds-size_1-of-4">
+                                        <lightning:buttonIcon iconName="utility:refresh" alternativeText="sync" title="sync" class="btnn" size="large" onclick="{!c.recUpdated}" />
+                                    </div>
+                                </div>
+                                
+                                <aura:if isTrue="{!v.showSearchAgent}">
+                                   <div class="slds-grid slds-wrap slds-p-bottom_xxx-small>">
+                                    <div class="slds-size_7-of-8">
+                                            <div style="position: relative;">
+                                                <lightning:input type="search" label="Search Agents" value="{!v.searchKey}" onkeyup="{!c.filterAgents}" onclick="{!c.filterAgents}" placeholder="Search by name or phone" />
+                                                <aura:if isTrue="{!v.showDropdown}">
+                                                    <div class="dropdown-style"> <!-- Applied dropdown-style here -->
+                                                        <aura:iteration items="{!v.filteredAgents}" var="agent">
+                                                            <p class="dropdown-item" onclick="{!c.selectAgent}" data-label="{!agent.label}" data-value="{!agent.value}">
+                                                                {!agent.label}
+                                                            </p>
+                                                        </aura:iteration>
+                                                    </div>
+                                                </aura:if>
+                                        </div>
+                                        </div>
+                                        
+                                        <div class="slds-size_1-of-8" style="padding:4px">
+                                            <br/>
+                                            <lightning:buttonIcon iconName="utility:trailblazer_ext" alternativeText="Transfer call" size="large" onclick="{!c.transferCall}" />
+                                        </div>
+                                    </div>
+                                </aura:if>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                     
+                    
+                    <!--c:mcubeTask recordId="{!v.recordId}" 
+                                 callId="{!v.callId}" 
+                                 showDialer="{!v.showDialer}"
+                                 showMcubeTask="{!v.showMcubeTask}"
+                                 aura:id="childComp"
+                                 /-->
+               
+                </div>
+            </aura:set>
+        </aura:if>
+    </aura:if>
+    
+</aura:component>

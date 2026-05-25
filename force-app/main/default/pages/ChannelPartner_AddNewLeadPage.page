@@ -1,0 +1,161 @@
+<apex:page showHeader="false" standardStylesheets="false" sidebar="false" docType="html-5.0" cache="false" controller="ChannelPartner_Controller">
+    <html>
+        <head>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous" />
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+        <link href="https://use.fontawesome.com/releases/v5.15.1/css/all.css" rel="stylesheet" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.20.0/font/bootstrap-icons.css" />   
+    <style>
+        .modal-content {
+            border-radius: 10px;
+            max-width: 866px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        .modal-header {
+            border-bottom: none;
+            text-align: center;
+            justify-content: center;
+        }
+
+        .modal-title {
+            font-weight: 600;
+            font-size: 24px;
+            color: #0B1E35;
+        }
+
+        .modal-body {
+            font-size: 16px;
+            color: #666;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #0B1E35;
+        }
+
+        .btn-orng {
+            background-color: #9D6200!important;
+            color: #fff!important;
+            font-weight: 500!important;
+        }
+
+        .input-group-text {
+            background-color: #fff;
+            border-right: none;
+        }
+
+        .form-control {
+            border-left: none;
+        }
+    </style>
+    </head>
+    <body ng-app="ChannelPartnerApp" ng-controller="ChannelController">
+    <div class="modal fade" id="addNewLeadModal" tabindex="-1" aria-labelledby="addNewLeadModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addNewLeadModalLabel" style="display:block;text-align:center;font-size:28px;font-weight:600;">Add Lead</h5>
+                    <button type="button" class="btn-close" ng-click="closeModal()" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Welcome to the Create Lead section. Here, you can easily add new leads to your pipeline. Fill in the necessary details such as the lead's name, contact information, and the property they are interested in. Let's turn these prospects into successful deals!</p>
+                    <form>
+                        <div class="row" style="text-align:left;">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="leadName" class="form-label">Lead Name<span class="required-asterisk" style="color:red;">*</span>
+                                    </label>
+                                        <input type="text" class="form-control" id="leadName" placeholder="John Smith" ng-model="leadObj.LastName"/>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="leadEmail" class="form-label">Email Address</label>
+                                    <input type="text" class="form-control" id="leadEmail" placeholder="john@gmail.com" ng-model="leadObj.Email"/>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="leadPhone" class="form-label">Mobile Number
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text" style="height:38px;">+91</span>
+                                        <input type="tel" class="form-control" id="leadPhone" placeholder="9994569008" ng-model="leadObj.Phone"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="project" class="form-label">Project<span class="required-asterisk" style="color:red;">*</span></label>
+                                    <select class="form-select" id="project" ng-model = "leadObj.Project__c">
+                                        <option ng-repeat = "project in projects" value="{{project.Id}}">{{project.Name}}</option>
+                                        <!-- <option>Apartment</option>;
+                                        <option>Villa</option>
+                                        <option>Commercial Space</option> -->
+                                    </select>
+                                </div>
+                            </div>
+                            <!-- <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="leadSource" class="form-label">Source</label>
+                                    <select class="form-select" id="leadSource" ng-model = "leadObj.LeadSource" ng-change = "updateSubSources()">
+                                        <option ng-repeat = "source in leadSources">{{source.key}}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="SubSource" class="form-label">Lead Sub Source</label>
+                                    <select class="form-select" id="SubSource" ng-model = "leadObj.Lead_Sub_Source__c" ng-disabled = "leadSubSource.length === 0">
+                                        <option ng-repeat = " subSource in leadSubSource">{{subSource}}</option>
+                                    </select>
+                                </div>
+                            </div> -->
+                        </div>
+                        <button type="button" class="btn btn-orng mt-2" ng-disabled="isDisabledAddLead" ng-click="addLead()">Add Lead</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include the Success Modal Page with parameters -->
+    <apex:include pageName="ChannelPartner_BulkLeadSuccessflagPage">
+    	<apex:param name="title" value="New Lead has been created!" />
+    	<apex:param name="content" value="Your new lead has been created successfully! Please wait for approval from SNN Estates You'll be notified once the lead is approved and ready for follow-up." />
+	</apex:include>
+
+    <script>
+        function handleAddLead() {
+            // Close the addNewLeadModal
+            var addNewLeadModalEl = document.getElementById('addNewLeadModal');
+            var addNewLeadModal = bootstrap.Modal.getInstance(addNewLeadModalEl);
+            addNewLeadModal.hide();
+
+            // Ensure the modal is fully closed before opening the success modal
+            addNewLeadModalEl.addEventListener('hidden.bs.modal', function () {
+                // Show the success modal
+                var successModalEl = document.getElementById('bulkLeadUploadSuccessModal');
+                var successModal = new bootstrap.Modal(successModalEl);
+                successModal.show();
+            });
+        }
+
+        var app = angular.module('ChannelPartnerApp', []);
+        app.controller('ChannelController', function($scope, $sce, $rootScope) {
+            
+        });
+
+</script>
+</body>
+
+</html>
+</apex:page>

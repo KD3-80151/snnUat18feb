@@ -1,0 +1,48 @@
+/* Custom class for the card to adjust its height */
+.body {
+    min-height: 300px; /* Minimum height for the card container */
+}
+
+.custom-card {
+    width: 100%; /* Set width to 100% to be responsive */
+    max-width: 1500px; /* Maximum width to control card size */
+    height: 400px; /* Adjust the height as needed */
+    max-height: 500px; /* Optional: Set a maximum height */
+    overflow: auto; /* Add scrollbars if content exceeds height */
+}
+
+/* Custom class for header to highlight it */
+.custom-header {
+    background-color: #f3f4f6; /* Light grey background color */
+    border-bottom: 1px solid #d8dde6; /* Border at the bottom of the header */
+    padding: 1rem; /* Add some padding */
+}
+
+/* Header text styles */
+.slds-card__header h2 {
+    font-size: 1.5rem; /* Adjust font size */
+    color: #0070d2; /* Set text color */
+}
+
+/* Flex container to move the button to the right */
+.button-container {
+    display: flex; /* Use flexbox layout */
+    justify-content: flex-end; /* Align items to the right end */
+    margin-top: 1rem; /* Add margin for spacing */
+}
+
+/* Error message styles for visibility */
+.error-message-container {
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    height: 200px; /* Fixed height for centering */
+    padding: 16px; /* Add some padding */
+    text-align: center; /* Center text alignment */
+}
+
+.slds-text-color_error {
+    font-weight: bold; /* Make the error message bold */
+    font-size: 1.2rem; /* Increase the font size */
+    color: #d50000; /* A more vivid red color */
+}

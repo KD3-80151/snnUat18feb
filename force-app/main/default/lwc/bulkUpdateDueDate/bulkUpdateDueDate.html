@@ -1,0 +1,159 @@
+<template>
+    <div
+        style="background-color: #f9f9f9; border-radius: 3px; padding: 1px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+        <div class="header-container slds-m-around_medium" style=" background-color: #ab6c1f;border-radius: 5px;">
+            <h1 class="header  "
+                style="color:white;Padding :10px; font-size :20px;  text-align: center; font-weight: 700;">Schedule
+                Scheme Due Date Updation</h1>
+        </div>
+        <div class="slds-p-around_medium  slds-grid slds-wrap slds-gutters">
+            <div class="slds-col slds-size_1-of-2">
+                <lightning-combobox label="Company" value={selectedCompany} onchange={handleCompanyChange}
+                    placeholder="Select Company" options={companyOptions} disabled={approval} required>
+                </lightning-combobox>
+            </div>
+            <div class="slds-col slds-size_1-of-2">
+                <lightning-combobox label="Schedule Scheme " value={selectedScheme} onchange={handleSchemeChange}
+                    placeholder="Select Schedule Scheme" options={schemeOptions} disabled={approval} required>
+                </lightning-combobox>
+            </div>
+            <div class="slds-col slds-size_1-of-2">
+                <lightning-combobox label="Project" value={selectedProject} onchange={handleProjectChange}
+                    placeholder="Select Project" options={projectOptions} disabled={approval} required>
+                </lightning-combobox>
+            </div>
+            <div class="slds-col slds-size_1-of-2">
+                <lightning-combobox label="Cost Sheet" value={selecteCostSheet} onchange={handleCostSheetChange}
+                    placeholder="Select Cost Sheet" options={CostSheetOptions} disabled={approval} required>
+                </lightning-combobox>
+            </div>             
+            <div class="slds-col slds-size_1-of-2">
+                <lightning-combobox label="Block" value={selectedBlock} onchange={handleBlockChange}
+                    placeholder="Select Block" options={blockOptions} disabled={approval} required>
+                </lightning-combobox>
+            </div>
+            <template if:true={showOpps}>
+                 <div class="slds-col slds-size_1-of-2">
+                <c-resusable-lookup label="Select Opportunity" selected-icon-name="standard:opportunity" object-label="Account"
+                     object-api-name="Opportunity" field-api-name="Name" other-field-api-name="Account.Name" onvalueselected={handleChangeOpportunity}
+                     second-field-filter-api-name="Payment_Scheme__c" second-field-filter-value={selectedScheme} value={selectedOpp}>
+                </c-resusable-lookup>
+                 </div>
+            </template>
+            <!-- <div class="slds-col slds-size_1-of-2">
+                <lightning-combobox label="Opportunity" value={selectedOpportunity} onchange={handleOpportunityChange}
+                    placeholder="Select Opportunity" options={OpportunityOptions} disabled={approval} required>
+                </lightning-combobox>
+                <c-resusable-lookup label="Select Opportunity" selected-icon-name="standard:opportunity" object-label="Account"
+                     object-api-name="Opportunity" field-api-name="Name" other-field-api-name="Account.Name" onvalueselected={handleChangeOpportunity}
+                     second-field-filter-api-name="Payment_Scheme__c" second-field-filter-value={selectedScheme} value={selectedOpp}>
+                </c-resusable-lookup>
+
+            </div> -->
+            <!--div class="slds-col slds-size_1-of-2">
+      <lightning-input 
+          type="date" 
+          label="To Date" 
+          value={toDate} 
+          onchange={handleToDateChange}
+          disabled={approval}
+          required>
+      </lightning-input>
+           </div-->
+            <!--template if:true={isLoading}>
+          <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+      </template-->
+
+            <!--template if:true={showTable}-->
+
+            <div class="slds-col slds-size_2-of-2 slds-grid_align-center" style="margin-left:47.5%;margin-top:1%;">
+                <lightning-button variant="brand" label="Show" onclick={handleShow}>
+                </lightning-button>
+            </div> <br />
+
+            <div class="slds-p-around_medium  slds-grid slds-wrap slds-gutters" style="width:100%; padding-right:0;">
+                 <template if:true={oppsPaymentSchedules.length}>
+                    <div class="custom-table-container  " style="width:100%; ">
+                        <table class="custom-table ">
+                            <thead style="Padding :30px; background-color: #ab6c1f;border-radius: 5px; ">
+                                <tr style="margin :10%;font-size :15px; color:white;">
+                                    <th class="custom-header slds-p-vertical_small borderRadiusLeft">#</th>
+                                    <th class="custom-header slds-p-vertical_small">Payment Schedule </th>
+                                    <th class="custom-header slds-p-vertical_small">Demand Date</th>
+                                    <th class="custom-header slds-p-vertical_small borderRadiusRight">Due Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={oppsPaymentSchedules} for:item="row">
+                                    <tr key={row.Id}>
+                                        <td class="custom-cell">{row.index}</td>
+                                        <td class="custom-cell">{row.Name}</td>
+                                        <td class="custom-cell  ">
+                                            <lightning-input type="date" value={row.Pay_Date__c} data-id={row.Id} 
+                                                data-field="PayByDate" onchange={handleDateChange2} style="width:50%;">
+                                            </lightning-input>
+                                        </td>
+                                        <td class="custom-cell   ">
+                                            <lightning-input type="date" value={row.Due_Date__c} data-id={row.Id} disabled
+                                                data-field="DueDate" onchange={handleDateChange2} style="width:50%;">
+                                            </lightning-input>
+                                        </td>
+                                        
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+
+                        <div class="slds-grid slds-grid_align-center slds-p-top_medium"
+                            style=" display: flex; justify-content: center;">
+                            <lightning-button variant="brand" label="Save" onclick={handleOppsPaySchedulesSave}>
+                            </lightning-button>
+                        </div>
+                    </div>
+                </template>
+                <template if:false={oppsPaymentSchedules.length}>
+                <template if:true={showTable}>
+                    <div class="custom-table-container  " style="width:100%; ">
+                        <table class="custom-table ">
+                            <thead style="Padding :30px; background-color: #ab6c1f;border-radius: 5px; ">
+                                <tr style="margin :10%;font-size :15px; color:white;">
+                                    <th class="custom-header slds-p-vertical_small borderRadiusLeft">#</th>
+                                    <th class="custom-header slds-p-vertical_small">Schedule Installment </th>
+                                    <th class="custom-header slds-p-vertical_small">Demand Date</th>
+                                    <th class="custom-header slds-p-vertical_small borderRadiusRight">Due Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={pymentinstall} for:item="row">
+                                    <tr key={row.Id}>
+                                        <td class="custom-cell">{row.index}</td>
+                                        <td class="custom-cell">{row.Payment_Schedule_Master__c}</td>
+                                        <td class="custom-cell  ">
+                                            <lightning-input type="date" value={row.PayByDate} data-id={row.Id}
+                                                data-field="PayByDate" onchange={handleDateChange} style="width:50%;">
+                                            </lightning-input>
+                                        </td>
+                                        <td class="custom-cell   ">
+                                            <lightning-input type="date" value={row.DueDate} data-id={row.Id} disabled
+                                                data-field="DueDate" onchange={handleDateChange} style="width:50%;">
+                                            </lightning-input>
+                                        </td>
+                                        
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+
+                        <div class="slds-grid slds-grid_align-center slds-p-top_medium"
+                            style=" display: flex; justify-content: center;">
+                            <lightning-button variant="brand" label="Save" onclick={handleSave}>
+                            </lightning-button>
+                        </div>
+                    </div>
+                </template>
+                </template>
+            </div>
+
+        </div>
+    </div>
+</template>

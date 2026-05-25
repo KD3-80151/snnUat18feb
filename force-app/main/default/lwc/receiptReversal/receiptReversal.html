@@ -1,0 +1,108 @@
+<template>
+    <div class="mainDiv">
+        <h1 class="header">Receipt Reversal</h1>
+        <div class="">
+            <div class="slds-grid slds-gutters slds-wrap">
+                <div class="slds-col slds-size_6-of-12 slds-p-right_small">
+                    <c-resusable-lookup label="Unit No." selected-icon-name="custom:custom64" object-label="Unit"
+                        object-api-name="Unit__c" field-api-name="Unit_Name__c" other-field-api-name="Name" second-field-filter-api-name="Status__c"
+                        second-field-filter-value="Sold" onvalueselected={handleChangeUnit} value={selectedUnitId} disabled={isUnitDisabled} required="true">
+                    </c-resusable-lookup>
+                </div>
+                <div class="slds-col slds-size_6-of-12 slds-p-right_small">
+                    <lightning-combobox label="Receipt No." value={selectedRcpt} options={receiptNumOptions}
+                        onchange={handleChangeReceiptNum} disabled={isReceiptNumDisabled} >
+                    </lightning-combobox>
+                    <!-- <lightning-input type="text" label="Client Name" value={clientName} required="true" disabled></lightning-input> -->
+                </div>
+            </div>
+            <div class="slds-grid slds-gutters slds-wrap">
+                <div class="slds-col slds-size_4-of-12 slds-p-right_small">
+                    <!-- <lightning-combobox label="Receipt No." value={selectedRcpt} options={receiptNumOptions}
+                        onchange={handleChangeReceiptNum} disabled={isReceiptNumDisabled} required="true">
+                    </lightning-combobox> -->
+                    <lightning-input type="text" label="Client Name" value={clientName} required="true" disabled></lightning-input>
+                </div>
+                <div class="slds-col slds-size_4-of-12 slds-p-right_small">
+                    <lightning-input type="text" label="Cheque No." value={chequeNum} disabled></lightning-input>
+                </div>
+                <div class="slds-col slds-size_4-of-12 slds-p-right_small">
+                    <lightning-input type="date" label="Cheque Date" value={chequeDate} disabled></lightning-input>
+                </div>
+            </div>
+        </div>
+        <div class="slds-m-top_medium" style="text-align: center;">
+            <lightning-button variant="brand" label="Search" title="Search" onclick={handleSearch}
+                class="slds-m-left_small"></lightning-button>
+            <lightning-button variant="destructive-text" label="CLear" title="Clear" onclick={handleClear}
+                class="slds-m-left_small"></lightning-button>
+        </div>
+        <template if:true={showTable}>
+            <div class="table-container">
+                <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_striped custom-table">
+                    <thead>
+                        <tr class="slds-text-title_caps">
+                            <th>
+                                <input type="checkbox" onchange={handleSelectAll} />
+                            </th>
+                            <th>Bank Name</th>
+                            <th>Receipt No.</th>
+                            <th>Cheque No.</th>
+                            <th>Receipt Date</th>
+                            <th>Cheque Date</th>
+                            <th>Receipt Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={receiptReversalData} for:item="rcpt">
+                            <tr key={rcpt.Id}>
+                                <td>
+                                    <input type="checkbox" data-id={rcpt.Id} checked={rcpt.isChecked} onchange={handleCheck}/>
+                                </td>
+                                <td>{rcpt.Bank__c}</td>
+                                <td>{rcpt.Name}</td>
+                                <td>{rcpt.Cheque_Number__c}</td>
+                                <td>{rcpt.Receipt_Date__c}</td>
+                                <td>{rcpt.Cheque_Date__c}</td>
+                                <td>{rcpt.Amount__c}</td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+            <div style="text-align: center;">
+                <lightning-button variant="brand" label="Apply" title="Apply" onclick={handleApply}
+                    class="slds-m-left_small"></lightning-button>
+            </div>
+        </template>
+        <template if:true={isShowModal}>
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                <!-- modal header start -->
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={hideModalBox}>
+                        <lightning-icon icon-name="utility:close"
+                        alternative-text="close"
+                        variant="inverse"
+                        size="small" ></lightning-icon>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                </header>
+                <!-- modal body start -->
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    <lightning-input type="date" label="Bounced Date" value={bouncedDate} required="true" onchange={handleInputChange}></lightning-input>
+                    <lightning-input type="radio" label="Same Cheque" name="cheque" value="Same Cheque" checked={isSameCheque} onchange={handleChequeChange}></lightning-input>
+                    <lightning-input type="radio" label="New Cheque" name="cheque" value="New Cheque" checked={isNewCheque} onchange={handleChequeChange}></lightning-input>
+                    <lightning-input type="text" label="Bounced Reason" value={bouncedReason} required="true" onchange={handleInputChange}></lightning-input>
+                </div>
+                <!-- modal footer start-->
+                <footer class="slds-modal__footer">
+                    <lightning-button variant="brand" label="Save" title="Save" onclick={handleSave}
+                        class="slds-m-around_medium" disabled={isSaveDisabled}></lightning-button>
+                </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </template>
+    </div>
+</template>

@@ -1,0 +1,40 @@
+<apex:page showHeader="false" standardStylesheets="false" sidebar="false" docType="html-5.0" controller="CustomerPortalController">
+    <html>
+        <div ng-controller="termsconditions_ctrl">
+            <head>
+                <!-- Include Bootstrap CSS -->
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous"/>
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+                <!-- Include Font Awesome -->
+                <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" rel="stylesheet" crossorigin="anonymous"/>
+                <!-- Include Bootstrap Icons -->
+                <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css" rel="stylesheet" crossorigin="anonymous"/>
+                <!-- AngularJS -->
+                <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+                <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular-sanitize.min.js"></script>
+            </head>
+            
+            <style>
+                .title-color {
+                    color: #1F1E1E;
+                }
+                .loading-message {
+                    text-align: center;
+                    color: #6c757d;
+                    font-size: 18px;
+                }
+                .content-container {
+                    margin: 20px;
+                }
+            </style>
+            
+            <body>
+                <div class="container-fluid content-container">
+                    <h2 class="mb-4 title-color">Terms &amp; Conditions</h2>
+                    <p ng-show="isLoading" class="loading-message">Loading terms and conditions...</p>
+                    <div ng-bind-html="trustedTerms"></div> <!-- Using trusted HTML content -->
+                </div>
+            </body>
+        </div>
+    </html>
+</apex:page>

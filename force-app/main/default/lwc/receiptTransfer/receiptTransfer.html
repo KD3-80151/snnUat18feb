@@ -1,0 +1,134 @@
+<template>
+
+    <lightning-card>
+        <h1 class="headerCss">Receipt Transfer Client</h1>
+        <div class="slds-grid slds-gutters">
+            <div class="slds-col sectionsCss">
+                <lightning-combobox label="From Project" options={projectOptions} name="From_Project__c"
+                    value={transferLogDetails.From_Project__c} onchange={handleChange} required>
+                </lightning-combobox>
+                <lightning-combobox label="From Block" options={FromBlockOptions} name="From_Block__c"
+                    value={transferLogDetails.From_Block__c} onchange={handleChange} required>
+                </lightning-combobox>
+                <lightning-combobox label="From Client" options={fromClientOptions} name="From_Client__c"
+                    value={transferLogDetails.From_Client__c} onchange={handleChange} >
+                    
+                </lightning-combobox>
+                <lightning-combobox label="From Opportunity" options={fromOpportunityOptions} name="From_Opportunity__c"
+                    value={transferLogDetails.From_Opportunity__c} onchange={handleChange} >
+                    
+                </lightning-combobox>
+                <lightning-input type="text" label="Remarks" name="Remarks__c" value={transferLogDetails.Remarks__c}
+                    onchange={handleChange}>
+                </lightning-input>
+            </div>
+            <div class="slds-col sectionsCss">
+                <lightning-input label="Transfer Date" type="date" name="Transfer_Date__c"
+                    value={transferLogDetails.Transfer_Date__c} onchange={handleChange} required>
+                </lightning-input>
+                <lightning-combobox label="To Project" options={projectOptions} name="To_Project__c"
+                    value={transferLogDetails.To_Project__c} onchange={handleChange} required>
+                </lightning-combobox>
+                <lightning-combobox label="To Block" options={ToBlockOptions} name="To_Block__c"
+                    value={transferLogDetails.To_Block__c} onchange={handleChange} required>
+                </lightning-combobox>
+                <lightning-combobox label="To Client" options={toClientOptions} name="To_Client__c"
+                    value={transferLogDetails.To_Client__c} onchange={handleChange} >
+                </lightning-combobox>
+                <lightning-combobox label="To Opportunity" options={toOpportunityOptions} name="To_Opportunity__c"
+                    value={transferLogDetails.To_Opportunity__c} onchange={handleChange} >
+                </lightning-combobox>
+            </div>
+        </div>
+
+        <div class="slds-align_absolute-center slds-p-top_small">
+            <div class="customButtonCss" onclick={handleClear}>Clear</div>
+            <lightning-button variant="brand" label="Show Receipts" onclick={showReceipts}
+                class="slds-m-left_x-small newButtonCss"></lightning-button>
+            <lightning-button variant="brand" label="Submit" onclick={handleSubmit}
+                class="slds-m-left_x-small newButtonCss" disabled={disableButton}></lightning-button>
+        </div>
+        <template if:true={fromOppList}>
+            <div class="slds-gutters slds-size_1-of-1 mainHeader">
+                <div class="slds-p-top_large slds-p-bottom_medium">
+                    <template for:each={fromOppList} for:item="opp">
+                        <div key={opp.Id} class="slds-section oppBorder" data-id={opp.Id}>
+                            <h3 class="slds-section__title">
+                                <div aria-controls={opp.Id} class="slds-section__title-action" data-buttonid={opp.Id}
+                                    onclick={toggleSection}>
+                                    <lightning-icon icon-name="utility:down" alternative-text="button icon"
+                                        size="x-small"
+                                        class="slds-section__title-action-icon slds-button__icon_left"></lightning-icon>
+                                    <span class="slds-truncate slds-p-vertical_xx-small"
+                                        title={opp.Name}><b>{opp.Name}</b></span>
+                                </div>
+                            </h3>
+                            <div class="slds-section__content" style="padding-top: 0;">
+                                <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                                    <thead>
+                                        <tr class="slds-line-height_reset">
+                                            <th scope="col" class="bgColor">
+                                                <lightning-input onchange={allSelected} type="checkbox"
+                                                    data-oppid={opp.Id} checked={opp.isSelected}></lightning-input>
+                                            </th>
+                                            <th scope="col" class="bgColor">Receipt Number</th>
+                                            <th scope="col" class="bgColor">Amount</th>
+                                            <th scope="col" class="bgColor">Mode Of Payment</th>
+                                            <th scope="col" class="bgColor">Receipt Date</th>
+                                            <th scope="col" class="bgColor">To Opportunity</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template for:each={opp.Receipts__r} for:item="receipt">
+                                            <tr key={receipt.Id}>
+                                                <th scope="col">
+                                                    <lightning-input type="checkbox" data-id={receipt.Id}
+                                                        data-oppid={opp.Id} checked={receipt.isSelected}
+                                                        onchange={handleCheckboxChange}></lightning-input>
+                                                </th>
+                                                <th scope="col">{receipt.Receipt_Number__c}</th>
+                                                <th scope="col">{receipt.Amount__c}</th>
+                                                <th scope="col">{receipt.Mode_Of_Payment__c}</th>
+                                                <th scope="col">{receipt.CreatedDate}</th>
+                                                <th scope="col">{receipt.ToOpportunity}</th>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </template>
+    </lightning-card>
+
+    <template if:true={isShowModal}>
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true"
+            aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+                        title="Close" onclick={hideModalBox}>
+                        <lightning-icon icon-name="utility:close" alternative-text="close" variant="inverse"
+                            size="small"></lightning-icon>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">List of Opportunities
+                        related to Client - {toClientName}
+                    </h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    <lightning-datatable key-field="Id" data={toOppListFormatted} columns={columns}
+                        onrowselection={handleRowSelection} max-row-selection="1">
+                    </lightning-datatable>
+                </div>
+                <footer class="slds-modal__footer">
+                    <button class="slds-button slds-button_neutral" onclick={hideModalBox}>Cancel</button>
+                    <button class="slds-button slds-button_brand" onclick={processOpps}>Submit</button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+</template>

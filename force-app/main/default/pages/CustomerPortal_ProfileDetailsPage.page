@@ -1,0 +1,231 @@
+<apex:page showHeader="false" standardStylesheets="false" lightningStylesheets="false" sidebar="false" docType="html-5.0" controller="CustomerPortalController">
+<html>
+    <div ng-controller="cpprofilepage_ctrl">
+        <head>
+<style>
+    .title-color {
+        color: #0B1E35;
+    }
+    .profile-page {
+        margin: 20px !important;
+    }
+    .profile-header {
+        text-align: center !important;
+        margin-bottom: 20px !important;
+    }
+    .profile-header img {
+        width: 160px !important;
+        height: 160px !important;
+        border-radius: 50% !important;
+        margin-right: 20px !important;
+    }
+    .personal-info, .account-details {
+        margin-top: 20px !important;
+    }
+    .section-header {
+        color: red !important;
+        font-size: 24px !important;
+    }
+    .personal-info label, .account-details label {
+        font-weight: bold !important;
+    }
+    .personal-info .form-control-plaintext, .account-details .form-control-plaintext {
+        background-color: #f8f9fa !important;
+    }
+    .edit-button {
+        margin-top: 10px !important;
+    }
+    .position-relative {
+        position: relative !important;
+    }
+    .input-container {
+        position: relative !important;
+    }
+    .change-link {
+        position: absolute !important;
+        top: 50% !important;
+        right: 10px !important; 
+        transform: translateY(-50%) !important;
+        color: #dc3545 !important; /* Text color for Bootstrap danger */
+        text-decoration: none !important;
+    }
+    .form-control[disabled] {
+        background-color: #e9ecef !important; /* Light background color for disabled inputs */
+        opacity: 1 !important; 
+    }
+    .image-previewIF {
+        background-color: white !important;
+        height: 200px !important;
+        overflow: hidden;
+    }
+    .profile-container1 {
+        position: relative;
+        display: inline-block;
+        /* width: 150px; */
+        height: 150px;
+        margin-bottom: 10px; /* Adjusted for spacing */
+    }
+    .upload-icon-main-profile {
+        position: absolute;
+        bottom: -15px;
+        right: 0px;
+        background-color: #9D6200;
+        color: white;
+        border-radius: 50%;
+        padding: 5px;
+        cursor: pointer;
+        border: 2px solid #ffffff;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .custom-file-upload{
+        display: flex;
+        justify-content: space-around;
+        padding: 20px;
+    }
+    .input-group-lg>.form-control {
+        font-size: 1.2rem !important;
+        border-radius: 0 !important;
+        padding: 0.2rem !important;
+        max-width: 105px !important;
+        /* margin-left: 75px !important; */
+        margin-right: 30px !important;
+    }
+    .input-group-lg {
+        display: flex;
+        justify-content: center;
+        padding: 30px;
+    }
+    .custom-btn {
+        background-color: #9D6200!important;
+        color: white!important;
+        /* padding: 10px 20px; */
+        border-radius: 5px;
+        font-size: 16px;
+        font-weight: 600;
+    }
+</style>
+</head>
+    
+<body>
+    <div  class="container profile-page">
+    
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2 class="title-color">Profile</h2>
+                <p>View and update your personal information, change your profile photo, and manage your account details including username and password. Keep your profile up-to-date to ensure smooth communication and access to all features provided by SNN Estates Stay current to make the most of your partnership and maximize your success.</p>
+            </div>
+        </div>
+    
+        <div class="row align-items-start">
+            <div class="col-md-4" ng-show="!editable">
+                <div class="profile-header">
+                    <div  ng-if="profilePicId != ''" class="image-previewIF d-flex align-items-center justify-content-center">
+                        <img class="mr-2 mb-2" src="{{profileUrl + profilePicId}}" alt="avatar" />
+                    </div>
+                    <div ng-show="profilePicId == ''" class="image-previewIF d-flex align-items-center justify-content-center" style="background-color:#ddd;height:85%;">
+                        <i class="fa-solid fa-circle-user fa-10x"></i>
+                    </div>
+                    <div class="d-flex justify-content-center" style="padding:20px;">
+                        <button class="btn custom-btn" ng-click="editProfile()">Edit Profile</button>
+                    </div>
+                </div>
+            </div>
+    
+            <div class="col-md-4" ng-show="editable">
+                <div class="profile-header">
+                    <div class="profile-container1">    
+                        <div  ng-if="profilePicId != ''" class="image-previewIF d-flex align-items-center justify-content-center">
+                            <span ng-show="imageSrc == undefined">
+                                <img class="mr-2 mb-2" src="{{profileUrl + profilePicId}}" alt="avatar" />
+                            </span>
+                            <span ng-hide="imageSrc == undefined">
+                                <img class="mr-2 mb-2" style="max-height: 257px; max-width: 257px" src="{{imageSrc}}" alt="avatar" />
+                            </span>
+                        </div>
+                        <div ng-show="profilePicId == ''" class="image-previewIF d-flex align-items-center justify-content-center" style="background-color:#ddd;height:85%;">
+                            <span ng-show="imageSrc == undefined">
+                                <i class="fa-solid fa-circle-user fa-10x"></i>
+                            </span>
+                            <span ng-hide="imageSrc == undefined">
+                                <img class="mr-2 mb-2" style="max-height: 257px; max-width: 257px" src="{{imageSrc}}" alt="avatar" />
+                            </span>
+                        </div>
+                        <div class="upload-icon-main-profile" onclick="document.getElementById('profilePic')?.click();">
+                            <i class="bi bi-plus"></i>
+                        </div>
+                    </div>
+                    <input type="file" accept=".jpg,.jpeg" id="profilePic" ng-file-select="onFileSelect($files)" ng-model="imageSrc" style="display: none;" />
+                    <div class="custom-file-upload">
+                        <div class="input-group input-group-lg">
+                            <!-- <input class="form-control" type="file" accept=".jpg,.jpeg" id="profilePic" ng-file-select="onFileSelect($files)" ng-model="imageSrc"/> -->
+                            <span class="input-group-btn">
+                                <button id="saveChangesBtn" type="button" class="btn custom-btn" ng-click="saveChanges()">Save Changes</button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    
+            <div class="col-md-8">
+                <div class="row personal-info">
+                    <h4 class="section-header">Personal Information</h4>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="firstName" class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="firstName" ng-model="con1.FirstName" ng-disabled="true"/>
+                        </div>
+                        <div class="mb-3">
+                            <label for="emailId" class="form-label">Email ID</label>
+                            <input type="text" class="form-control" id="emailId" ng-model="con1.Email" ng-disabled="true"/>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="lastName" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="lastName" ng-model="con1.LastName" ng-disabled="true"/>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phoneNumber" class="form-label">Phone Number</label>
+                            <div class="input-group">
+                                <span class="input-group-text">+91</span>
+                                <input type="text" class="form-control" id="phoneNumber" ng-model="con1.Phone" ng-disabled="true"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="department" class="form-label">Department</label>
+                            <input type="text" class="form-control" id="department" ng-model="con1.Department" ng-disabled="true"/>
+                        </div>
+                    </div>
+                </div>
+    
+                <!--div class="row account-details">
+                    <h4 class="section-header">Account Details</h4>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" value="John"/>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3 position-relative">
+                            <label for="password" class="form-label">Password</label>
+                            <div class="input-container">
+                                <input type="password" class="form-control" id="password" value="******"/>
+                                <a href="#" class="text-danger change-link">Change</a>
+                            </div>
+                        </div>
+                    </div>
+                </div-->
+            </div>
+        </div>
+    </div>
+</body>
+</div>
+</html>
+</apex:page>

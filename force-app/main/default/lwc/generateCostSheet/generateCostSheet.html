@@ -1,0 +1,10 @@
+<template>
+    <template if:true={showSpinner}>
+        <div style="height: 500px;">
+            <c-custom-spinner></c-custom-spinner>
+        </div>
+    </template>
+    <template if:false={showSpinner}>
+        <iframe src={subDocUrl} width="100%" height="800px"></iframe>
+    </template>
+</template>

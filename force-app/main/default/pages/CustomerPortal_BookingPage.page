@@ -1,0 +1,481 @@
+<apex:page showHeader="false" standardStylesheets="false" sidebar="false">
+    <html>
+        <div ng-controller="booking_ctrl">
+            <head>
+                <c:Libraries ></c:Libraries>
+                <style>
+                    .title-color {
+                        color: #1F1E1E !important;
+                    }
+                    .btn-custom {
+                        background-color: #9D6200;
+                        color: white;
+                        border: none;
+                        font-size: 14px; /* Small size for buttons */
+                    }
+                    .btn-custom:hover {
+                        background-color: #724906;
+                    }
+                    .view-more-btn {
+                        background-color: #ffffff;
+                        color: #1F1E1E;
+                        border: 1px solid #1F1E1E;
+                        font-size: 14px; /* Small size for buttons */
+                    }
+                    .view-more-btn:hover {
+                        background-color: #f1f1f1;
+                    }
+                    .table th, .table td {
+                        vertical-align: middle;
+                        font-size: 14px; /* Set font size to 14px */
+                    }
+                    .sub-table {
+                        margin-top: 10px;
+                        background-color: #f9f9f9;
+                    }
+                    .btn-icon {
+                        border: none;
+                        cursor: pointer;
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        width: 40px;
+                        height: 40px;
+                        border-radius: 5px;
+                    }
+                    .btn-icon.view {
+                        background-color: #1F1E1E;
+                        color: #fff;
+                    }
+                    .btn-icon.download {
+                        background-color: #9D6200;
+                        color: #fff;
+                    }
+                    .btn-icon.view:hover {
+                        background-color: #1F1E1E;
+                    }
+                    .btn-icon.download:hover {
+                        background-color: #9D6200;
+                    }
+                    .table-header-custom {
+                        background-color: #A3A3A3 !important;
+                        color: white;
+                        border-radius: 10px 10px 0 0; /* Rounded corners for the header */
+                    }
+                    .table-header-custom th {
+                        border-top: none;
+                        border-left: none;
+                        border-right: none;
+                    }
+                    .table-header-custom th:first-child {
+                        border-top-left-radius: 10px; /* Round top-left corner */
+                    }
+                    .table-header-custom th:last-child {
+                        border-top-right-radius: 10px; /* Round top-right corner */
+                    }
+                    .table-body-gap {
+                        margin-top: 10px;
+                    }
+                    .table-container {
+                        border-radius: 10px; /* Rounded corners for the entire table */
+                        overflow: hidden;
+                        background-color: #fff; /* Background color for better visibility of corners */
+                        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Shadow effect for the table */
+                    }
+                    .action-buttons {
+                        display: flex;
+                        gap: 10px;
+                    }
+                    .contact-sales-button, .schedule-visit-button {
+                        flex: 1;
+                        height: 40px;
+                        padding: 10px 18px;
+                        border-radius: 8px;
+                        font-size: 14px;
+                        font-family: Hind, sans-serif;
+                        font-weight: 500;
+                        line-height: 20px;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        text-align: center;
+                        min-width: auto;
+                    }
+                    .contact-sales-button {
+                        border: 1px solid #0B1E35;
+                        color: #0B1E35;
+                        background-color: white;
+                    }
+                    .schedule-visit-button {
+                        background: #9D6200;
+                        color: white;
+                        border: none;
+                    }
+                    .contact-sales-button:hover {
+                        background-color: #bebebe;
+                    }
+                    .btn-blue{
+                        background-color: #0B1E35;
+                        color: #fff !important;
+                        font-weight: 500;
+                        display: inline-block;
+                        align-self: center;
+                        line-height: 1.5;
+                        text-align: center;
+                        text-decoration: none;
+                        vertical-align: middle;
+                        user-select: none;
+                        border: 1px solid transparent;
+                        padding: .375rem .75rem;
+                        font-size: 1rem;
+                        border-radius: .25rem;
+                        transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+                    }
+                    .btn-blue:hover{
+                        color: black !important;
+                    }
+                    .btn-red{
+                        background-color: #9D6200;
+                        color: #fff !important;
+                        font-weight: 500;
+                        display: inline-block;
+                        align-self: center;
+                        line-height: 1.5;
+                        text-align: center;
+                        text-decoration: none;
+                        vertical-align: middle;
+                        user-select: none;
+                        border: 1px solid transparent;
+                        padding: .375rem .75rem;
+                        font-size: 1rem;
+                        border-radius: .25rem;
+                        transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+                    }
+                    .modal-header, .modal-footer {
+                        border: none;
+                    }
+                    .modal-footer {
+                        text-align: center;
+                    }
+                    .modal-footer .btn {
+                        background-color: #9D6200;
+                        color: white;
+                        border-radius: 5px;
+                        padding: 10px;
+                        font-size: 16px;
+                        font-weight: 600;
+                        width: 380px; /* Set the width to 380px */
+                    }
+                    .ps-stage {
+                        text-align: center;
+                        width: 100px;
+                        font-size: 12px;
+                        font-weight: 600;
+                        padding: 5px 10px;
+                        border-radius: 20px;
+                        display: inline-block;
+                    }
+                    .stage-realized {
+                        background-color: #3ae70f;
+                        color: white;
+                    }
+                    .stage-partial_paid {
+                        background-color: #ffc400;
+                        color: white;
+                    }
+                    .stage-unpaid {
+                        background-color: #ff0000;
+                        color: white;
+                    }
+                    .table-responsive1>table>tbody>tr>td{
+                        border-bottom-color:gainsboro;
+                    }
+                    .no-payment-card {
+                        max-width: 400px;
+                        margin: 20px auto; /* Centers the card */
+                        padding: 20px;
+                        border: 1px solid #ff0000;
+                        border-radius: 8px;
+                        background-color: #fff4f4;
+                        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                        text-align: center; /* Centers the text inside */
+                    }
+                    .no-payment-card .card-body {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                    }
+                    .no-payment-card .card-title {
+                        color: #ff0000;
+                        font-size: 18px;
+                        font-weight: bold;
+                        margin-bottom: 10px;
+                    }
+                    .no-payment-card .card-text {
+                        color: #333;
+                        font-size: 14px;
+                    }
+                </style>
+            </head>
+            <body>        
+                <div ng-show="bookingPage" id="bookingPageContent" class="container-fluid">
+                    <h2 class="mb-4 title-color">Bookings</h2>
+                    <p>Easily manage your property bookings with SNN Estates Pvt. Ltd. View your current reservations, check the status of your applications, and stay updated on the next steps. Our dedicated team is here to ensure a smooth and hassle-free booking experience. For any assistance, feel free to contact our support team anytime.</p>
+                    <div ng-if = "paginatedBookings.length > 0" class="table-responsive1">
+                        <table class="table">
+                            <thead class="table-header-custom">
+                                <tr>
+                                    <th scope="col">Sr.</th>
+                                    <th scope="col">Project Name</th>
+                                    <th scope="col">Unit Number</th>
+                                    <th scope="col">Super Built-Up Area</th>
+                                    <!-- <th scope="col">Customer ID</th> -->
+                                    <th scope="col">Type</th>
+                                    <th scope="col">Booking Date</th>
+                                    <th scope="col">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody ng-repeat = "opp in paginatedBookings" style="border:none;">
+                                <tr>
+                                    <td>{{$index+1}}</td>
+                                    <td>{{opp.Project__r.Name}}</td>
+                                    <td>{{opp.Unit__r.Unit_Name__c}}</td>
+                                    <td>{{opp.Unit__r.Super_Built_Up_Area_sq_ft__c}}</td>
+                                    <!-- <td>{{opp.Account.Customer_SAP_External_Id__c}}</td> -->
+                                    <td>{{opp.Unit__r.Unit_Type__c}}</td>
+                                    <td>{{opp.Booking_Date__c}}</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="schedule-visit-button" ng-click="showPaymentPlanPage(opp)">View Payment Plan</button>
+                                            <button class="contact-sales-button" ng-click="toggleDetails(opp)"><span ng-show="!opp.showDoc">View&nbsp;</span> <span ng-show="opp.showDoc">Hide&nbsp;</span>Documents</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr ng-show="opp.showDoc" style="background-color:#F4F4F4; border-color:#F4F4F4;" ng-if="!opp.Documents__r">
+                                    <td></td>
+                                    <td style="color:#ff0000"><strong>No related documents found!!</strong></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                <tr ng-show="opp.showDoc" style="background-color:#F4F4F4; border-color:#F4F4F4;" ng-repeat="doc in opp.Documents__r">
+                                    <td></td>
+                                    <td>{{doc.Name}}</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>
+                                        <div style="width:fit-content;margin-left:auto;">
+                                            <button class="btn-blue" ng-if="doc.Sub_Documents__r" ng-click="openPreview(doc.Sub_Documents__r[0].File_URL__c)"><i class="bi bi-eye"></i></button>
+                                            <button class="btn-red" ng-if="doc.Sub_Documents__r" ng-click="download(doc.Sub_Documents__r[0].File_URL__c)"><i class="fa-solid fa-download"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div ng-if="paginatedBookings.length == 0" class="no-payment-card">
+                            <div class="card-body">
+                                <h5 class="card-title">Bookings Not Found</h5>
+                                <p class="card-text">No Bookings are available. Please contact support for further assistance.</p>
+                            </div>
+                        </div>
+                    
+                    <div ng-if = "paginatedBookings.length > 0" class="row mobile-cards1">
+                        <div class="col-12" ng-repeat="opp in paginatedBookings">
+                            <div class="card">
+                                <div class="card-body">
+                                    <p>Description: <strong>{{opp.Project__r.Name}}</strong></p>
+                                    <p>Unit Number: <strong>{{opp.Unit__r.Unit_Name__c}}</strong></p>
+                                    <p>Super Built-Up Area: <strong>{{opp.Unit__r.Super_Built_Up_Area_sq_ft__c}}</strong></p>
+                                    <!-- <p>Customer ID: <strong>{{opp.Account.Customer_SAP_External_Id__c}}</strong></p> -->
+                                    <p>Type: <strong>{{opp.Unit__r.Unit_Type__c}}</strong></p>
+                                    <p>Initiated On: <strong>{{opp.CreatedDate}}</strong></p>
+                                    <div class="action-buttons">
+                                        <button class="schedule-visit-button" ng-click="showPaymentPlanPage(opp)">View Payment Plan</button>
+                                        <button class="contact-sales-button" ng-click="openDocumentsPopUp(opp.Documents__r)">View<span ng-show="!opp.showDoc">&nbsp;more</span> <span ng-show="opp.showDoc">&nbsp;less</span></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Pagination -->
+                    <div ng-if = "paginatedBookings.length > 0" class="d-flex justify-content-between align-items-center mt-4">
+                        <div>
+                            <span>Showing {{getDisplayedRange()}} of {{totalBookingItems}} entries</span>
+                        </div>
+                        <nav>
+                            <ul class="pagination">
+                                <li class="page-item" ng-class="{disabled: curBookingPage == 1}">
+                                    <a class="page-link" href="" ng-click="prevPages()">
+                                        <i class="bi bi-arrow-left"></i> Prev
+                                    </a>
+                                </li>
+                                <!-- Dynamically displayed page numbers -->
+                                <li class="page-item" ng-repeat="page in getPageRange()" ng-class="{active: curBookingPage == page}">
+                                    <a class="page-link" href="" ng-click="goToPage(page)">
+                                        {{page}}
+                                    </a>
+                                </li>
+                                <li class="page-item" ng-class="{disabled: curBookingPage == totalBookingPages}">
+                                    <a class="page-link" href="" ng-click="nextPages()">
+                                        Next <i class="bi bi-arrow-right"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+                <div class="modal" id="documentsModal" tabindex="-1" aria-labelledby="documentsModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-body">
+                                <button type="button" class="close-button" ng-click="closeDocumentsPopUp()" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                                <div style="margin-top:40px;margin-bottom:40px;" class="content-wrapper">
+                                    <div style="display:flex;" ng-repeat="document in documents">
+                                        <p>{{document.Name}}</p>
+                                        <div style="width:fit-content;margin-left:auto;">
+                                            <button class="btn-blue" ng-if="document.Sub_Documents__r" ng-click="openPreview(document.Sub_Documents__r[0].File_URL__c)"><i class="bi bi-eye"></i></button>
+                                            <button class="btn-red" ng-if="document.Sub_Documents__r" ng-click="download(document.Sub_Documents__r[0].File_URL__c)"><i class="fa-solid fa-download"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div ng-show="paymentPlan" class="container-fluid">
+                    <span class="mb-4 back-link"><p class="bi bi-arrow-left" ng-click="showMainPage()">&nbsp;&nbsp;&nbsp;Back</p></span>
+                    <div ng-if="totalPsItems == 0" class="no-payment-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Payment Schedule Not Found</h5>
+                            <p class="card-text">No payment schedule is available for this booking. Please contact support for further assistance.</p>
+                        </div>
+                    </div>
+                    <div ng-if="totalPsItems != 0">
+                        <div class="d-flex flex-row justify-content-between align-items-center">
+                            <span>Total Amount: <strong>{{totalAmountStr}}</strong></span>
+                            <span>Amount Paid: <strong>{{amountPaidStr}}</strong></span>
+                            <span>Amount Due: <strong>{{amountDueStr}}</strong></span>
+                        </div>
+                        <div class="table-responsive1">
+                            <table class="table">
+                                <thead class="table-header-custom">
+                                    <tr>
+                                        <th scope="col">Sr.</th>
+                                        <th scope="col">Paymnet Schedule</th>
+                                        <th scope="col">Amount</th>
+                                        <th scope="col">Due Date</th>
+                                        <th scope="col">Payment Date</th>
+                                        <th scope="col">Unpaid Amount</th>
+                                        <th scope="col">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody ng-repeat = "ps in paginatedPs" style="border:none;">
+                                    <tr>
+                                        <td>{{$index+1}}</td>
+                                        <td>{{ps.Name}}</td>
+                                        <td>{{ps.Agreement_Value__c}}</td>
+                                        <td>{{ps.Due_Date__c}}</td>
+                                        <td>{{ps.Pay_Date__c}}</td>
+                                        <td>{{ps.Total_Due_Amount__c}}</td>
+                                        <td><span class="ps-stage {{statusClassMapping[ps.Status__c]}}">{{ps.Status__c}}</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="row mobile-cards1">
+                            <div class="col-12" ng-repeat="ps in paginatedPs">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <p>Paymnet Schedule: <strong>{{ps.Name}}</strong></p>
+                                        <p>Amount: <strong>{{ps.Agreement_Value__c}}</strong></p>
+                                        <p>Due Date: <strong>{{ps.Due_Date__c}}</strong></p>
+                                        <p>Payment Date: <strong>{{}}</strong></p>
+                                        <p>Unpaid Amount: <strong>{{ps.Total_Due_Amount__c}}</strong></p>
+                                        <p>Status: <span class="ps-stage {{statusClassMapping[ps.Status__c]}}">{{ps.Status__c}}</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Pagination -->
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <div>
+                                <span>Showing {{getDisplayedRange()}} of {{totalPsItems}} entries</span>
+                            </div>
+                            <nav>
+                                <ul class="pagination">
+                                    <li class="page-item" ng-class="{disabled: curPsPage == 1}">
+                                        <a class="page-link" href="" ng-click="prevPages()">
+                                            <i class="bi bi-arrow-left"></i> Prev
+                                        </a>
+                                    </li>
+                                    <!-- Dynamically displayed page numbers -->
+                                    <li class="page-item" ng-repeat="page in getPageRange()" ng-class="{active: curPsPage == page}">
+                                        <a class="page-link" href="" ng-click="goToPage(page)">
+                                            {{page}}
+                                        </a>
+                                    </li>
+                                    <li class="page-item" ng-class="{disabled: curPsPage == totalPsPage}">
+                                        <a class="page-link" href="" ng-click="nextPages()">
+                                            Next <i class="bi bi-arrow-right"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="filePreviewModalbookings" tabindex="-1" role="dialog" aria-labelledby="filePreviewModalbookingsLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title text-center w-100" id="filePreviewModalbookingsLabel">File Preview</h5>
+                                <button type="button" class="close" data-dismiss="modal" ng-click="closeModal()" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <iframe id="filePreviewFramebookings" style="width: 100%; height: 500px;" frameborder="0"></iframe>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal" ng-click="closeModal()">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                 <!-- <h5 class="modal-title text-center w-100" id="welcomeScreenLabel">File Preview</h5> -->
+                <!-- <div class="modal fade" id="welcomeScreen" tabindex="-1" role="dialog" aria-labelledby="welcomeScreenLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                               
+                                <button type="button" class="close" data-dismiss="modal" ng-click="closeFirstPopup()" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <div>Welcome to SNN Homes</div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal" ng-click="closeFirstPopup()">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div> -->
+                <div id="paymentPlanContent" style="display:none;">
+                    <a href="#" class="mb-4 back-link" onclick="showBookingPage()"><i class="bi bi-arrow-left"></i>Back</a>
+                    <apex:include pageName="CustomerPortal_BookingPaymentPlan"/>
+                </div>
+            </body>
+        </div>
+    </html>
+</apex:page>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Case_Submit_Check</fullName>
+    <active>true</active>
+    <errorConditionFormula>AND(
+ISPICKVAL(Status, &quot;Completed&quot;),
+Subject = &quot;Receipt Transfer is successful please verify&quot;,
+NOT(Case_Submitted__c)
+)</errorConditionFormula>
+    <errorMessage>Please Approve First</errorMessage>
+</ValidationRule>

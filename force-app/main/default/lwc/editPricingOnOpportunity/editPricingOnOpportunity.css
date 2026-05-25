@@ -1,0 +1,38 @@
+/* Custom CSS to style and center the <h1> title */
+.center-title {
+    background-color: #9D6200;  /* Set the background color */
+    color: white;               /* Set the text color to white */
+    text-align: center;           /* Center the title */
+    margin: 0;                    /* Remove default margin */
+    padding: 10px;                /* Add some padding to the header */
+    font-size: 1.5rem;            /* Adjust the font size as needed */
+    font-weight: 600;             /* Adjust the weight if needed */
+}
+
+.slds-table thead th {
+    background-color: #5D5D5D;  /* Set the background color for the table header */
+    color: white;               /* Set the text color to white */
+}
+
+.slds-table {
+	width: 100%;
+    background-color: white;
+    border-radius: 8px;
+    font-size: 16px;
+}
+.slds-table th {
+    padding: 10px;
+    text-align: left;
+}
+table, th, td {
+	border: 1px solid white;
+}
+.has-error {
+    border: 4px solid red;
+}
+.large-input {
+    width: 200px !important; 
+}
+.large-inputOutput{
+     width: 100px !important;
+}

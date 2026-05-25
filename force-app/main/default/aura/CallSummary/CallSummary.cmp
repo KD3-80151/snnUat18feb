@@ -1,0 +1,113 @@
+<aura:component controller ="DialerCmpCntrl">
+    <!-- Attributes controller="DialerCmpCntrl" -->
+    <aura:attribute name="userCallCount" type="Object" default="" />
+    <aura:attribute name="duration" type="String" default="" />
+    <aura:attribute name="isFilterPanelOpen" type="Boolean" default="false" />
+    <aura:attribute name="buttonvariant" type="String" default="" />
+    <aura:attribute name="spinner" type="Boolean" default="false" />
+
+    <!-- Handler -->
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+
+    <!-- Main container -->
+    <div class="page-container">
+        <!-- Call Summary Section -->
+        <div class="scrollable-content">
+            <br/>
+            <div class="card">
+                <table class ="table">
+                    <tr>
+                        <td><b>Total Call :</b></td>
+                        <td>{!v.userCallCount.totalCount}</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="card">
+                <table class ="table">
+                    <tr>
+                        <td><b>Inbound Call :</b></td>
+                        <td>{!v.userCallCount.inboundCallCount}</td>
+                    </tr>
+                    <tr>
+                        <td><b>Connected Call :</b></td>
+                        <td>{!v.userCallCount.inbConnCallCount}</td>
+                    </tr>
+                    <tr>
+                        <td><b>Call Duration(in min):</b></td>
+                        <td>{!v.userCallCount.inbCallDuration}</td>
+                    </tr>
+                  <!--  <tr>
+                        <td><b>Answered Time(in min):</b></td>
+                        <td>{!v.userCallCount.inbAnsweredTime}</td>
+                    </tr> -->
+                </table>
+            </div>
+
+            <div class="card">
+                <table class ="table">
+                    <tr>
+                        <td><b>Outbound Call :</b></td>
+                        <td>{!v.userCallCount.outboundCallCount}</td>
+                    </tr>
+                    <tr>
+                        <td><b>Connected Call :</b></td>
+                        <td>{!v.userCallCount.outConnCallCount}</td>
+                    </tr>
+                    <tr>
+                        <td><b>Call Duration(in min):</b></td>
+                        <td>{!v.userCallCount.outCallDuration}</td>
+                    </tr>
+                   <!-- <tr>
+                        <td><b>Answered Time(in min):</b></td>
+                        <td>{!v.userCallCount.outAnsweredTime}</td>
+                    </tr> -->
+                </table>
+            </div>
+        </div>
+
+        <div style="position: absolute; top: 10px; right: 20px;">
+            <lightning:buttonIcon iconName="utility:filterList" variant="{!v.buttonvariant}" alternativeText="Filter" onclick="{!c.toggleFilterPanel}"/>
+        </div>
+        
+        <aura:if isTrue="{!v.isFilterPanelOpen}">
+            <div style="position: absolute; top: 0; right: 0; width: 200px; background-color: #f4f6f9; box-shadow: -2px 0 5px rgba(0,0,0,0.2); z-index: 1000; padding: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2>Filters</h2>
+                    <lightning:buttonIcon iconName="utility:close"  alternativeText="Close" onclick="{!c.toggleFilterPanel}"/>
+                </div>
+                
+                <div class="slds-m-top_medium">
+                    <lightning:select aura:id="select1" name="select1" value="{!v.duration}" label="Duration">
+                        <option value="">choose one...</option>
+                        <option value="Today">Today</option>
+                        <option value="Yesterday">Yesterday</option>
+                        <option value="This_Week">This Week</option>
+                        <option value="This_Month">This Month</option>
+                        
+                    </lightning:select>
+                    
+                </div>
+                
+                <div class="slds-m-top_medium">
+                    <div class="slds-clearfix">
+                        <div class="slds-float_left">
+                            <p><lightning:button variant="brand" label="Apply" onclick="{!c.applyFilters}"/></p>
+                        </div>
+                        <div class="slds-float_right">
+                            <p><lightning:button label="Clear" onclick="{!c.clearFilters}" class="slds-m-left_small"/></p>
+                        </div>
+                    </div>
+                    
+                    
+                </div>
+            </div>
+        </aura:if>
+        </div>
+
+        <!-- Spinner -->
+        <aura:if isTrue="{!v.spinner}">
+            <lightning:spinner size="small" variant="brand"  />
+        </aura:if>
+    
+</aura:component>

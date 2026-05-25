@@ -1,0 +1,522 @@
+h1 {
+    color : red;
+}
+
+#myClass {
+    color : blue;
+}
+
+.header-bg {
+    width: 100%;
+    height: 60px;
+    background-color : #DEA318;
+}
+
+.header-bgLife {
+    width: 100%;
+    height: 60px;
+    background-color : #257228;
+}
+
+.header-bgSerene {
+    width: 100%;
+    height: 60px;
+    background-color : #1e45aa;
+}
+
+.header-siteVisit {
+    width: 100%;
+    height: 60px;
+    background-color : #12a1d2;
+}
+
+.header-bgCP {
+    width: 100%;
+    height: 60px;
+    background-color : #ff8c00;
+}
+
+.header-text {
+    padding-top: 10px;
+    color: white;
+}
+
+.border {
+    margin-top: 0px;
+    border-top: 1px #1E45AA;
+}
+
+.heading {
+    margin-top: 10%;
+    color: #000099;
+}
+
+.heading-loc {
+    color: #7A7A7A;
+}
+
+.header-address {
+    color: black;
+    margin-top: 35px;
+    padding-left:140px;
+}
+
+.heading2 {
+    color: #DEA318;
+    padding-left: 36%;
+    margin-top: 33px;
+}
+
+
+/* CSS PREMIERE */
+body {
+    font-family: 'Inter', sans-serif;
+}
+h1, h2, h3, h4, h5, h6, p {
+    margin: 0;
+    padding: 0;
+}
+a {
+    text-decoration: none;
+}
+ul, li {
+    padding: 0;
+    list-style: none;
+}
+::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+    color: #9A9A9A;
+    font-size: 14px;
+}
+::-moz-placeholder { /* Firefox 19+ */
+    color: #9A9A9A;
+    font-size: 14px;
+}
+:-ms-input-placeholder { /* IE 10+ */
+    color: #9A9A9A;
+    font-size: 14px;
+}
+:-moz-placeholder { /* Firefox 18- */
+    color: #9A9A9A;
+    font-size: 14px;
+}
+.form-control {
+    border-color: #979797;
+}
+.booking-form h1 {
+    color: #DEA318;
+    font-size: 1.25rem;
+    line-height: 1.5rem;
+    font-weight: 700;
+    padding: 40px 0 24px 0;
+    text-transform: uppercase;
+}
+.booking-form .label {
+    color: #000;
+    font-size: 1rem;
+    line-height: 1.25rem;
+    font-weight: 500;
+}
+.booking-form .datepicker .input-group-append {
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 10;
+}
+.booking-form .datepicker.input-group:not(.has-validation)>:not(:last-child):not(.dropdown-toggle):not(.dropdown-menu) {
+    border-top-right-radius: .25rem;
+    border-bottom-right-radius: .25rem;
+}
+.booking-form .datepicker .input-group-append .input-group-text {
+    background: transparent;
+    border: none;
+    padding: .65rem .75rem;
+}
+.booking-form .form-tabs {
+    background: #fff;
+    width: 100%;
+    margin: 1.5rem 0 0 0;
+    border: 1px solid #CDCDCD;
+    -moz-border-radius: 0.5rem;
+    -webkit-border-radius: 0.5rem;
+    border-radius: 0.5rem;
+    display: flex;
+}
+.booking-form .form-tabs .sidebar {
+    background: #eee;
+    padding: 2.6875rem 1rem 1rem 1rem;
+    border-right: 1px solid #CDCDCD;
+}
+.booking-form .form-tabs .sidebar li a {
+    color: #7A7A7A;
+    font-size: 16px;
+    line-height: 19px;
+    font-weight: 500;
+    padding: 1rem;
+    text-transform: capitalize;
+    -moz-border-radius: 0.5rem;
+    -webkit-border-radius: 0.5rem;
+    border-radius: 0.5rem;
+    display: block;
+}
+.booking-form .form-tabs .sidebar li.active a {
+    background: #fff;
+    color: #a97c09;
+}
+.booking-form .form-tabs .rightbar {
+    width: 80%;
+    padding: 2.5rem;
+}
+.booking-form .form-tabs .rightbar .file-upload {
+    width: 100%;
+    color: #B0ADAB;
+    font-size: 12px;
+    line-height: 15px;
+    font-weight: 600;
+    padding: 4.875rem 1.875rem;
+    border: 1px solid #979797;
+    -moz-border-radius: 0.25rem;
+    -webkit-border-radius: 0.25rem;
+    border-radius: 0.25rem;
+}
+.booking-form .form-tabs .rightbar .file-upload span {
+    font-weight: 500;
+    padding: 0.25rem 0 0 0;
+    display: block;
+}
+.booking-form .form-tabs .rightbar .file-upload .custom-file-input {
+    width: 6.5625rem;
+    cursor: pointer;
+    color: transparent;
+}
+.booking-form .form-tabs .rightbar .file-upload .custom-file-input::-webkit-file-upload-button {
+    visibility: hidden;
+}
+.booking-form .form-tabs .rightbar .file-upload .custom-file-input::before {
+    content: 'Browse Files';
+    background: #1E45AA;
+    color: #fff;
+    font-size: 12px;
+    line-height: 15px;
+    font-weight: 600; 
+    padding: 8px 16px;
+    -moz-border-radius: 0.5rem;
+    -webkit-border-radius: 0.5rem;
+    border-radius: 0.5rem;
+    display: inline-block;
+}
+.booking-form .form-tabs .rightbar .file-upload .custom-file-input:hover::before {
+    border-color: black;
+}
+.custom-file-input:active {
+    outline: 0;
+}
+.custom-file-input:active::before {
+    background: -webkit-linear-gradient(top, #e3e3e3, #f9f9f9); 
+}
+
+.button {
+    background-color: #a97c09;
+    border: none;
+    color: white;
+    padding: 5px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 6px;
+}
+.cancelbutton {
+    border: none;
+    color: #1e45aa;
+    padding: 8px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 6px;
+    border-color: #1e45aa;
+}
+
+
+
+/* CSS LIFE */
+
+.booking-form2 h1 {
+    color: #257228;
+    font-size: 1.25rem;
+    line-height: 1.5rem;
+    font-weight: 700;
+    padding: 40px 0 24px 0;
+    text-transform: uppercase;
+}
+.booking-form2 .label {
+    color: #000;
+    font-size: 1rem;
+    line-height: 1.25rem;
+    font-weight: 500;
+}
+.booking-form2 .datepicker .input-group-append {
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 10;
+}
+.booking-form2 .datepicker.input-group:not(.has-validation)>:not(:last-child):not(.dropdown-toggle):not(.dropdown-menu) {
+    border-top-right-radius: .25rem;
+    border-bottom-right-radius: .25rem;
+}
+.booking-form2 .datepicker .input-group-append .input-group-text {
+    background: transparent;
+    border: none;
+    padding: .65rem .75rem;
+}
+.booking-form2 .form-tabs {
+    background: #fff;
+    width: 100%;
+    margin: 1.5rem 0 0 0;
+    border: 1px solid #CDCDCD;
+    -moz-border-radius: 0.5rem;
+    -webkit-border-radius: 0.5rem;
+    border-radius: 0.5rem;
+    display: flex;
+}
+.booking-form2 .form-tabs .sidebar {
+    background: #eee;
+    padding: 2.6875rem 1rem 1rem 1rem;
+    border-right: 1px solid #CDCDCD;
+}
+.booking-form2 .form-tabs .sidebar li a {
+    color: #7A7A7A;
+    font-size: 16px;
+    line-height: 19px;
+    font-weight: 500;
+    padding: 1rem;
+    text-transform: capitalize;
+    -moz-border-radius: 0.5rem;
+    -webkit-border-radius: 0.5rem;
+    border-radius: 0.5rem;
+    display: block;
+}
+.booking-form2 .form-tabs .sidebar li.active a {
+    background: #fff;
+    color: #1E45AA;
+}
+.booking-form2 .form-tabs .rightbar {
+    width: 80%;
+    padding: 2.5rem;
+}
+.booking-form2 .form-tabs .rightbar .file-upload {
+    width: 100%;
+    color: #B0ADAB;
+    font-size: 12px;
+    line-height: 15px;
+    font-weight: 600;
+    padding: 4.875rem 1.875rem;
+    border: 1px solid #979797;
+    -moz-border-radius: 0.25rem;
+    -webkit-border-radius: 0.25rem;
+    border-radius: 0.25rem;
+}
+.booking-form2 .form-tabs .rightbar .file-upload span {
+    font-weight: 500;
+    padding: 0.25rem 0 0 0;
+    display: block;
+}
+.booking-form2 .form-tabs .rightbar .file-upload .custom-file-input {
+    width: 6.5625rem;
+    cursor: pointer;
+    color: transparent;
+}
+.booking-form2 .form-tabs .rightbar .file-upload .custom-file-input::-webkit-file-upload-button {
+    visibility: hidden;
+}
+.booking-form2 .form-tabs .rightbar .file-upload .custom-file-input::before {
+    content: 'Browse Files';
+    background: #1E45AA;
+    color: #fff;
+    font-size: 12px;
+    line-height: 15px;
+    font-weight: 600; 
+    padding: 8px 16px;
+    -moz-border-radius: 0.5rem;
+    -webkit-border-radius: 0.5rem;
+    border-radius: 0.5rem;
+    display: inline-block;
+}
+.booking-form2 .form-tabs .rightbar .file-upload .custom-file-input:hover::before {
+    border-color: black;
+}
+.custom-file-input:active {
+    outline: 0;
+}
+.custom-file-input:active::before {
+    background: -webkit-linear-gradient(top, #e3e3e3, #f9f9f9); 
+}
+
+
+/* CSS SERENE */
+
+.booking-form3 h1 {
+    color: #1E45AA;
+    font-size: 1.25rem;
+    line-height: 1.5rem;
+    font-weight: 700;
+    padding: 40px 0 24px 0;
+    text-transform: uppercase;
+}
+.booking-form3 .label {
+    color: #000;
+    font-size: 1rem;
+    line-height: 1.25rem;
+    font-weight: 500;
+}
+.booking-form3 .datepicker .input-group-append {
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 10;
+}
+.booking-form3 .datepicker.input-group:not(.has-validation)>:not(:last-child):not(.dropdown-toggle):not(.dropdown-menu) {
+    border-top-right-radius: .25rem;
+    border-bottom-right-radius: .25rem;
+}
+.booking-form3 .datepicker .input-group-append .input-group-text {
+    background: transparent;
+    border: none;
+    padding: .65rem .75rem;
+}
+.booking-form3 .form-tabs {
+    background: #fff;
+    width: 100%;
+    margin: 1.5rem 0 0 0;
+    border: 1px solid #CDCDCD;
+    -moz-border-radius: 0.5rem;
+    -webkit-border-radius: 0.5rem;
+    border-radius: 0.5rem;
+    display: flex;
+}
+.booking-form3 .form-tabs .sidebar {
+    background: #eee;
+    padding: 2.6875rem 1rem 1rem 1rem;
+    border-right: 1px solid #CDCDCD;
+}
+.booking-form3 .form-tabs .sidebar li a {
+    color: #7A7A7A;
+    font-size: 16px;
+    line-height: 19px;
+    font-weight: 500;
+    padding: 1rem;
+    text-transform: capitalize;
+    -moz-border-radius: 0.5rem;
+    -webkit-border-radius: 0.5rem;
+    border-radius: 0.5rem;
+    display: block;
+}
+.booking-form3 .form-tabs .sidebar li.active a {
+    background: #fff;
+    color: #1E45AA;
+}
+.booking-form3 .form-tabs .rightbar {
+    width: 80%;
+    padding: 2.5rem;
+}
+.booking-form3 .form-tabs .rightbar .file-upload {
+    width: 100%;
+    color: #B0ADAB;
+    font-size: 12px;
+    line-height: 15px;
+    font-weight: 600;
+    padding: 4.875rem 1.875rem;
+    border: 1px solid #979797;
+    -moz-border-radius: 0.25rem;
+    -webkit-border-radius: 0.25rem;
+    border-radius: 0.25rem;
+}
+.booking-form3 .form-tabs .rightbar .file-upload span {
+    font-weight: 500;
+    padding: 0.25rem 0 0 0;
+    display: block;
+}
+.booking-form3 .form-tabs .rightbar .file-upload .custom-file-input {
+    width: 6.5625rem;
+    cursor: pointer;
+    color: transparent;
+}
+.booking-form3 .form-tabs .rightbar .file-upload .custom-file-input::-webkit-file-upload-button {
+    visibility: hidden;
+}
+.booking-form3 .form-tabs .rightbar .file-upload .custom-file-input::before {
+    content: 'Browse Files';
+    background: #1E45AA;
+    color: #fff;
+    font-size: 12px;
+    line-height: 15px;
+    font-weight: 600; 
+    padding: 8px 16px;
+    -moz-border-radius: 0.5rem;
+    -webkit-border-radius: 0.5rem;
+    border-radius: 0.5rem;
+    display: inline-block;
+}
+.booking-form3 .form-tabs .rightbar .file-upload .custom-file-input:hover::before {
+    border-color: black;
+}
+.custom-file-input:active {
+    outline: 0;
+}
+.custom-file-input:active::before {
+    background: -webkit-linear-gradient(top, #e3e3e3, #f9f9f9); 
+}
+
+
+
+
+
+.table {
+    border-collapse: separate;
+    border-spacing: 0 10px;
+}
+.table thead {
+    background: rgba(177, 210, 240, 0.3);
+    box-shadow: 0px 4.48467px 4.48467px rgba(0, 0, 0, 0.25);
+}
+.table > thead > tr > th, .table > tbody > tr > td {
+    color: #000;
+    font-size: 15px;
+    line-height: 24px;
+    padding: 12px;
+    /* padding-left: 30px; */
+    border: none;
+    border-right: 1px solid rgba(103, 103, 103, 0.39);
+    font-weight: 600;
+}
+.table > thead > tr > th:last-child, .table > tbody > tr > td:last-child {
+    border: none;
+}
+.table tbody tr {
+    background: #ffffff;
+    box-shadow: 0px 4.48467px 4.48467px rgba(0, 0, 0, 0.25);
+}
+.table > tbody > tr > td {
+    color: #676767;
+}
+.table > thead > tr > th .fa-plus-circle {
+    font-size: 24px;
+    color: #171347;
+}
+.table > tbody > tr > td .fa-times-circle {
+    font-size: 24px;
+    color: #CA0000;
+}
+.table > thead > tr > th a:hover, .table > tbody > tr > td a:hover {
+    text-decoration: none;
+}
+.table > tbody > tr > td .accuracy {
+    color: #676767;
+    padding: 0 5px;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.11)
+}

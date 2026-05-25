@@ -1,0 +1,1948 @@
+<apex:page sidebar="false" showHeader="false" standardStylesheets="false" controller="siteVisitFormController">
+    <html>
+        <head>
+            <apex:stylesheet value="{!$Resource.BookingFormCSS}" />
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.1.6/semantic.css"/>
+            <c:Libraries ></c:Libraries>
+            <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+            <!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>  -->
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800&display=swap" rel="stylesheet" />
+            <link href="https://use.fontawesome.com/releases/v5.15.1/css/all.css" rel="stylesheet"/>
+            
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.js"/>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.8/angular.js"/>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.1.6/semantic.js">
+            </script>
+            <style>
+                .createVisit{
+                    color: blue !important;
+                    text-decoration: underline !important;
+                }
+                a:hover{
+                    cursor: pointer;
+                }
+            </style>
+        </head>
+        <body ng-app="visit_app" ng-controller="visit_ctrl" style="overflow-x: hidden;">
+            <div class="booking-form3">
+                <div class="container mb-5">
+                    <!-- <h5 class="heading text-center"><b>SITE VISIT FORM</b></h5> -->
+                    <div class="row mt-3">
+                        <div class="col-md-5">
+                            <label class="label">Enter Email or Phone</label>
+                            <input type="text" class="form-control mt-2" ng-model="searchValue" />
+                        </div>
+                        <div class="col-md-7 mt-4">
+                            <button class="button" ng-click="getleadDet()">Search</button>
+                            <button class="button" ng-show="errorMsg" ng-click="createLead()"><i class="fa fa-plus"></i>  Create New Lead</button> 
+                            <button class="button" ng-show="showLeadDetails || showVisitAfterCreatn" id="btnSubmit1" ng-click="OnClickcreateVisit()">Create Visit</button>
+                            <button class="button" id="btnPleaseWait1" style="text-align: center; display:none;"><i class="fa-solid fa-spinner fa-spin-pulse me-3"></i>Please Wait....</button>
+                        </div>
+                    </div>
+                    <div class="row mt-5" ng-show="errorMsg">
+                        <h3 style="color: red; text-align:center;">No such record available ! Try Again.....</h3>
+                    </div>
+                    <div class="row mt-5" ng-show="showLeadDetails">
+                        <hr class="border" />
+                        <h5 style="color:#1e45aa;"><b>Lead Details</b></h5>
+                        <div class="col-md-6 mt-3">
+                            <label class="label pe-3 text-nowrap">First Name</label>
+                            <input type="text" class="form-control" ng-model="leadDetails.FirstName" ng-disabled="true" />
+                        </div>
+                        <div class="col-md-6 mt-3">
+                            <label class="label pe-3 text-nowrap">Last Name</label>
+                            <input type="text" class="form-control" ng-model="leadDetails.LastName" ng-disabled="true" />
+                        </div>
+                        <div class="col-md-6 mt-3">
+                            <label class="label pe-3 text-nowrap">Email ID</label>
+                            <input type="text" class="form-control" ng-model="leadDetails.Email" ng-disabled="true" />
+                        </div>
+                        <div class="col-md-6 mt-3">
+                            <label class="label pe-3 text-nowrap">Phone No.</label>
+                            <input type="text" class="form-control" ng-model="leadDetails.Phone" ng-disabled="true" />
+                        </div>
+                        <div class="col-md-6 mt-3">
+                            <label class="label pe-3 text-nowrap">Pre Sales Team Member</label>
+                            <input type="text" class="form-control" ng-model="leadDetails.Pre_Sales_Team_Member__r.Name" ng-disabled="true" />
+                        </div>
+                        <div class="col-md-6 mt-3">
+                            <label class="label pe-3 text-nowrap">Lead Source</label>
+                            <input type="text" class="form-control" ng-model="leadDetails.LeadSource" ng-disabled="true" />
+                        </div>
+                        <div class="col-md-6 mt-3">
+                            <label class="label pe-3 text-nowrap">Lead Sub Source</label>
+                            <input type="text" class="form-control" ng-model="leadDetails.Lead_Sub_Source__c" ng-disabled="true" />
+                        </div>
+                        <div class="col-md-6 mt-3">
+                            <label class="label pe-3 text-nowrap">Lead Type</label>
+                            <input type="text" class="form-control" ng-model="leadDetails.Lead_Type__c" ng-disabled="true" />
+                        </div>
+                    </div>
+                    <div class="row mt-5" ng-show="showAllLeadDetails">
+                        <hr class="border" />
+                        <div ng-if="leadList.length>1">
+                            <h5 style="color:#1e45aa;"><b>All Lead Details</b></h5>
+                            <div class="table-responsive table-res">
+                                <table class="table">
+                                    <thead class="table-header-custom">
+                                        <tr>
+                                            <th scope="col">Sr.</th>
+                                            <th scope="col">First Name</th>
+                                            <th scope="col">Last Name</th>
+                                            <th scope="col">Email</th>
+                                            <th scope="col">Phone</th>
+                                            <th scope="col">Pre Sales Team Member</th>
+                                            <th scope="col">Lead Source</th>
+                                            <th scope="col">Lead Sub Source</th>
+                                            <th scope="col">Lead Type</th>
+                                            <th scope="col">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody style="border:none">
+                                        <tr ng-repeat = "lead in leadList">
+                                            <td>{{$index + 1}}</td>
+                                            <td>{{lead.FirstName}}</td>
+                                            <td>{{lead.LastName}}</td>
+                                            <td>{{lead.Email}}</td>
+                                            <td>{{lead.Phone}}</td>
+                                            <td>{{lead.Pre_Sales_Team_Member__r.Name}}</td>
+                                            <td>{{lead.LeadSource}}</td>
+                                            <td>{{lead.Lead_Sub_Source__c}}</td>
+                                            <td>{{lead.Lead_Type__c}}</td>
+                                            <td><a class="createVisit" ng-click="OnClickcreateVisit(lead)">Create Visit</a></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-5" ng-show="showAllOppDetails">
+                        <div ng-if="oppList.length>0">
+                            <h5 style="color:#1e45aa;"><b>All Opportunity Details</b></h5>
+                            <div class="table-responsive table-res">
+                                <table class="table">
+                                    <thead class="table-header-custom">
+                                        <tr>
+                                            <th scope="col">Sr.</th>
+                                            <th scope="col">Name</th>
+                                            <th scope="col">Email</th>
+                                            <th scope="col">Phone</th>
+                                            <th scope="col">Lead Source</th>
+                                            <th scope="col">Lead Sub Source</th>
+                                            <th scope="col">Lead Type</th>
+                                            <th scope="col">Pre Sales Team Member</th>
+                                            <th scope="col">Sales Team Member</th>
+                                            <th scope="col">No. of Visits</th>
+                                            <th scope="col">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody style="border:none">
+                                        <tr ng-repeat = "opp in oppList">
+                                            <td>{{$index + 1}}</td>
+                                            <td>{{opp.Name}}</td>
+                                            <td>{{opp.Email__c}}</td>
+                                            <td>{{opp.Phone__c}}</td>
+                                            <td>{{opp.LeadSource}}</td>
+                                            <td>{{opp.Lead_Sub_Source__c}}</td>
+                                            <td>{{opp.Lead_Type__c}}</td>
+                                            <td>{{opp.Pre_Sales_Team_Member__r.Name}}</td>
+                                            <td>{{opp.Sales_Team_Member__r.Name}}</td>
+                                            <td><a ng-click="showRelVisits(opp)">{{oppXvisitMap[opp.Id] ? oppXvisitMap[opp.Id].length : 0}}</a></td>
+                                            <td><a class="createVisit" ng-click="OnClickcreateVisit(opp)">Create Visit</a></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div ng-show="relVisits">
+                                <h5 style="color:#1e45aa;"><b>All Visits related to {{opp.Name}} opportunity</b></h5>
+                                <div class="table-responsive table-res">
+                                    <table class="table">
+                                        <thead class="table-header-custom">
+                                            <tr>
+                                                <th scope="col">Sr.</th>
+                                                <th scope="col">Visit Id</th>
+                                                <th scope="col">Opportunity</th>
+                                                <th scope="col">Project Name</th>
+                                                <th scope="col">Visit Date</th>
+                                                <th scope="col">Attended Sales Person</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody style="border:none">
+                                            <tr ng-repeat = "visit in oppXvisitMap[opp.Id]">
+                                                <td>{{$index + 1}}</td>
+                                                <td>{{visit.Name}}</td>
+                                                <td>{{visit.Opportunity__r.Name}}</td>
+                                                <td>{{visit.Project_Name__c}}</td>
+                                                <td>{{visit.Actual_Visit_Date__c | date:'d/M/yyyy'}}</td>
+                                                <td>{{visit.Sales_Manager__c}}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div ng-show="showCreateLead">
+                        <hr class="border" />
+                        <div class="row mt-5">
+                            <h6 style="color:#1e45aa;"><b>Create New Lead</b></h6>
+                            <div class="col-md-6 mt-3">
+                                <label class="label pe-3 text-nowrap">First Name</label>
+                                <input type="text" class="form-control" ng-model="leadDetails.FirstName" />
+                            </div>
+                            <div class="col-md-6 mt-3">
+                                <label class="label pe-3 text-nowrap">Last Name<span class="required-asterisk" style="color:red;">*</span></label>
+                                <input type="text" class="form-control" ng-model="leadDetails.LastName" />
+                            </div>
+                            <div class="col-md-6 mt-3">
+                                <label class="label pe-3 text-nowrap">Email ID<span class="required-asterisk" style="color:red;">*</span></label>
+                                <input type="text" class="form-control" id="txtEmail" ng-focus="removeClass('txtEmail')" ng-model="leadDetails.Email" />
+                            </div>
+                            <div class="col-md-6 mt-3">
+                                <label class="label pe-3 text-nowrap">Phone No.<span class="required-asterisk" style="color:red;">*</span></label>
+                                <input type="text" class="form-control" ng-model="leadDetails.Phone" />
+                            </div>
+                            <div class="col-md-6 mt-3">
+                                <label class="label">Project<span class="required-asterisk" style="color:red;">*</span></label><br/>
+                                <so-dropdown class="col-md-12" ng-model="leadDetails.Project__c" dropdown-items="projectList">
+                                    <option value='None'>None</option>
+                                </so-dropdown>
+                            </div>
+                            <div class="col-md-6 mt-3">
+                                <label class="label pe-3 text-nowrap">Lead Type</label>
+                                <select class="form-select" ng-model="leadDetails.Lead_Type__c" ng-change="updateDependentFields()">
+                                    <option ng-repeat="value in leadType" ng-selected="true">{{value}}</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mt-3" ng-if = "leadDetails.Lead_Type__c == 'Direct'">
+                                <label class="label pe-3 text-nowrap">Lead Source</label>
+                                <select class="form-select" ng-model = "leadDetails.LeadSource" ng-change="changeOfSource()">
+                                    <option ng-repeat="source in leadSources" ng-selected="true">{{source.key}}</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mt-3" ng-if = "leadDetails.Lead_Type__c == 'Direct'">
+                                <label class="label pe-3 text-nowrap">Lead Sub Source</label>
+                                <select class="form-select" ng-model="leadDetails.Lead_Sub_Source__c" ng-disabled = "leadSubSource.length === 0">
+                                    <option ng-repeat="subSource in leadSubSource" ng-selected="true">{{subSource}}</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mt-3" ng-if = "leadDetails.Lead_Type__c == 'Channel Partner'">
+                                <label class="label">Channel Partner</label><br/>
+                                <so-dropdown class="col-md-12" ng-model="leadDetails.Channel_Partner__c" dropdown-items="cpList">
+                                    <option value='None'>None</option>
+                                </so-dropdown>
+                            </div>
+                            <div class="col-md-6 mt-3" ng-if = "leadDetails.Lead_Type__c == 'Referral'">
+                                <label class="label pe-3 text-nowrap">Referral Name</label>
+                                <input type="text" class="form-control" ng-model="leadDetails.Referred_By_Name__c" />
+                            </div>
+                            <div class="col-md-6 mt-3" ng-if = "leadDetails.Lead_Type__c == 'Referral'">
+                                <label class="label pe-3 text-nowrap">Referral Phone</label>
+                                <input type="text" class="form-control" ng-model="leadDetails.Referred_By_Phone__c" />
+                            </div>
+                        </div>
+                        <div class="row mt-5">
+                            <!-- <div class="d-grid gap-2">
+                                <button class="btn btn-success btn-block" id="btnSubmit" ng-click="saveContact()" type="submit">Submit</button>
+                            </div> -->
+                            <div class="col-md-12">
+                                <button class="button" id="btnSubmit" style="text-align: center;" ng-click="createLeadRecord()">Create</button>
+                                <button class="button" id="btnPleaseWait" style="text-align: center; display:none;"><i class="fa fa-spinner" aria-hidden="true"></i> Please Wait....</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="booking-form" ng-if="showVisitSection">
+                <div class="container mb-5">
+                    <!-- <h5 class="heading text-center"><b>SITE VISIT FORM</b></h5> -->
+                    <div class="row justify-content-between">
+                        <div class="col-md-3">
+                            <!-- <div class="d-flex align-items-center">
+                                <label class="label pe-3 text-nowrap">Form No.</label>
+                                <input type="text" class="form-control" ng-model="visit.Form_No__c"/>
+                            </div> -->
+                        </div>
+                        <div class="col-md-3">
+                            
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-flex align-items-center">
+                                <label class="label pe-3 text-nowrap">Date of visit:</label>
+                                <input type="date" class="form-control" placeholder="DD/MM/YYYY" ng-model="today" ng-disabled="true"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-tabs">
+                        <div class="sidebar col-md-auto">
+                            <ul>
+                                <li class="active">
+                                    <a ng-click="">Customer Details &amp; <br/>Requirements</a>
+                                </li>
+                                <!-- <li>
+                                    <a ng-click="">Customer's Requirements</a>
+                                </li> -->
+                                <!-- <li>
+                                    <a ng-click="">Visit Details</a>
+                                </li> -->
+                                <li>
+                                    <a ng-click="">To be filled by GRE</a>
+                                </li>
+                                <!-- <li>
+                                    <a ng-click="">To be filled by Sales Manager</a>
+                                </li> -->
+                            </ul>
+                        </div>
+                        <div class="rightbar">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div ng-if="leadDetails.Phone || leadDetails.Email">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="row align-items-center mb-4">
+                                                    <div class="col-md-4">
+                                                        <label class="label">First Name:<span class="required-asterisk" style="color:red;">*</span></label>
+                                                    </div>
+                                                    <div class="col-md-8">
+                                                        <input type="tel" class="form-control" ng-model="leadDetails.FirstName"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="row align-items-center mb-4">
+                                                    <div class="col-md-4">
+                                                        <label class="label">Surname:<span class="required-asterisk" style="color:red;">*</span></label>
+                                                    </div>
+                                                    <div class="col-md-8">
+                                                        <input type="text" class="form-control" ng-model="leadDetails.LastName"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="row align-items-center mb-4">
+                                                    <div class="col-md-4">
+                                                        <label class="label">Mobile No.:<span class="required-asterisk" style="color:red;">*</span></label>
+                                                    </div>
+                                                    <div class="col-md-8">
+                                                        <input type="tel" class="form-control" ng-model="leadDetails.Phone"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="row align-items-center mb-4">
+                                                    <div class="col-md-4">
+                                                        <label class="label">Email:</label>
+                                                    </div>
+                                                    <div class="col-md-8">
+                                                        <input type="email" class="form-control" ng-model="leadDetails.Email"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div ng-if="opp.Name != undefined">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="row align-items-center mb-4">
+                                                    <div class="col-md-4">
+                                                        <label class="label">First Name:<span class="required-asterisk" style="color:red;">*</span></label>
+                                                    </div>
+                                                    <div class="col-md-8">
+                                                        <input type="text" class="form-control" ng-model="opp.Name"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="row align-items-center mb-4">
+                                                    <div class="col-md-4">
+                                                        <label class="label">Surname:<span class="required-asterisk" style="color:red;">*</span></label>
+                                                    </div>
+                                                    <div class="col-md-8">
+                                                        <input type="text" class="form-control" ng-model="opp.Name"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="row align-items-center mb-4">
+                                                    <div class="col-md-4">
+                                                        <label class="label">Mobile No.:<span class="required-asterisk" style="color:red;">*</span></label>
+                                                    </div>
+                                                    <div class="col-md-8">
+                                                        <input type="tel" class="form-control" ng-model="opp.Phone__c"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="row align-items-center mb-4">
+                                                    <div class="col-md-4">
+                                                        <label class="label">Email:</label>
+                                                    </div>
+                                                    <div class="col-md-8">
+                                                        <input type="email" class="form-control" ng-model="opp.Email__c"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="row align-items-center mb-4">
+                                                <div class="col-md-4">
+                                                    <!--label class="label">Date of Birth:</label><span class="required-asterisk" style="color:red;">*</span-->
+                                                    <label class="label">Date of Birth:</label>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <input type="date" class="form-control" ng-model="visit.Date_Of_Birth__c"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="row align-items-center mb-4">
+                                                <div class="col-md-4">
+                                                    <label class="label">Alternate Phone:</label>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <input type="text" class="form-control" ng-model="visit.Alternate_Phone__c" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- <div class="row align-items-center mb-4">
+                                        <div class="col-md-2">
+                                            <label class="label">Date of Birth:</label>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <input type="date" class="form-control" ng-model="visit.Date_Of_Birth__c" />
+                                        </div>
+                                    </div> -->
+                                    <!-- <div class="row align-items-center mb-4">
+                                        <div class="col-md-2">
+                                            <label class="label">Age(in years):</label>
+                                        </div>
+                                        <div class="col-md-10">
+                                            <div class="row">
+                                                <div class="col-md-4 pt-3" ng-repeat="value in ageGroup">
+                                                    <input type="radio" ng-model="visit.Age_Group__c" ng-value="value" ng-change="changeOfAgeGroup(value)" />
+                                                    <label>{{value}}</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div> -->
+                                    <div class="row align-items-center mb-4">
+                                        <div class="col-md-2">
+                                            <label class="label">Residential Address:</label>
+                                        </div>
+                                        <div class="col-md-10">
+                                            <textarea class="form-control" ng-model="visit.Residential_Address__c"/>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="row align-items-center mb-4">
+                                                <div class="col-md-4">
+                                                    <label class="label">Residence City:</label>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <input type="text" class="form-control" ng-model="visit.City__c" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="row align-items-center mb-4">
+                                                <div class="col-md-4">
+                                                    <label class="label">Pincode:</label>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <input class="form-control" type="number" ng-model="visit.Pincode__c"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- <div class="col-md-6">
+                                            <div class="row align-items-center mb-4">
+                                                <div class="col-md-4">
+                                                    <label class="label">Locality:</label>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <so-dropdown ng-model="visit.Location__c" dropdown-items="listOfLocation">
+                                                        <option value='None'>None</option>
+                                                    </so-dropdown>
+                                                    <select class="form-control" aria-label="Default select example" ng-model="visit.Location__c">
+                                                        <option ng-repeat="location in listOfLocation">{{location.Name}}</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div> -->
+                                    </div>
+                                    <!-- <div class="row align-items-center mb-4">
+                                        <div class="col-md-2">
+                                            <label class="label">Pincode:<span class="required-asterisk" style="color:red;">*</span></label>
+                                        </div>
+                                        <div class="col-md-10">
+                                            <input class="form-control" type="number" ng-model="visit.Pincode__c"/>
+                                        </div>
+                                    </div> -->
+                                    
+                                    <div class="row align-items-center mb-4">
+                                        <div class="col-md-2">
+                                            <label class="label">Employment Type:</label>
+                                        </div>
+                                        <div class="col-md-10">
+                                            <div class="row">
+                                                <div class="col-md-4 pt-3" ng-repeat="value in employmentType">
+                                                    <input type="radio" ng-model="visit.Employment_Type__c" ng-value="value" ng-change="ChangeOfEmpType(value)" />
+                                                    <label>{{value}}</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div ng-if="visit.Employment_Type__c == 'Others'">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="row align-items-center mb-4">
+                                                    <div class="col-md-4">
+                                                        <label class="label">Please Specify:</label>
+                                                    </div>
+                                                    <div class="col-md-8">
+                                                        <input type="text" class="form-control" ng-model="visit.Others_Employment_Type__c" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- <div class="col-md-6">
+                                                <div class="row align-items-center mb-4">
+                                                    <div class="col-md-4">
+                                                        <label class="label">Industry:</label><span class="required-asterisk" style="color:red;">*</span>
+                                                    </div>
+                                                    <div class="col-md-8">
+                                                        <input type="text" class="form-control" ng-model="visit.Industry__c" />
+                                                    </div>
+                                                </div>
+                                            </div> -->
+                                        </div>
+                                        <!-- <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="row align-items-center mb-4">
+                                                    <div class="col-md-4">
+                                                        <label class="label">Company Location:</label><span class="required-asterisk" style="color:red;">*</span>
+                                                    </div>
+                                                    <div class="col-md-8">
+                                                        <textarea class="form-control" ng-model="visit.Office_Address__c"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="row align-items-center mb-4">
+                                                    <div class="col-md-4">
+                                                        <label class="label">Company Pincode:</label><span class="required-asterisk" style="color:red;">*</span>
+                                                    </div>
+                                                    <div class="col-md-8">
+                                                        <input type="number" class="form-control" ng-model="visit.Office_PinCode__c" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div> -->
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="row align-items-center mb-4">
+                                                <div class="col-md-4">
+                                                    <label class="label">Industry:</label>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <select class="form-select" ng-model="selectedIndustry" ng-change="changeOfIndustry(selectedIndustry)">
+                                                        <option ng-repeat="value in industry" ng-selected="true">{{value}}</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="row align-items-center mb-4">
+                                                <div class="col-md-4">
+                                                    <label class="label">Sales Team Member:</label>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <select class="form-select"
+                                                            ng-model="selectedSalesTeamMember"
+                                                            ng-options="user.Id as (user.Name + ' - ' + user.Profile.Name) for user in salesTeamMembers">
+                                                        <option value="">-- Select Sales Team Member --</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div ng-if="visit.Industry__c == 'Others'">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="row align-items-center mb-4">
+                                                    <div class="col-md-4">
+                                                        <label class="label">Please Specify:</label>
+                                                    </div>
+                                                    <div class="col-md-8">
+                                                        <input type="text" class="form-control" ng-model="visit.Others_Industry__c" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- <div class="col-md-6">
+                                                <div class="row align-items-center mb-4">
+                                                    <div class="col-md-4">
+                                                        <label class="label">Industry:</label><span class="required-asterisk" style="color:red;">*</span>
+                                                    </div>
+                                                    <div class="col-md-8">
+                                                        <input type="text" class="form-control" ng-model="visit.Industry__c" />
+                                                    </div>
+                                                </div>
+                                            </div> -->
+                                        </div>
+                                        <!-- <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="row align-items-center mb-4">
+                                                    <div class="col-md-4">
+                                                        <label class="label">Company Location:</label><span class="required-asterisk" style="color:red;">*</span>
+                                                    </div>
+                                                    <div class="col-md-8">
+                                                        <textarea class="form-control" ng-model="visit.Office_Address__c"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="row align-items-center mb-4">
+                                                    <div class="col-md-4">
+                                                        <label class="label">Company Pincode:</label><span class="required-asterisk" style="color:red;">*</span>
+                                                    </div>
+                                                    <div class="col-md-8">
+                                                        <input type="number" class="form-control" ng-model="visit.Office_PinCode__c" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div> -->
+                                    </div>
+                                    
+                                    <div class="row align-items-center mb-4">
+                                        <div class="col-md-2">
+                                            <label class="label">Budget:</label>
+                                        </div>
+                                        <div class="col-md-10">
+                                            <div class="row">
+                                                <div class="col-md-4 pt-3" ng-repeat="value in budget">
+                                                    <input type="radio" ng-model="visit.Budget__c" ng-value="value" ng-change="changeOfBudget(value)" />
+                                                    <label>{{value}}</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row align-items-center mb-4">
+                                        <div class="col-md-2">
+                                            <label class="label">Unit Type:</label>
+                                        </div>
+                                        <div class="col-md-10">
+                                            <div class="row">
+                                                <div class="col-md-4 pt-3" ng-repeat="value in area">
+                                                    <input type="radio" ng-model="visit.Area__c" ng-value="value" ng-change="changeOfArea(value)" />
+                                                    <label>{{value}}</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row align-items-center mb-4">
+                                        <div class="col-md-2">
+                                            <label class="label">Requirement Type:</label>
+                                        </div>
+                                        <div class="col-md-10">
+                                            <div class="row">
+                                                <div class="col-md-4 pt-3" ng-repeat="value in reqType">
+                                                    <input type="radio" ng-model="visit.Requirement_Type__c" ng-value="value" ng-change="changeOfReqType(value)" />
+                                                    <label>{{value}}</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row align-items-center mb-4">
+                                        <div class="col-md-2">
+                                            <label class="label">Project Completion <br/>Timeline:</label>
+                                        </div>
+                                        <div class="col-md-10">
+                                            <div class="row">
+                                                <div class="col-md-4 pt-3" ng-repeat="value in constructionStatus">
+                                                    <input type="radio" ng-model="visit.Construction_Status__c" ng-value="value" ng-change="changeOfConstStatus(value)" />
+                                                    <label>{{value}}</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row align-items-center mb-4">
+                                        <div class="col-md-2">
+                                            <label class="label">Purpose Of Buying:</label>
+                                        </div>
+                                        <div class="col-md-10">
+                                            <div class="row">
+                                                <div class="col-md-4 pt-3" ng-repeat="value in purposeOfBuying">
+                                                    <input type="radio" ng-model="visit.Purpose_Of_Buying__c" ng-value="value" ng-change="changeOfPurposeOfBuying(value)" />
+                                                    <label>{{value}}</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- <div class="row">
+                                        <div class="col-md-12">
+                                            <button type="button" class="button float-end" ng-click="saveCustomerReq()">Save and Next</button>
+                                            <button type="button" class="cancelbutton float-end me-2" ng-click="showFirst()">Back</button>
+                                        </div>
+                                    </div> -->
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <button type="button" id="btnCreateVisit" class="button float-end" ng-click="saveCustomerDet()">Save and Next</button>
+                                            <button type="button" id="btnCreateVisitWait" style="text-align: center; display:none;" class="button float-end"><i class="fa fa-spinner" aria-hidden="true"></i> Please Wait....</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- <div class="booking-form" ng-if="showCustReq">
+                <div class="container mb-5">
+                    <div class="form-tabs">
+                        <div class="sidebar col-md-auto">
+                            <ul>
+                                <li>
+                                    <a ng-click="">Customer Details</a>
+                                </li>
+                                <li class="active">
+                                    <a ng-click="">Customer's Requirements</a>
+                                </li>
+                                <li>
+                                    <a ng-click="">To be filled by GRE</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="rightbar">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="row align-items-center mb-4">
+                                        <div class="col-md-2">
+                                            <label class="label">Budget<span class="required-asterisk" style="color:red;">*</span>:</label>
+                                        </div>
+                                        <div class="col-md-10">
+                                            <div class="row">
+                                                <div class="col-md-4 pt-3" ng-repeat="value in budget">
+                                                    <input type="radio" ng-model="visit.Budget__c" ng-value="value" ng-change="changeOfBudget(value)" />
+                                                    <label>{{value}}</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row align-items-center mb-4">
+                                        <div class="col-md-2">
+                                            <label class="label">Unit Type:</label>
+                                        </div>
+                                        <div class="col-md-10">
+                                            <div class="row">
+                                                <div class="col-md-4 pt-3" ng-repeat="value in area">
+                                                    <input type="radio" ng-model="visit.Area__c" ng-value="value" ng-change="changeOfArea(value)" />
+                                                    <label>{{value}}</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row align-items-center mb-4">
+                                        <div class="col-md-2">
+                                            <label class="label">Requirement Type<span class="required-asterisk" style="color:red;">*</span>:</label>
+                                        </div>
+                                        <div class="col-md-10">
+                                            <div class="row">
+                                                <div class="col-md-4 pt-3" ng-repeat="value in reqType">
+                                                    <input type="radio" ng-model="visit.Requirement_Type__c" ng-value="value" ng-change="changeOfReqType(value)" />
+                                                    <label>{{value}}</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row align-items-center mb-4">
+                                        <div class="col-md-2">
+                                            <label class="label">Project Completion <br/>Timeline:</label>
+                                        </div>
+                                        <div class="col-md-10">
+                                            <div class="row">
+                                                <div class="col-md-4 pt-3" ng-repeat="value in constructionStatus">
+                                                    <input type="radio" ng-model="visit.Construction_Status__c" ng-value="value" ng-change="changeOfConstStatus(value)" />
+                                                    <label>{{value}}</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row align-items-center mb-4">
+                                        <div class="col-md-2">
+                                            <label class="label">Purpose Of Buying:</label>
+                                        </div>
+                                        <div class="col-md-10">
+                                            <div class="row">
+                                                <div class="col-md-4 pt-3" ng-repeat="value in purposeOfBuying">
+                                                    <input type="radio" ng-model="visit.Purpose_Of_Buying__c" ng-value="value" ng-change="changeOfPurposeOfBuying(value)" />
+                                                    <label>{{value}}</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <button type="button" class="button float-end" ng-click="saveCustomerReq()">Save and Next</button>
+                                            <button type="button" class="cancelbutton float-end me-2" ng-click="showFirst()">Back</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> -->
+
+            <div class="booking-form" ng-if="visitDet">
+                <div class="container mb-5">
+                    <!-- <h5 class="heading text-center"><b>SITE VISIT FORM</b></h5> -->
+                    <!-- <div class="row justify-content-between">
+                        <div class="col-md-3">
+                            <div class="d-flex align-items-center">
+                                <label class="label pe-3 text-nowrap">Form No.</label>
+                                <input type="text" class="form-control" ng-model="visit.Form_No__c"/>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-flex align-items-center">
+                                <label class="label pe-3 text-nowrap">Date of visit:</label>
+                                    <input type="date" class="form-control" placeholder="DD/MM/YYYY" ng-model="visit.Actual_visit_date__c"/>
+                            </div>
+                        </div>
+                    </div> -->
+                    <div class="form-tabs">
+                        <div class="sidebar col-md-auto">
+                            <ul>
+                                <li>
+                                    <a ng-click="">Customer Details &amp; <br/>Requirements</a>
+                                </li>
+                                <!-- <li>
+                                    <a ng-click="">Customer's Requirements</a>
+                                </li> -->
+                                <!-- <li class="active">
+                                    <a ng-click="">Visit Details</a>
+                                </li> -->
+                                <li>
+                                    <a ng-click="">To be filled by GRE</a>
+                                </li>
+                                <!-- <li>
+                                    <a ng-click="">To be filled by Sales Manager</a>
+                                </li> -->
+                            </ul>
+                        </div>
+                        <div class="rightbar">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <!-- <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="row align-items-center mb-4">
+                                                <div class="col-md-4">
+                                                    <label class="label">Visiting with:</label>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <input type="text" class="form-control" ng-model="visit.Visiting_With__c"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="row align-items-center mb-4">
+                                                <div class="col-md-4">
+                                                    <label class="label">Visiting on<br/>behalf of:</label>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <input type="text" class="form-control" ng-model="visit.Visiting_On_Behalf_Of__c" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div> -->
+                                    <div class="row align-items-center mb-4">
+                                        <div class="col-md-2">
+                                            <label class="label">Walkin Source:</label>
+                                        </div>
+                                        <div class="col-md-10">
+                                            <div class="row">
+                                                <div class="col-md-4 pt-3" ng-repeat="value in walkinSource">
+                                                    <input type="radio" ng-model="visit.Walkin_Source__c" ng-value="value" ng-change="changeOfLeadSource(value)" />
+                                                    <label>{{value}}</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div ng-show="visit.Walkin_Source__c == 'Portals'">
+                                        <div class="row align-items-center mb-4">
+                                            <div class="col-md-2">
+                                                <label class="label">Walkin Sub Source:</label>
+                                            </div>
+                                            <div class="col-md-10">
+                                                <div class="row">
+                                                    <div class="col-md-4 pt-3" ng-repeat="value in walkinSubSource">
+                                                        <input type="radio" ng-model="visit.Walkin_Sub_Source__c" ng-value="value" ng-change="changeOfSubSource(value)" />
+                                                        <label>{{value}}</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div ng-show="visit.Walkin_Source__c == 'Channel Partner'">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h4 class="label">If-case of Channel Partner mention the following:</h4>
+                                            </div>
+                                        </div>
+                                        <!-- <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="row align-items-center mb-4">
+                                                    <div class="col-md-4">
+                                                        <label class="label">GR Code:</label>
+                                                    </div>
+                                                    <div class="col-md-8">
+                                                        <input type="text" class="form-control" ng-model="visit.GR_Code__c"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="row align-items-center mb-4">
+                                                    <div class="col-md-4">
+                                                        <label class="label">Channel partner<br/>not registered:</label>
+                                                    </div>
+                                                    <div class="col-md-8">
+                                                        <input type="checkbox" class="" ng-model="visit.Channel_Partner_Not_registered__c" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div> -->
+                                        <div class="row">
+                                            <!-- <div class="col-md-6">
+                                                <div class="row align-items-center mb-4">
+                                                    <div class="col-md-4">
+                                                        <label class="label">Firm Name:</label>
+                                                    </div>
+                                                    <div class="col-md-8">
+                                                        <input type="text" class="form-control" ng-model="visit.Firm_Name__c"/>
+                                                    </div>
+                                                </div>
+                                            </div> -->
+                                            <div class="col-md-6">
+                                                <div class="row align-items-center mb-4">
+                                                    <div class="col-md-4">
+                                                        <label class="label">Channel Partner<br/>Name:</label>
+                                                    </div>
+                                                    <div class="col-md-8">
+                                                        <so-dropdown ng-model="visit.Channel_Partner__c" dropdown-items="listOfChannelPartner">
+                                                            <option value='None'>None</option>
+                                                        </so-dropdown>
+                                                        <!-- <input type="text" class="form-control" ng-model="visit.Channel_Partner_Name__c" /> -->
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="row align-items-center mb-4">
+                                                    <div class="col-md-4">
+                                                        <label class="label">Email:</label>
+                                                    </div>
+                                                    <div class="col-md-8">
+                                                        <input type="email" class="form-control" ng-model="visit.Channel_Partner_Email__c"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="row align-items-center mb-4">
+                                                    <div class="col-md-4">
+                                                        <label class="label">RERA No.:</label>
+                                                    </div>
+                                                    <div class="col-md-8">
+                                                        <input type="text" class="form-control" ng-model="visit.RERA_No__c" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row align-items-center mb-4">
+                                            <div class="col-md-2">
+                                                <label class="label">Mobile No.:</label>
+                                            </div>
+                                            <div class="col-md-10">
+                                                <input type="tel" class="form-control" ng-model="visit.Channel_Partner_Mobile_No__c"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div ng-show="visit.Walkin_Source__c == 'Site Visit Referral' || visit.Walkin_Source__c == 'V-Team' || visit.Walkin_Source__c == 'V-Associates' || visit.Walkin_Source__c == 'V-Connect'">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h4 class="label">Please Specify:</h4>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="row align-items-center mb-4">
+                                                    <div class="col-md-4">
+                                                        <label class="label">Name:</label>
+                                                    </div>
+                                                    <div class="col-md-8">
+                                                        <input type="text" class="form-control" ng-model="visit.Referral_Name__c"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="row align-items-center mb-4">
+                                                    <div class="col-md-4">
+                                                        <label class="label">Mobile No.:</label>
+                                                    </div>
+                                                    <div class="col-md-8">
+                                                        <input type="tel" class="form-control" ng-model="visit.Referral_Mobile_No__c" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row" ng-show="visit.Walkin_Source__c == 'V-Connect'">
+                                            <div class="col-md-6">
+                                                <div class="row align-items-center mb-4">
+                                                    <div class="col-md-4">
+                                                        <label class="label">Project:</label>
+                                                    </div>
+                                                    <div class="col-md-8">
+                                                        <input type="text" class="form-control" ng-model="visit.Projects__c"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="row align-items-center mb-4">
+                                                    <div class="col-md-4">
+                                                        <label class="label">Apartment No.:</label>
+                                                    </div>
+                                                    <div class="col-md-8">
+                                                        <input type="text" class="form-control" ng-model="visit.Apartment_No__c" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <button type="button" class="button float-end" ng-click="savevisitDetails()">Save and Next</button>
+                                            <button type="button" class="cancelbutton float-end me-2" ng-click="showSecond()">Back</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="booking-form" ng-if="showGRE">
+                <div class="container mb-5">
+                    <!-- <h5 class="heading text-center"><b>SITE VISIT FORM</b></h5> -->
+                    <!-- <div class="row justify-content-between">
+                        <div class="col-md-3">
+                            <div class="d-flex align-items-center">
+                                <label class="label pe-3 text-nowrap">Form No.</label>
+                                <input type="text" class="form-control" ng-model="visit.Form_No__c"/>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-flex align-items-center">
+                                <label class="label pe-3 text-nowrap">Date of visit:</label>
+                                    <input type="date" class="form-control" placeholder="DD/MM/YYYY" ng-model="visit.Actual_visit_date__c"/>
+                            </div>
+                        </div>
+                    </div> -->
+                    <div class="form-tabs">
+                        <div class="sidebar col-md-auto">
+                            <ul>
+                                <li>
+                                    <a ng-click="">Customer Details &amp; <br/>Requirements</a>
+                                </li>
+                                <!-- <li>
+                                    <a ng-click="">Customer's Requirements</a>
+                                </li> -->
+                                <!-- <li>
+                                    <a ng-click="">Visit Details</a>
+                                </li> -->
+                                <li class="active">
+                                    <a ng-click="">To be filled by GRE</a>
+                                </li>
+                                <!-- <li>
+                                    <a ng-click="">To be filled by Sales Manager</a>
+                                </li> -->
+                            </ul>
+                        </div>
+                        <div class="rightbar">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="row">
+                                        <!-- <div class="col-md-6">
+                                            <div class="row align-items-center mb-4">
+                                                <div class="col-md-4">
+                                                    <label class="label">Sourcing<br/>Manager:</label>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <input type="text" class="form-control" ng-model="visit.Sourcing_Manager__c"/>
+                                                </div>
+                                            </div>
+                                        </div> -->
+                                        <div class="col-md-6">
+                                            <div class="row align-items-center mb-4">
+                                                <div class="col-md-4">
+                                                    <label ng-if="!leadCreated" class="label">Attending Sales<br/>Manager: <span class="required-asterisk" style="color:red;">*</span></label>
+                                                    <label ng-if="leadCreated" class="label">Attending Sales<br/>Manager:</label>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <so-dropdown ng-model="visit.Sales_Manager__c" dropdown-items="listOfSalesManager">
+                                                        <option value='None'>None</option>
+                                                    </so-dropdown>
+                                                    <!--input type="text" class="form-control" ng-model="visit.Sales_Manager__c" /-->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- <div class="row align-items-center mb-4">
+                                        <div class="col-md-2">
+                                            <label class="label">Customer Gender:</label>
+                                        </div>
+                                        <div class="col-md-10">
+                                            <div class="row">
+                                                <div class="col-md-4 pt-3" ng-repeat="value in gender">
+                                                    <input type="radio" ng-model="visit.Customer_Gender__c" ng-value="value" ng-change="changeOfGender(value)" />
+                                                    <label>{{value}}</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div> -->
+                                    <div class="row align-items-center mb-4">
+                                        <div class="col-md-2">
+                                            <label class="label">Facilitated By<br/>Pre-Sales:</label>
+                                        </div>
+                                        <div class="col-md-10">
+                                            <div class="row">
+                                                <div class="col-md-4 pt-3" ng-repeat="value in facilitatedBy">
+                                                    <input type="radio" ng-model="visit.Facilitated_By__c" ng-value="value" ng-disabled="leadCreated" ng-change="changeOfFacilitatedBy(value)" />
+                                                    <label>{{value}}</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="row align-items-center mb-4">
+                                                <div class="col-md-4">
+                                                    <label class="label">Mobile No.:</label>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <input type="tel" class="form-control" ng-model="visit.GRE_Mobile_No__c"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="row align-items-center mb-4">
+                                                <div class="col-md-4">
+                                                    <label class="label">Email:</label>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <input type="email" class="form-control" ng-model="visit.GRE_Email__c" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div> -->
+                                    <!-- <div class="row align-items-center mb-4">
+                                        <div class="col-md-2">
+                                            <label class="label">Date Of Birth:</label>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="date" class="form-control" ng-model="visit.GRE_Date_of_Birth__c"/>
+                                        </div>
+                                    </div> -->
+                                    <!-- <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="row align-items-center mb-4">
+                                                <div class="col-md-4">
+                                                    <label class="label">Customer<br/>Time-In:</label>
+                                                    {{timeString}}
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <input type="text" class="form-control" ng-model="timeString" ng-disabled="true"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="row align-items-center mb-4">
+                                                <div class="col-md-4">
+                                                    <label class="label">Customer<br/>Time-Out:</label>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <input type="time" class="form-control" ng-model="visit.Customer_Time_Out__c" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div> -->
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <button type="button" class="button float-end" ng-click="saveGREDetails()">Submit</button>
+                                            <button type="button" class="cancelbutton float-end me-2" ng-click="showThird()">Back</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </body>
+        <script>
+            var employmentType = JSON.parse('{!employmentType}');
+            var budget = JSON.parse('{!budget}');
+            var area = JSON.parse('{!area}');
+            var constructionStatus = JSON.parse('{!constructionStatus}');
+            var purposeOfBuying = JSON.parse('{!purposeOfBuying}');
+            var flatType = JSON.parse('{!flatType}');
+            var facilitatedBy = JSON.parse('{!facilitatedBy}');
+            var industry = JSON.parse('{!industry}');
+            var leadType = JSON.parse('{!leadType}');
+            var reqType = JSON.parse('{!reqType}');
+            var app = angular.module('visit_app', []);
+            var today = new Date();
+            app.controller('visit_ctrl', function ($scope) {
+                debugger;
+                $scope.employmentType = employmentType;
+                $scope.budget = budget;
+                $scope.area = area;
+                $scope.constructionStatus = constructionStatus;
+                $scope.purposeOfBuying = purposeOfBuying;
+                $scope.flatType = flatType;
+                $scope.facilitatedBy = facilitatedBy;
+                $scope.industry = industry;
+                $scope.leadType = leadType;
+                $scope.reqType = reqType;
+                $scope.leadDetails = {"LastName":""};
+                $scope.searchValue = '';
+                $scope.visit = {};
+                $scope.visitId = '';
+                $scope.today = today;
+                $scope.oppId = '';
+                $scope.selectedIndustry;
+                $scope.leadSubSource = [];
+                $scope.salesTeamMembers = [];
+                $scope.selectedSalesTeamMember = '';
+                $scope.leadCreated = true;
+
+                $scope.createLead = function(){
+                    debugger;
+                    $scope.leadDetails = {};
+                    $scope.showCreateLead = true;
+                    $scope.errorMsg = false;
+                    $scope.showLeadDetails = false;
+                    $scope.showVisitSection = false;
+                    $scope.showCustReq = false;
+                    $scope.visitDet = false;
+                    $scope.showGRE = false;
+                    $scope.showSalesManager = false;
+                    $scope.showAllLeadDetails = false;
+                    $scope.relVisits = false;
+                }
+
+                $scope.getleadDet = function(){
+                    debugger;
+                    $scope.visit = {};
+                    if($scope.searchValue != ''){
+                        siteVisitFormController.getLeadRecords($scope.searchValue,function(result,event){
+                            debugger;
+                            if(event.status && result){
+                                $scope.showVisitAfterCreatn = false;
+                                $scope.visitId = '';
+                                if(result.leadList.length == 1){
+                                    $scope.leadDetails = result.leadList[0];
+                                    $scope.leadList = [];
+                                    $scope.showLeadDetails = true;
+                                    $scope.showAllLeadDetails = false;
+                                    if(result.oppList.length == 0){
+                                        $scope.oppList = [];
+                                        $scope.showAllOppDetails = false;
+                                    }else if(result.oppList.length > 0){
+                                        $scope.oppXvisitMap = result.oppXvisitMap;
+                                        $scope.oppList = result.oppList;
+                                        $scope.showAllOppDetails = true;
+                                    }
+                                    $scope.errorMsg = false;
+                                    $scope.showCreateLead = false;
+                                    $scope.showVisitSection = false;
+                                    $scope.showCustReq = false;
+                                    $scope.visitDet = false;
+                                    $scope.showGRE = false;
+                                    $scope.showSalesManager = false;
+                                    $scope.relVisits = false;
+                                    $scope.leadId = result.leadList[0].Id;
+                                }else if(result.leadList.length > 1){
+                                    $scope.leadDetails = {};
+                                    $scope.leadList = result.leadList;
+                                    $scope.showLeadDetails = false;
+                                    $scope.showAllLeadDetails = true;
+                                    if(result.oppList.length == 0){
+                                        $scope.oppList = [];
+                                        $scope.showAllOppDetails = false;
+                                    }else if(result.oppList.length > 0){
+                                        $scope.oppXvisitMap = result.oppXvisitMap;
+                                        $scope.oppList = result.oppList;
+                                        $scope.showAllOppDetails = true;
+                                    }
+                                    $scope.errorMsg = false;
+                                    $scope.showCreateLead = false;
+                                    $scope.showVisitSection = false;
+                                    $scope.showCustReq = false;
+                                    $scope.visitDet = false;
+                                    $scope.showGRE = false;
+                                    $scope.showSalesManager = false;
+                                    $scope.relVisits = false;
+                                }else if(result.leadList.length == 0 && result.oppList.length == 0){
+                                    $scope.leadDetails = {};
+                                    $scope.errorMsg = true;
+                                    $scope.showAllLeadDetails = false;
+                                    $scope.showAllOppDetails = false;
+                                    $scope.showLeadDetails = false;
+                                    $scope.showCreateLead = false;
+                                    $scope.showVisitSection = false;
+                                    $scope.showCustReq = false;
+                                    $scope.visitDet = false;
+                                    $scope.showGRE = false;
+                                    $scope.showSalesManager = false;
+                                    $scope.relVisits = false;
+                                }else{
+                                    $scope.errorMsg = false;
+                                    $scope.showAllLeadDetails = false;
+                                    $scope.oppXvisitMap = result.oppXvisitMap;
+                                    $scope.oppList = result.oppList;
+                                    $scope.showAllOppDetails = true;
+                                    $scope.showLeadDetails = false;
+                                    $scope.showCreateLead = false;
+                                    $scope.showVisitSection = false;
+                                    $scope.showCustReq = false;
+                                    $scope.visitDet = false;
+                                    $scope.showGRE = false;
+                                    $scope.showSalesManager = false;
+                                    $scope.relVisits = false;
+                                }
+                            }else{
+                                $scope.leadDetails = {};
+                                $scope.errorMsg = true;
+                                $scope.showLeadDetails = false;
+                                $scope.showCreateLead = false;
+                                $scope.relVisits = false;
+                            }
+                            $scope.$apply();
+                        })
+                    }else{
+                        swal(
+                            'Info',
+                            'Please enter something to search!',
+                            'info'
+                        );
+                    }
+                }
+
+                // $scope.removeClass=function(controlid){
+                //     $("#"+controlid+"").removeClass('border-theme');
+                // }
+
+                $scope.createLeadRecord = function(){
+                    debugger;
+                    $scope.visit = {};
+                    if($scope.validateLead($scope.leadDetails)){
+                        return;
+                    }
+                    $("#btnSubmit").hide();
+                    $("#btnPleaseWait").show();
+                    debugger;
+                    siteVisitFormController.createLeadRecord($scope.leadDetails,function(result,event){
+                        debugger;
+                        $("#btnPleaseWait").hide();
+                        $("#btnSubmit").show();
+                        if(event.status && result.startsWith('00Q')){
+                            debugger;
+                            $scope.leadId = result;
+                            swal('Success','Lead has been created successfully..','success');
+                            $scope.showVisitAfterCreatn = true;
+                            $scope.leadCreated = false;
+                            $scope.$apply();
+                        }else if(result == 'We already have this Lead record.'){
+                            swal('ERROR!',result,'error');
+                        }else{
+                            swal('INTERNAL SERVER ERROR!','Please check all the fields are filled properly.','error');
+                        }
+                    })
+                }
+
+                $scope.validateLead = function(value){
+                    if($scope.leadDetails.LastName == "" || $scope.leadDetails.LastName == undefined){
+                        swal(
+                            'Info',
+                            'Please Enter Name!',
+                            'info'
+                        );
+                        // $("#txtEmail").addClass('border-theme');
+                        return true;
+                    }
+                    if($scope.leadDetails.Email == "" || $scope.leadDetails.Email == undefined){
+                        swal(
+                            'Info',
+                            'Please Enter Email!',
+                            'info'
+                        );
+                        // $("#txtEmail").addClass('border-theme');
+                        return true;
+                    }
+                    if($scope.leadDetails.Phone == "" || $scope.leadDetails.Phone == undefined){
+                        swal(
+                            'Info',
+                            'Please Enter Phone No.!',
+                            'info'
+                        );
+                        // $("#txtEmail").addClass('border-theme');
+                        return true;
+                    }
+                    if($scope.leadDetails.Project__c == "" || $scope.leadDetails.Project__c == undefined){
+                        swal(
+                            'Info',
+                            'Please Enter Project!',
+                            'info'
+                        );
+                        // $("#txtEmail").addClass('border-theme');
+                        return true;
+                    }
+                    if($scope.validateEmail($scope.leadDetails.Email)){
+                        swal(
+                            'Info',
+                            'Email Format Invalid!',
+                            'info'
+                        );
+                        // $("#txtEmail").addClass('border-theme');
+                        return true;
+                        
+                    }
+                    if($scope.validatePhone($scope.leadDetails.Phone)){
+                        swal(
+                            'Info',
+                            'Invalid Phone No.!',
+                            'info'
+                        );
+                        // $("#txtEmail").addClass('border-theme');
+                        return true;
+                    }
+                }
+
+                $scope.validateEmail = function (value) {
+                    if (value != undefined) {
+                        var x = value;
+                        var atpos = x.indexOf("@");
+                        var dotpos = x.lastIndexOf(".");
+                        if (atpos < 1 || dotpos < atpos + 2 || dotpos + 2 >= x.length) {
+                            return true;
+                        }
+                        return false;
+                    }
+                }
+
+                $scope.validatePhone = function(value){
+                    if(value != undefined) {
+                        if(value.length != 10){
+                            return true;
+                        }
+                        return false;
+                    }
+                }
+
+                $scope.ChangeOfEmpType = function(value){
+                    debugger;
+                    $scope.visit.Employment_Type__c = value;
+                }
+
+                $scope.OnClickcreateVisit = function(value){
+                    debugger;
+                    if(value == undefined){
+                        $scope.opp = {};
+                        $scope.oppId = '';
+                        $scope.showVisitSection = true;
+                        $scope.errorMsg = false;
+                        $scope.showLeadDetails = false;
+                        $scope.showCreateLead = false;
+                        $scope.showVisitAfterCreatn = false;
+                        // $scope.showConvertedLead = false;
+                    }else if(value.Name){
+                        $scope.opp = value;
+                        $scope.oppId = value.Id;
+                        $scope.leadDetails = {};
+                        $scope.leadId = '';
+                        
+                    }else{
+                        $scope.leadDetails = value;
+                        $scope.leadId = value.Id;
+                        $scope.opp = {};
+                        $scope.oppId = '';
+                    }
+                    $scope.showVisitSection = true;
+                    $scope.showAllLeadDetails = false;
+                    $scope.showAllOppDetails = false;
+                    $scope.errorMsg = false;
+                    $scope.relVisits = false;
+                    $scope.showLeadDetails = false;
+                    $scope.showCreateLead = false;
+                    $scope.showVisitAfterCreatn = false;
+                    // $scope.showConvertedLead = false;
+                    $scope.$apply();
+                }
+
+                $scope.showRelVisits = function(value){
+                    $scope.opp = value;
+
+                    $scope.relVisits = true;
+                }
+
+                $scope.saveCustomerDet = function(){
+                    debugger;
+                    if ($scope.today != null) {
+                        const dateString = $scope.today;
+                        // Create a new Date object from the date string
+                        const dateObject = new Date(dateString);
+                        // Get the Unix timestamp (milliseconds since the Unix epoch)
+                        const unixTimestamp = dateObject.getTime();
+                        // Update the $scope.SLIlist[i].Actual_date_of_dispatch__c with the Unix timestamp
+                        $scope.visit.Actual_visit_date__c = unixTimestamp;
+                    }
+                    // if($scope.visit.Date_Of_Birth__c == undefined || $scope.visit.Date_Of_Birth__c == ""){
+                    //     debugger;
+                    //     swal('Info','Please Enter Date of Birth.','info');
+                    //     return;
+                    // }
+                    if($scope.opp.Name){
+                        if($scope.opp.Name == undefined || $scope.opp.Name == ''){
+                            debugger;
+                            swal('Info','Please Enter Name.','info');
+                            return;
+                        }
+                        if($scope.opp.Phone__c == undefined || $scope.opp.Phone__c == ''){
+                            debugger;
+                            swal('Info','Please Enter Mobile No.','info');
+                            return;
+                        }
+                    }else{
+                        if($scope.leadDetails.FirstName == undefined || $scope.leadDetails.FirstName == ''){
+                            debugger;
+                            swal('Info','Please Enter First Name.','info');
+                            return;
+                        }
+                        if($scope.leadDetails.LastName == undefined || $scope.leadDetails.LastName == ''){
+                            debugger;
+                            swal('Info','Please Enter Surname.','info');
+                            return;
+                        }
+                        if($scope.leadDetails.Phone == undefined || $scope.leadDetails.Phone ==''){
+                            debugger;
+                            swal('Info','Please Enter Mobile No.','info');
+                            return;
+                        }
+                    }
+                    if ($scope.visit.Date_Of_Birth__c != null) {
+                        const dateString = $scope.visit.Date_Of_Birth__c;
+                        // Create a new Date object from the date string
+                        const dateObject = new Date(dateString);
+                        // Get the Unix timestamp (milliseconds since the Unix epoch)
+                        const unixTimestamp = dateObject.getTime();
+                        // Update the $scope.SLIlist[i].Actual_date_of_dispatch__c with the Unix timestamp
+                        $scope.visit.Date_Of_Birth__c = unixTimestamp;
+                    }
+                    if($scope.visit.Date_Of_Birth__c >= $scope.visit.Actual_visit_date__c){
+                        debugger;
+                        swal('Info','Date of Birth cannot be future date.','info');
+                        return;
+                    }
+                    $("#btnCreateVisit").hide();
+                    $("#btnCreateVisitWait").show();
+                    // if($scope.visit.Employment_Type__c == 'Salaried' || $scope.visit.Employment_Type__c == 'Business' || $scope.visit.Employment_Type__c == 'Professional'){
+                    //     if($scope.visit.Company_Name__c == undefined || $scope.visit.Company_Name__c == ""){
+                    //         debugger;
+                    //         swal('Info','Please Enter Company Name.','info');
+                    //         return;
+                    //     }
+                    //     if($scope.visit.Office_Address__c == undefined || $scope.visit.Office_Address__c == ""){
+                    //         debugger;
+                    //         swal('Info','Please Enter Office Address.','info');
+                    //         return;
+                    //     }
+                    //     if($scope.visit.Office_PinCode__c == undefined || $scope.visit.Office_PinCode__c == ""){
+                    //         debugger;
+                    //         swal('Info','Please Enter Pin Code.','info');
+                    //         return;
+                    //     }
+                    //     if($scope.visit.Industry__c == undefined || $scope.visit.Industry__c == ""){
+                    //         debugger;
+                    //         swal('Info','Please Enter Industry.','info');
+                    //         return;
+                    //     }
+                    // }
+
+                    // $scope.firstVisitRecord = {"Residential_Address__c":$scope.visit.Residential_Address__c,"City__c":$scope.visit.City__c,
+                    // "Pincode__c":$scope.visit.Pincode__c,"Employment_Type__c":$scope.visit.Employment_Type__c,"Company_Name__c":$scope.visit.Company_Name__c,
+                    // "Industry__c":$scope.visit.Industry__c,"Office_Address__c":$scope.visit.Office_Address__c,"Office_PinCode__c":$scope.visit.Office_PinCode__c,
+                    // "Date_Of_Birth__c":$scope.visit.Date_Of_Birth__c,"Actual_visit_date__c":$scope.visit.Date_Of_Birth__c,"Actual_visit_date__c":$scope.visit.Alternate_Phone__c};
+
+                    // $scope.firstVisitRecord = {"Id":$scope.visit.Id,"Form_No__c":$scope.visit.Form_No__c,"Date_Of_Birth__c":$scope.visit.Date_Of_Birth__c,"Age_Group__c":$scope.visit.Age_Group__c,
+                    // "Residential_Address__c":$scope.visit.Residential_Address__c,"City__c":$scope.visit.City__c,
+                    // "Pincode__c":$scope.visit.Pincode__c,"Employment_Type__c":$scope.visit.Employment_Type__c,"Company_Name__c":$scope.visit.Company_Name__c,
+                    // "Industry__c":$scope.visit.Industry__c,"Office_Address__c":$scope.visit.Office_Address__c,"Office_PinCode__c":$scope.visit.Office_PinCode__c,
+                    // "Actual_visit_date__c":$scope.today,"Alternate_Phone__c":$scope.visit.Alternate_Phone__c,"Project__c":$scope.leadRecord[0].Project__c};
+                    // var year = 0
+                    // var month = 0;
+                    // var day = 0;
+                    // if($scope.firstVisitRecord.Date_Of_Birth__c !=undefined && $scope.firstVisitRecord.Date_Of_Birth__c!=''){
+                    //     year = $scope.firstVisitRecord.Date_Of_Birth__c.getUTCFullYear();
+                    //     month = $scope.firstVisitRecord.Date_Of_Birth__c.getUTCMonth()+1;
+                    //     day = $scope.firstVisitRecord.Date_Of_Birth__c.getDate();
+                    // }
+                    // if($scope.firstVisitRecord.Actual_visit_date__c !=undefined && $scope.firstVisitRecord.Actual_visit_date__c!=''){
+                    //     visityear = $scope.firstVisitRecord.Actual_visit_date__c.getUTCFullYear();
+                    //     visitmonth = $scope.firstVisitRecord.Actual_visit_date__c.getUTCMonth()+1;
+                    //     visitday = $scope.firstVisitRecord.Actual_visit_date__c.getDate();
+                    // }
+                    // delete($scope.firstVisitRecord.Date_Of_Birth__c);
+                    // delete($scope.firstVisitRecord.Actual_visit_date__c);
+
+                    // if($scope.oppId != null){
+                    //     $scope.firstVisitRecord.Deal__c = $scope.oppId;
+                    //     $scope.firstVisitRecord.Project__c = $scope.oppDetails.Project__c;
+                    // }else{
+                    //     $scope.firstVisitRecord.Lead__c = $scope.leadId;
+                    //     $scope.firstVisitRecord.Project__c = $scope.leadRecord[0].Project__c;
+                    // }
+
+                    // if($scope.visit.Location__c == undefined){
+                    //     $scope.visit.Location__c = "";
+                    // }
+
+
+                    if($scope.leadCreated == true){
+                        $scope.visit.Facilitated_By__c = 'Yes';
+                    }
+                    if($scope.visitId == ''){
+                        siteVisitFormController.insertVisitRecord($scope.visit,$scope.leadId,$scope.oppId,$scope.selectedSalesTeamMember,function(result,event){
+                            debugger;
+                            $("#btnCreateVisitWait").hide();
+                            $("#btnCreateVisit").show();
+                            if (event.status && result && result.startsWith('a0')) {
+                                debugger;
+                                $scope.visitId = result;
+                                $scope.visit.Id = result;
+                                console.log('visitId===>'+$scope.visitId);
+                                swal('Success','Customer Requirement Details have been saved successfully.','success');
+                                $scope.showCustReq = false;
+                                $scope.showVisitSection = false;
+                                $scope.visitDet = false;
+                                $scope.showGRE = true;
+                                $scope.showSalesManager = false;
+                                $scope.$apply();
+                            }
+                            else {
+                                swal('INTERNAL SERVER ERROR!','Plaese check all Qualification metrics.','error');
+                            }
+                        })
+                    }
+                    else{
+                        // $scope.firstVisitRecord.Id = $scope.visitId;
+                        siteVisitFormController.insertVisitRecord($scope.visit,$scope.leadId,$scope.oppId,$scope.selectedSalesTeamMember,function(result,event){
+                            debugger;
+                            $("#btnCreateVisitWait").hide();
+                            $("#btnCreateVisit").show();
+                            if(event.status && result){
+                                debugger;
+                                swal('Success','Customer Requirement Details have been saved successfully.','success');
+                                $scope.showCustReq = false;
+                                $scope.showVisitSection = false;
+                                $scope.visitDet = false;
+                                $scope.showGRE = true;
+                                $scope.showSalesManager = false;
+                                $scope.$apply();
+                            } else {
+                                swal('INTERNAL SERVER ERROR!','Plaese check all Qualification metrics.','error');
+                            }
+                        })
+                    }
+                    // else{
+                    //     siteVisitFormController.insertVisitRecordUnderOpportunity($scope.firstVisitRecord,year,month,day,visityear,visitmonth,visitday,function(result,event){
+                    //         debugger;
+                    //         if(event.status && result){
+                    //             debugger;
+                    //             $scope.visitId = result;
+                    //             $scope.visit.Id = result;
+                    //             swal('Success','Customer Details have been saved successfully..','success');
+                    //             $scope.showCustReq = true;
+                    //             $scope.showVisitSection = false;
+                    //             $scope.visitDet = false;
+                    //             $scope.showGRE = false;
+                    //             $scope.showSalesManager = false;
+                    //             $scope.$apply();
+                    //         }
+                    //     })
+                    // }
+                }
+
+                $scope.saveCustomerReq = function(){
+                    debugger;
+                    if($scope.visit.Budget__c == undefined || $scope.visit.Budget__c == ''){
+                        swal(
+                            'Info',
+                            'Please Enter Budget!',
+                            'info'
+                        );
+                        return;
+                    }
+                    if($scope.visit.Requirement_Type__c == undefined || $scope.visit.Requirement_Type__c == ''){
+                        swal(
+                            'Info',
+                            'Please Enter Requirement Type!',
+                            'info'
+                        );
+                        return;
+                    }
+                    // $scope.secondVisitRecord = {"Budget__c":$scope.visit.Budget__c,"Area__c":$scope.visit.Area__c,
+                    // "Construction_Status__c":$scope.visit.Construction_Status__c,"Purpose_Of_Buying__c":$scope.visit.Purpose_Of_Buying__c};
+                    // $scope.secondVisitRecord.Id = $scope.visitId;
+                    // if($scope.oppId != null){
+                    //     $scope.secondVisitRecord.Deal__c = $scope.oppId;
+                    // }else{
+                    //     $scope.secondVisitRecord.Lead__c = $scope.leadId;
+                    // }
+                    // $scope.secondVisitRecord.Id = $scope.visitId;
+                    siteVisitFormController.insertVisitRecord($scope.visit,null,null,function(result,event){
+                        debugger;
+                        if(event.status && result){
+                            debugger;
+                            swal('Success','Customer Requirement Details have been saved successfully..','success');
+                            $scope.visitDet = false;
+                            $scope.showCustReq = false;
+                            $scope.showVisitSection = false;
+                            $scope.showGRE = true;
+                            $scope.showSalesManager = false;
+                            $scope.$apply();
+                        }
+                    })
+                }
+
+                $scope.saveGREDetails = function(){
+                    debugger;
+
+                    // $scope.forthVisitRecord = {"Sales_Manager__c":$scope.visit.Sales_Manager__c, "Facilitated_By__c":$scope.visit.Facilitated_By__c};
+
+                    // var year = 0
+                    // var month = 0;
+                    // var day = 0;
+                    // if($scope.forthVisitRecord.GRE_Date_of_Birth__c !=undefined && $scope.forthVisitRecord.GRE_Date_of_Birth__c!=''){
+                    //     year = $scope.forthVisitRecord.GRE_Date_of_Birth__c.getUTCFullYear();
+                    //     month = $scope.forthVisitRecord.GRE_Date_of_Birth__c.getUTCMonth()+1;
+                    //     day = $scope.forthVisitRecord.GRE_Date_of_Birth__c.getDate();
+                    // }
+
+                    var sHour = 0
+                    var sMin = 0;
+                    if ($scope.visit.Customer_Time_In__c != undefined && !angular.isNumber($scope.visit.Customer_Time_In__c)) {
+                        sHour = $scope.visit.Customer_Time_In__c.getHours();
+                        sMin = $scope.visit.Customer_Time_In__c.getMinutes();
+                    }
+
+                    // var oHour = 0
+                    // var oMin = 0;
+                    // if ($scope.forthVisitRecord.Customer_Time_Out__c != undefined && !angular.isNumber($scope.forthVisitRecord.Customer_Time_Out__c)) {
+                    //     oHour = $scope.forthVisitRecord.Customer_Time_Out__c.getHours();
+                    //     oMin = $scope.forthVisitRecord.Customer_Time_Out__c.getMinutes();
+                    // }
+
+                    // $scope.forthVisitRecord.Id = $scope.visitId;
+                    // delete($scope.forthVisitRecord.GRE_Date_of_Birth__c);
+                    delete($scope.visit.Customer_Time_In__c);
+                    // delete($scope.forthVisitRecord.Customer_Time_Out__c);
+
+                    // if($scope.oppId != null){
+                    //     $scope.forthVisitRecord.Deal__c = $scope.oppId;
+                    // }else{
+                    //     $scope.forthVisitRecord.Lead__c = $scope.leadId;
+                    // }
+                    if(($scope.visit.Sales_Manager__c == undefined || $scope.visit.Sales_Manager__c == '') && !$scope.leadCreated){
+                        swal(
+                            'Info',
+                            'Please Enter Sales Manager!',
+                            'info'
+                        );
+                        return;
+                    }
+                    siteVisitFormController.updateGREDetails($scope.leadCreated,$scope.visit,$scope.leadId,function(result,event){
+                        debugger;
+                        if(event.status && result == 'SUCCESS'){
+                            debugger;
+                            swal('Success','To be filled by GRE Details have been saved successfully..','success');
+                            $scope.showGRE = false;
+                            $scope.visitDet = false;
+                            $scope.showCustReq = false;
+                            $scope.showVisitSection = false;
+                            // $scope.showSalesManager = true;
+                            $scope.$apply();
+                        } else {
+                            swal('INTERNAL SERVER ERROR!','GRE Details failed to be updated.','error');
+                        }
+                    })
+                }
+
+                $scope.fetchDataOnLoad = function(){
+                    debugger;
+                    siteVisitFormController.fetchDataOnLoad(function(result,event){
+                        debugger;
+                        if(event.status && result){
+                            debugger;
+                            $scope.listOfSalesManager = result.salesUserList;
+                            $scope.salesTeamMembers = result.salesUserList || [];
+                            $scope.projectList = result.projectList;
+                            $scope.cpList = result.cpList;
+                            $scope.$apply();
+                        }
+                    })
+                }
+                $scope.fetchDataOnLoad();
+
+                $scope.changeOfBudget = function(value){
+                    debugger;
+                    $scope.visit.Budget__c = value;
+                }
+
+                $scope.changeOfArea = function(value){
+                    debugger;
+                    $scope.visit.Area__c = value;
+                }
+
+                $scope.changeOfReqType = function(value){
+                    debugger;
+                    $scope.visit.Requirement_Type__c = value;
+                }
+
+                $scope.changeOfConstStatus = function(value){
+                    debugger;
+                    $scope.visit.Construction_Status__c = value;
+                }
+
+                $scope.changeOfPurposeOfBuying = function(value){
+                    debugger;
+                    $scope.visit.Purpose_Of_Buying__c = value;
+                }
+
+                $scope.changeOfFacilitatedBy = function(value){
+                    debugger;
+                    $scope.visit.Facilitated_By__c = value
+                }
+
+                $scope.changeOfIndustry = function(value){
+                    debugger;
+                    // $scope.selectedIndustry = value;
+                    $scope.visit.Industry__c = value;
+                }
+
+                $scope.showFirst = function(){
+                    debugger;
+                    $scope.showVisitSection = true;
+                    $scope.showCustReq = false;
+                    $scope.visitDet = false;
+                    $scope.showGRE = false;
+                    $scope.showSalesManager = false;
+                }
+
+                $scope.showThird = function(){
+                    debugger;
+                    $scope.showVisitSection = true;
+                    $scope.showCustReq = false;
+                    $scope.visitDet = false;
+                    $scope.showGRE = false;
+                    $scope.showSalesManager = false;
+                }
+
+                $scope.getDependentPicklist = function(){
+                    debugger;
+                    siteVisitFormController.getFieldDependencies('Lead','LeadSource','Lead_Sub_Source__c',function(result,event){
+                        debugger;
+                        if(event.status,result){
+                            $scope.sourceXsubSourceMap = result;
+                            $scope.leadSources = Object.entries($scope.sourceXsubSourceMap).map(([key, values]) => {
+                                return { key: key, values: values };
+                            });
+                            // console.log('$scope.leadSources ---> '+JSON.stringify($scope.leadSources));
+                        }else{
+                            // console.log('Error while fetching lead source: '+event.message);
+                        }
+                        $scope.$apply();
+                    });
+                }
+                $scope.getDependentPicklist();
+
+                $scope.changeOfSource = function(){
+                    debugger;
+                    $scope.leadSubSource = $scope.sourceXsubSourceMap[$scope.leadDetails.LeadSource];
+                }
+
+                $scope.updateDependentFields = function(){
+                    $scope.leadDetails.Channel_Partner__c = '';
+                    $scope.leadDetails.LeadSource = '';
+                    $scope.leadDetails.Lead_Sub_Source__c = '';
+                    $scope.leadDetails.Referred_By_Name__c= '';
+                    $scope.leadDetails.Referred_By_Phone__c = '';
+                }
+
+            })
+            
+            .directive('soDropdown', ['$timeout', function($timeout) {
+                return {
+                    restrict: 'E',
+                    require: 'ngModel',
+                    replace: true,
+                    transclude: true,
+                    template: function (el, atts) {
+                        var itemName = 'dropdownItem';
+                        var valueField = itemName + '.' + (atts.valueField || 'Id');
+                        var textField = itemName + '.' + (atts.textField || 'Name');
+                        return "<select class='ui search dropdown'>" +
+                            "<div ng-transclude></div>" +
+                            "   <option value='{{" + valueField + "}}' ng-repeat='" + itemName + " in " + atts.dropdownItems + " track by " + valueField + "'>" +
+                            "       {{" + textField + "}}" +
+                            "   </option>" +
+                            "</select>";
+                    },
+                    link: function (scope, el, atts, ngModel) {
+                        $(el).dropdown({
+                            onChange: function (value, text, choice) {
+                                scope.$apply(function () {
+                                    ngModel.$setViewValue(value);
+                                });
+                            }
+                        });
+                        ngModel.$render = function () {
+                            console.log('set value', el, ngModel, ngModel.$viewValue);
+                            $timeout(function () {
+                                $(el).dropdown('set value', ngModel.$viewValue);
+                            });
+                            // $(el).dropdown('set value', ngModel.$viewValue);
+                        };
+                    }
+                };
+            }]);
+        </script>
+    </html>
+</apex:page>

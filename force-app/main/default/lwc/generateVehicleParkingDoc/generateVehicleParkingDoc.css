@@ -1,0 +1,64 @@
+.custom-header {
+    background: linear-gradient(to right, #0070d2, #014486); /* Salesforce blue gradient */
+    color: white; /* Text color */
+    padding: 1rem 1.5rem; /* Space around header */
+    display: flex;
+    justify-content: center; /* Center the content horizontally */
+    align-items: center; /* Align content vertically */
+    border-bottom: 1px solid #ccc; /* Optional: subtle border */
+    text-align: center; /* Ensure text alignment */
+}
+
+.custom-header h2 {
+    margin: 0; /* Remove default margins */
+    font-weight: bold; /* Make text bold */
+    font-size: 1.4rem; /* Slightly larger font size */
+    display: flex;
+    align-items: center; /* Center align the text and icon */
+}
+
+.custom-header .icon {
+    margin-right: 0.5rem; /* Add spacing between icon and text */
+}
+
+
+.horizontal-loader-container {
+    width: 100%;
+    height: 6px; /* Adjust the thickness */
+    background-color: #e0e0e0; /* Light grey background */
+    border-radius: 5px;
+    overflow: hidden;
+    margin: 20px 0;
+     margin-bottom: 90px;
+}
+
+.horizontal-loader {
+    width: 0;
+    height: 100%;
+    background-color: #0070d2; /* Salesforce Blue */
+    animation: loadingAnimation 2s infinite;
+   
+}
+
+@keyframes loadingAnimation {
+    0% {
+        width: 0;
+        margin-left: 0;
+    }
+    50% {
+        width: 50%;
+    }
+    100% {
+        width: 100%;
+        margin-left: 100%;
+    }
+}
+
+
+.cust-high{
+
+     height: 100px; /* Set the desired height */
+    min-height: 100px; /* Ensures it doesn’t shrink below this height */
+    overflow-y: auto; /* Add vertical scrolling if content exceeds */
+
+}

@@ -1,0 +1,67 @@
+<template>
+    <lightning-card>
+        <h1 class="headerCss">Receipt Re-Allocation</h1>
+        <div class="slds-grid slds-gutters slds-wrap">
+            <div class="slds-col slds-size_1-of-4">
+                <lightning-combobox label="Company" options={companyOptions} name="SelectedCompany"
+                    value={SelectedCompany} onchange={handleChange} required>
+                </lightning-combobox>
+            </div>
+            <div class="slds-col slds-size_1-of-4">
+                <lightning-combobox label="Project" options={projectOptions} name="SelectedProject"
+                    value={SelectedProject} onchange={handleChange} required>
+                </lightning-combobox>
+            </div>
+            <div class="slds-col slds-size_1-of-4">
+                <lightning-combobox label="Block" options={blockOptions} name="SelectedBlock"
+                    value={SelectedBlock} onchange={handleChange} required>
+                </lightning-combobox>
+            </div>
+            <div class="slds-col slds-size_1-of-4" style="margin-top:20px;">
+                <lightning-button variant="brand" label="Search" onclick={showClientTable}
+                class="slds-m-left_x-small newButtonCss"></lightning-button>
+            <lightning-button variant="brand" label="Save" onclick={handleSave}
+                class="slds-m-left_x-small newButtonCss"></lightning-button>
+            </div>
+        </div>
+
+        <template if:true={showclientdetails}>
+            <div class="table-container">
+                <table class="slds-table slds-table_bordered slds-table_cell-buffer slds-table_striped custom-table">
+                    <thead>
+                        <tr class="slds-text-title_caps">
+                            <th scope="col">
+                                <input type="checkbox" onchange={handleSelectAll} />
+                            </th>
+                            <th scope="col">Prospect</th>
+                            <th scope="col">Client</th>
+                            <th scope="col">Total Receipts</th>
+                            <th scope="col">Total Credit Note</th>
+                            <th scope="col">Total Installment Value</th>
+                            <th scope="col">Total Debit Value</th>
+                            <th scope="col">Received Amount</th>
+                            <th scope="col">Balance To Pay</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={allClientList} for:item="client">
+                            <tr key={client.Id}>
+                                <td>
+                                    <input type="checkbox" data-id={client.Id} onchange={handleRowSelection} />
+                                </td>
+                                <td>{client.Name}</td>
+                                <td>{client.Account.Name}</td>
+                                <td>{client.TotalReceipts}</td>
+                                <td>Credit</td>
+                                <td>{client.Agreement_Value__c}</td>
+                                <td>Debit</td>
+                                <td>{client.Total_Amount_Collected__c}</td>
+                                <td>{client.Balance_Total_Due_Amount__c}</td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>            
+        </template>        
+    </lightning-card>
+</template>

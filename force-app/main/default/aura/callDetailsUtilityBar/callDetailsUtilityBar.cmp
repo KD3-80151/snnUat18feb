@@ -1,0 +1,72 @@
+<aura:component controller="DialerCmpCntrl" implements="flexipage:availableForAllPageTypes,lightning:utilityItem" access="global"  >
+    
+    <!--controller="DialerCmpCntrl" -->
+    <lightning:utilityBarAPI aura:id="utilitybar" />
+    <lightning:empApi aura:id="empApi" />
+    <lightning:overlayLibrary aura:id="overlayLib"/>
+    <aura:attribute name="checked" type="boolean" default="true"/>
+    <aura:attribute name="isActive" type="boolean" default="true"/>
+    <aura:attribute name="username" type="String" default=""/>
+    <aura:attribute name="password" type="String" default=""/>
+    <aura:attribute name="loggedIn" type="Boolean" default="false"/>
+    <aura:attribute name="disabletoggle" type="boolean" default="false"/>
+    <aura:attribute name="disableLogin" type="boolean" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    
+    <div class="slds-utility-panel__body">
+        <div class="slds-is-fixed">
+            <!-- Tabset Container with fixed position -->
+            <lightning:tabset selectedTabId="1" class="slds-is-fixed slds-m-top_x-small">
+                <lightning:tab label="Dialer" id="1">
+                    <!-- Scrollable content for Dialer tab -->
+                    <div class="scrollable-tab-content" style="overflow-y: auto;">
+                        <c:DialerCmp checked = "{!v.checked}" 
+                                     username = "{!v.username}" 
+                                     password = "{!v.password}" 
+                                     loggedIn = "{!v.loggedIn}"
+                                     disabletoggle = "{!v.disabletoggle}"
+                                     disableLogin = "{!v.disableLogin}"/>
+                    </div>
+                </lightning:tab>
+                <lightning:tab label="Call History" id="2">
+                    <div class="scrollable-tab-content" style="height: 352px; overflow-y: auto;">
+                        <c:callHistory/>
+                    </div>
+                </lightning:tab>
+                <lightning:tab label="Call Summary" id="3">
+                    <c:CallSummary/>
+                </lightning:tab>
+                
+                <lightning:tab label="Availability" id="4">
+                    <c:isActiveNumber checked = "{!v.checked}"
+                                      username = "{!v.username}" 
+                                      password = "{!v.password}" 
+                                      loggedIn = "{!v.loggedIn}"
+                                      disabletoggle = "{!v.disabletoggle}"
+                                      disableLogin = "{!v.disableLogin}"/>
+                </lightning:tab>
+                
+            </lightning:tabset>
+        </div>
+        
+        <!-- Container for the toggle button on the left-->
+        <div class="slds-clearfix slds-m-top_xx-small">
+            <div class="slds-float_right slds-m-right_small">
+                <aura:if isTrue="{!v.loggedIn}">
+                <aura:if isTrue="{!v.checked}">
+                    <lightning:icon iconName="utility:success" variant="Success" size="small" /> 
+                    <aura:set attribute="else">
+                        <lightning:icon iconName="utility:clear" variant="error" size="small" />
+                    </aura:set>
+                </aura:if>
+                <aura:set attribute="else">
+                    <lightning:icon iconName="utility:resource_absence" variant="error" size="small" />
+                </aura:set>
+                </aura:if>
+            </div>
+        </div>   
+    </div>
+    
+    
+</aura:component>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Lead_Source__c</fullName>
+    <label>Lead Source</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Website</fullName>
+                <default>false</default>
+                <label>Website</label>
+            </value>
+            <value>
+                <fullName>Paper Advertisement</fullName>
+                <default>false</default>
+                <label>Paper Advertisement</label>
+            </value>
+            <value>
+                <fullName>Hoarding</fullName>
+                <default>false</default>
+                <label>Hoarding</label>
+            </value>
+            <value>
+                <fullName>Expo &amp; Events</fullName>
+                <default>false</default>
+                <label>Expo &amp; Events</label>
+            </value>
+            <value>
+                <fullName>Radio jingles</fullName>
+                <default>false</default>
+                <label>Radio jingles</label>
+            </value>
+            <value>
+                <fullName>Online portals</fullName>
+                <default>false</default>
+                <label>Online portals</label>
+            </value>
+            <value>
+                <fullName>Campaign leads</fullName>
+                <default>false</default>
+                <label>Campaign leads</label>
+            </value>
+            <value>
+                <fullName>Outdoor Activites</fullName>
+                <default>false</default>
+                <label>Outdoor Activites</label>
+            </value>
+            <value>
+                <fullName>Emailer</fullName>
+                <default>false</default>
+                <label>Emailer</label>
+            </value>
+            <value>
+                <fullName>Corporate Activities</fullName>
+                <default>false</default>
+                <label>Corporate Activities</label>
+            </value>
+            <value>
+                <fullName>Paid Advertising</fullName>
+                <default>false</default>
+                <label>Paid Advertising</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

@@ -1,0 +1,50 @@
+.headerCss{
+    background-color: #9D6200;  
+    color: white;               
+    text-align: center;         
+    margin: 0;                 
+    padding: 15px;              
+    font-size: 1.2rem;          
+    font-weight: 600;  
+}
+.sectionsCss{
+    padding: 30px 40px;
+}
+.newButtonCss{
+	--slds-c-button-brand-color-background : #4d4d4d;
+    --slds-c-button-brand-color-border : #4d4d4d;
+    --slds-c-button-brand-text-color : white;
+}
+.newButtonCss:hover{
+	--slds-c-button-brand-color-background : #4d4d4d;
+    --slds-c-button-brand-color-border : #4d4d4d;
+    --slds-c-button-brand-text-color : white;
+}
+.customButtonCss{
+	background-color: white;
+    border: 1px solid black;
+    border-radius: 4px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-right: 15px;
+    padding-left: 15px;
+}
+.customButtonCss:hover{
+	cursor: pointer;
+}
+.mainHeader{
+    padding-left: 3%;
+}
+.bgColor{
+    background-color: #6c6a6a;
+    color: white;
+}
+.oppBorder{
+    border: 1px solid #cccccc;
+    border-radius: 5px;
+}
+@media(min-width:1680px){
+    .mainHeader{
+        padding-left: 2.5%;
+    }
+}

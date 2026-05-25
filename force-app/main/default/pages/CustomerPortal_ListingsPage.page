@@ -1,0 +1,627 @@
+<apex:page showHeader="false" standardStylesheets="false" sidebar="false" docType="html-5.0" controller="CustomerPortalController">
+    <html>
+        <div ng-controller='listing_ctrl'>
+            <head>
+                <!-- Include Bootstrap CSS -->
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous"/>
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+                <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+                <script src="https://code.angularjs.org/1.8.2/i18n/angular-locale_en-in.js"></script>
+                <!-- Include Font Awesome -->
+                <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" rel="stylesheet" crossorigin="anonymous"/>
+                <!-- Include Bootstrap Icons -->
+                <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css" rel="stylesheet" crossorigin="anonymous"/>
+                <c:Libraries />
+                <script>
+                    var purposeOfBuying = JSON.parse('{!purposeOfBuying}');
+                </script>
+                <style>
+                    .listing-card {
+                        border: none;
+                        border-radius: 10px;
+                        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                        margin-bottom: 20px;
+                        min-height: 95%;
+                    }
+                    .listing-card img {
+                        border-top-left-radius: 10px;
+                        border-top-right-radius: 10px;
+                    }
+                    .listing-card-body {
+                        padding: 20px;
+                    }
+                    .listing-details {
+                        margin-bottom: 15px;
+                        /* border: 1px solid #dee2e6;
+                        border-radius: 10px; */
+                        overflow: hidden;
+                        margin-top: auto;
+                        width: 100%;
+                    }
+                    .listing-details .table {
+                        margin-bottom: 0;
+                    }
+                    .listing-details .table td {
+                        border: 1px solid #dee2e6;
+                        padding: 8px;
+                    }
+                    .listing-details .table td strong {
+                        display: block;
+                    }
+                    .button-container {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        gap: 8px;
+                        width:100%;
+                    }
+                    .contact-sales-button, .schedule-visit-button, .btn-custom-alt{
+                        flex: 1;
+                        height: 40px;
+                        border-radius: 8px;
+                        font-size: 14px;
+                        font-family: Hind, sans-serif;
+                        font-weight: 500;
+                        line-height: 20px;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        text-align: center;
+                    }
+                    .contact-sales-button {
+                        border: 1px solid #9D6200;
+                        color: #9D6200;
+                        background-color: white;
+                    }
+                    .schedule-visit-button {
+                        background: #9D6200;
+                        color: white;
+                        border: none;
+                    }
+                    .card-title-container {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                    }
+                    .share-icon {
+                        color: #0B1E35;
+                        cursor: pointer;
+                    }
+                    .title-color {
+                        color: #1F1E1E;
+                    }
+                    .modal-body {
+                        text-align: center;
+                        padding: 20px;
+                        position: relative;
+                    }
+                    .close-button {
+                        position: absolute;
+                        top: 0px;
+                        right: 10px;
+                        border: none;
+                        background: transparent;
+                        font-size: 2rem;
+                    }
+                    .content-wrapper {
+                        padding: 5%;
+                    }
+                    .btn-custom-alt {
+                        width: 60%;
+                        border: 1px solid #9D6200;
+                        color: #9D6200;
+                        background-color: white;
+                        margin-bottom: 10px;
+                        display: block;
+                        margin-left: auto;
+                        margin-right: auto;
+                    }
+                    .btn-custom-alt i {
+                        margin-right: 5px;
+                    }
+                    .btn-custom-alt:hover {
+                        background-color: #9D6200;
+                        color: white;
+                    }
+                    .modal-title-custom {
+                        color: #1F1E1E;
+                        font-size: 24px;
+                        font-weight: 600;
+                    }
+                    .schedule-visit-modal .modal-body {
+                        padding: 20px;
+                    }
+                    .schedule-visit-modal .form-control {
+                        margin-bottom: 15px;
+                    }
+                    .form-do{
+                        padding-right: 12px !important;
+                    }
+                    .schedule-visit-modal .btn-schedule {
+                        width: 50%;
+                        background-color: #9D6200;
+                        color: white;
+                        border: none;
+                        padding: 10px 18px;
+                        border-radius: 8px;
+                    }
+                    .schedule-visit-modal .btn-schedule:hover {
+                        background-color: #9D6200;
+                    }
+                    .info-section {
+                        display: flex;
+                        justify-content: space-between;
+                        gap: 20px; /* Add gap between columns */
+                    }
+                    .info-section .info-column {
+                        flex: 1;
+                    }
+                    .info-section p {
+                        margin-bottom: 10px;
+                    }
+                    .modal-dialog.custom-width {
+                        max-width: 866px;
+                    }
+                    .listing-cont{
+                        font-size : 16px;
+                    }
+                    /* Scrollable container for event cards */
+                    .scrollable-events {
+                        display: flex; /* Use flexbox for layout */
+                        overflow-x: auto; /* Enable horizontal scrolling for mobile */
+                        max-width: 100%; /* Ensure it takes full width */
+                        margin-top: 20px; /* Add some spacing above */
+                        padding: 0px; /* Optional: padding inside the scrollable area */
+                        scroll-snap-type: x mandatory; /* Snap scrolling */
+                    }
+                    /* Add margin between each card */
+                    .card-container {
+                        margin-right: 15px; /* Adds space between the cards */
+                    }
+                    /* Optional: Last card margin removal to avoid extra space */
+                    .card-container:last-child {
+                        margin-right: 0;
+                    }
+                    <!-- Optional: Custom CSS for mobile view -->
+                    @media (max-width: 768px) {
+                    
+                    }
+                    @media (min-width : 768px) and (max-width : 1024px){
+                        .contact-sales-button{
+                            width: 50% !important;
+                        }
+                        .schedule-visit-button{
+                            width : 50% !important;
+                        }
+                    }
+                    .rowLP{
+                        justify-content: left !important;
+                    }
+                    @media(max-width: 1024px){
+                        .colMdLp{
+                            width: 49% !important;
+                        }
+                    }
+                    .cust-contr{
+                        padding: 0 !important;
+                    }
+                    .col-lp{
+                        width: 70% !important;
+                    }
+                    .noImg2{
+                        height: 150px;
+                    }
+                    .listing-table {
+                        min-height: 203px;
+                        width: 100%;
+                    }
+                    .amenities-container {
+                        margin-top: 20px;
+                        display: flex;
+                        flex-wrap: wrap;
+                        justify-content: space-between;
+                    }
+                    .amenity-item {
+                        display: flex;
+                        align-items: center;
+                        margin-right: 20px;
+                        margin-bottom: 10px;
+                    }
+                    .amenity-item i {
+                        font-size: 20px;
+                        margin-right: 5px;
+                        color: #0B1E35;
+                    }
+                    .loadingSection {
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        z-index: 9999;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                    }
+                    .loadingBackground {
+                        position: absolute;
+                        width: 100%;
+                        height: 100%;
+                        background-color: rgba(0, 0, 0, 0.5); /* Dark semi-transparent background */
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                    }
+                    .loadingWrapper {
+                        position: relative;
+                        z-index: 10000; /* Ensures the loader is above the background */
+                    }
+                    .loader {
+                        width: 48px;
+                        height: 48px;
+                        border: 5px solid #FFF;
+                        border-bottom-color: transparent;
+                        border-radius: 50%;
+                        display: inline-block;
+                        box-sizing: border-box;
+                        animation: rotation 1s linear infinite;
+                    }
+                    @keyframes rotation {
+                        0% {
+                            transform: rotate(0deg);
+                        }
+                        100% {
+                            transform: rotate(360deg);
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                <div id="app" class="container-fluid">
+                    <div class="loadingSection" ng-show="showSpinner">
+                        <div class="loadingBackground">
+                            <div class="loadingWrapper">
+                                <div class="loader"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div ng-show="mainPage" class="container-fluid cust-contr">
+                        <h2 class="mb-4 title-color">Listings</h2>
+                        <p class="listing-cont">Explore our extensive property listings and take the first step towards finding your dream home with SNN Estates Pvt. Ltd. Our curated selection offers a variety of options to suit your needs and preferences. Start your journey with us today and discover the perfect place to call home.</p>
+                        <!-- Main container for the listing -->
+                        <div class="row rowLP d-none d-md-flex">
+                            <div class="col-md-4 colMdLp" ng-repeat="project in projects">
+                                <div class="card listing-card">
+                                    <div id="carouselExampleControl{{ $index }}" class="carousel slide" data-bs-ride="carousel">
+                                        <div class="carousel-inner" ng-click="showProjectDetails(project)" style="cursor: pointer;">
+                                            <div ng-if="project.Sub_Documents__r != undefined" ng-repeat="imageUrl in project.Sub_Documents__r" class="carousel-item" ng-class="{active: $first}">
+                                                <img src="{{imageUrl.File_URL__c}}" class="img1 d-block w-100" alt="{{project.Name}}"/>
+                                            </div>
+                                            <div ng-if="project.Sub_Documents__r == undefined">
+                                                <div class="noImg1"></div>
+                                            </div>
+                                        </div>
+                                        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControl{{ $index }}" data-bs-slide="prev">
+                                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                            <span class="visually-hidden">Previous</span>
+                                        </button>
+                                        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleControl{{ $index }}" data-bs-slide="next">
+                                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                            <span class="visually-hidden">Next</span>
+                                        </button>
+                                    </div>
+                                    <div class="d-flex flex-column card-body listing-card-body">
+                                        <div class="card-title-container">
+                                            <h5 class="card-title title-color">{{project.Name}}</h5>
+                                            <!-- <i class="bi bi-share share-icon"></i> -->
+                                        </div>
+                                        <p class="card-text">{{project.Project_Address__c}}</p>
+                                        <div class="listing-details">
+                                            <p><strong>Type</strong><br/>{{project.Unit_Type__c}}</p>
+                                            <!-- <table class="table listing-table">
+                                                <tr>
+                                                    <td><strong>{{project.Total_Amount__c || 0 | currency}}</strong><br/>Total Amount</td>
+                                                    <td><strong>{{project.Unit_Type__c}}</strong><br/>Type</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>{{project.Booking_Amount__c || 0 | currency}}</strong><br/>Booking Amount</td>
+                                                    <td><strong>{{project.Project_Status__c}}</strong><br/>Availability</td>
+                                                </tr>
+                                            </table> -->
+                                        </div>
+                                        <div class="button-container">
+                                            <button class="contact-sales-button" ng-click = "openContactSales(project)">Contact Sales</button>
+                                            <button class="schedule-visit-button" ng-click = "openReferNow(project)">Refer Now</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Mobile View for Smaller Screens -->
+                        <div id="mobileView" class="d-md-none scrollable-events" >
+                            <div class="col-12 col-lp card-container" ng-repeat="project in projects">
+                                <div class="card listing-card">
+                                    <div id="carouselExampleIndicatorsMobile{{ $index }}" class="carousel slide" data-bs-ride="carousel">
+                                        <div class="carousel-inner" ng-click="showProjectDetails(project)" style="cursor: pointer;">
+                                            <div ng-if="project.Sub_Documents__r != undefined" ng-repeat="imageUrl in project.Sub_Documents__r" class="carousel-item" ng-class="{active: $first}">
+                                                <img src="{{imageUrl.File_URL__c}}" class="img1 d-block w-100" alt="{{project.Name}}"/>
+                                            </div>
+                                            <div ng-if="project.Sub_Documents__r == undefined">
+                                                <div class="noImg2"></div>
+                                            </div>
+                                        </div>
+                                        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicatorsMobile{{ $index }}" data-bs-slide="prev">
+                                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                            <span class="visually-hidden">Previous</span>
+                                        </button>
+                                        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicatorsMobile{{ $index }}" data-bs-slide="next">
+                                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                            <span class="visually-hidden">Next</span>
+                                        </button>
+                                    </div>
+                                    <div class="d-flex card-body listing-card-body">
+                                        <h5 class="card-title title-color">{{project.Name}}</h5>
+                                        <p class="card-text">{{project.Project_Address__c}}</p>
+                                        <div class="listing-details">
+                                            <p><strong>Type</strong><br/>{{project.Unit_Type__c}}</p>
+                                            <!-- <table class="table listing-table table-sm">
+                                                <tr>
+                                                    <td><strong>{{project.Total_Amount__c || 0 | currency}}</strong><br/>Total Amount</td>
+                                                    <td><strong>{{project.Unit_Type__c}}</strong><br/>Type</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>{{project.Booking_Amount__c || 0 | currency}}</strong><br/>Booking Amount</td>
+                                                    <td><strong>{{project.Project_Status__c}}</strong><br/>Availability</td>
+                                                </tr>
+                                            </table> -->
+                                        </div>
+                                        <div class="button-container">
+                                            <button class="contact-sales-button" ng-click = "openContactSales(project)">Contact Sales</button>
+                                            <button class="schedule-visit-button" ng-click = "openReferNow(project)">Refer Now</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div> 
+                    <div ng-show = "detailsPage">
+                        <div id="projectDetailsMainContent" class="container-fluid">
+                            <div class="d-flex flex-row" style="justify-content: space-between;">
+                                <span class="mb-4 back-link"><p class="bi bi-arrow-left icon1" ng-click="showMainPage()"></p></span>
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="contact-sales-button" ng-click="openScheduleVisit(project)">Schedule Visit</button>
+                                    <!-- <button class="schedule-visit-button">Book Now</button> -->
+                                </div>
+                            </div>
+                            <!-- Image Carousel -->
+                            <div id="propertyCarousel" class="carousel slide mt-3" data-bs-ride="carousel">
+                                
+                                <div class="carousel-inner">
+                                    <div ng-repeat="imageUrl in projectDetails.Sub_Documents__r" class="carousel-item" ng-class="{active: $first}">
+                                        <img ng-src="{{imageUrl.File_URL__c}}" class="img2 d-block w-100" alt="{{projectDetails.Name}}"/>
+                                    </div>
+                                </div>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#propertyCarousel" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Previous</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#propertyCarousel" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Next</span>
+                                </button>
+                            </div>
+                            <div class="project-details d-flex flex-column flex-md-row justify-content-between align-items-center mt-4">
+                                <h5 class="mb-0">{{projectDetails.Project_Address__c}}</h5>
+                            </div>
+                            <!-- Property Details -->
+                            <div class="mt-4">
+                                <div class="listing-details">
+                                    <table class="table">
+                                        <tr>
+                                            <td><strong>{{projectDetails.Project_Type__c}}</strong><br/>Type</td>
+                                            <td><strong>{{projectDetails.Unit_Type__c}}</strong><br/>Unit Type</td>
+                                            <td><strong>{{projectDetails.Project_Status__c}}</strong><br/>Project Status</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>{{projectDetails.Total_Amount__c || 0 | currency}}</strong><br/>Total Amount</td>
+                                            <td><strong>{{projectDetails.Booking_Amount__c || 0 | currency}}</strong><br/>Booking Amount</td>
+                                            <td><strong>{{projectDetails.Area__c}}</strong><br/>Area</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <!-- Amenities -->
+                            <div ng-if="projectDetails.Amenities__r" class="mt-4">
+                                <h5>Amenities</h5>
+                                <div class="amenities-container">
+                                    <div class="amenity-item" ng-repeat="amenity in projectDetails.Amenities__r">
+                                        <i class="fas fa-{{amenity.Icon_Name__c}}"></i> <span>{{amenity.Name}}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>    
+                </div>
+
+                <!-- Contact Sales Modal -->
+                <div class="modal" id="contactModal" tabindex="-1" aria-labelledby="contactModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-body">
+                                <button type="button" class="close-button" ng-click="closeModal()" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                                <div class="content-wrapper">
+                                    <h5 class="modal-title mb-3 modal-title-custom" id="contactModalLabel">Make Your Choice!</h5>
+                                    <p>"Contact the Sales Executive: Call or Text? Choose your preferred method to reach out!"</p>
+                                    <button ng-show = "!projectContact.showContact" type="button" class="btn-custom-alt" ng-click = "showPhone(projectContact)">
+                                        <i class="fas fa-phone"></i> Call
+                                    </button>
+                                    <button ng-show = "projectContact.showContact" type="button" class="btn-custom-alt" ng-click = "showPhone(projectContact)">
+                                        <i class="fas fa-phone"></i> Contact -: +91 {{projectContact.Owner.Phone}}
+                                    </button>
+                                    <button type="button" class="btn-custom-alt" ng-click = "whatsappRedirct(projectContact)">
+                                        <i class="fas fa-comment-dots"></i> Text Or Whatsapp
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Schedule Visit Modal -->
+                <div class="modal" id="scheduleVisitModal" tabindex="-1" aria-labelledby="scheduleVisitModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-body schedule-visit-modal">
+                                <button type="button" class="close-button" ng-click="closeModal()" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                                <!--hide after click Schedule a Visit start-->
+                                <div id="visitForm" class="content-wrapper">
+                                    <h5 class="modal-title mb-3 modal-title-custom" id="scheduleVisitModalLabel">Schedule a Visit</h5>
+                                    <p>Book a personalized tour of our properties and experience your future home firsthand. Choose a convenient time, and let SNN Estates Pvt. Ltd. guide you every step of the way. Our team is ready to assist you with any questions you may have.</p>
+                                    <div class="row rowLP mb-3">
+                                        <div class="col-md-6">
+                                            <div class="row rowLP">
+                                                <div class="col-md-3 text-start">
+                                                    <label for="property"><strong>Property:</strong></label>
+                                                </div>
+                                                <div class="col-md-9 text-start">
+                                                    <span id="property">{{projectVisit.Name}}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="row rowLP">
+                                                <div class="col-md-3 text-start">
+                                                    <label for="type"><strong>Type:</strong></label>
+                                                </div>
+                                                <div class="col-md-9 text-start">
+                                                    <span id="type">{{projectVisit.Unit_Type__c}}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row rowLP mb-3">
+                                        <div class="col-md-6">
+                                            <div class="row rowLP">
+                                                <div class="col-md-3 text-start">
+                                                    <label for="address"><strong>Address:</strong></label>
+                                                </div>
+                                                <div class="col-md-9 text-start">
+                                                    <span id="address">{{projectVisit.Project_Address__c}}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="row rowLP">
+                                                <div class="col-md-3 text-start">
+                                                    <label for="location"><strong>Location:</strong></label>
+                                                </div>
+                                                <div class="col-md-9 text-start">
+                                                    <span id="location"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row rowLP mb-3">
+                                        <div class="col-md-6 text-start">
+                                            <label for="dateOfVisit"><strong>Date Of Visit</strong><span class="required-asterisk" style="color:red;">*</span></label>
+                                            <input type="date" class="form-control form-do" id="dateOfVisit" ng-model="visit.Actual_Visit_Date__c"/>
+                                        </div>
+                                        <div class="col-md-6 text-start">
+                                            <label for="timeOfVisit"><strong>Time Of Visit</strong><span class="required-asterisk" style="color:red;">*</span></label>
+                                            <input type="time" class="form-control form-do" id="timeOfVisit" ng-model="visit.time"/>
+                                        </div>
+                                    </div>
+                                    <div class="row rowLP mb-3">
+                                        <div class="col-md-6 text-start">
+                                            <label for="purposeOfVisit"><strong>Purpose Of Visit</strong><span class="required-asterisk" style="color:red;">*</span></label>
+                                            <select class="form-control" id="purposeOfVisit" ng-model="visit.Purpose_Of_Buying__c">
+                                                <option ng-repeat="purpose in purposeOfBuying" value="{{purpose}}">{{purpose}}</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 text-start">
+                                            <label for="visitDetails"><strong>Visit Details</strong></label>
+                                            <input type="text" class="form-control" id="visitDetails" rows="3" ng-model="visit.Visit_Description__c"/>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-schedule mt-3" ng-click="saveVisit()">Schedule a Visit</button>
+                                </div>
+                                <!--hide after click Schedule a Visit end-->
+                                <!-- Success Message Section -->
+                                <div id="successMessage" class="content-wrapper" style="display:none;">
+                                    <img src="{!URLFOR($Resource.successScheduleImage)}" alt="Success" class="img-fluid" style="max-width: 180px; margin: 0 auto;"/>
+                                    <h5 class="modal-title mb-3 modal-title-custom">Your Site Visit has been Scheduled!</h5>
+                                    <p>Your Site visit to SNN Estates Pvt. Ltd. has been Scheduled on {{visit.Actual_Visit_Date__c | date:'shortDate'}} at {{visit.Visit_Time__c | date:'shortTime':'UTC'}}. If you have any questions or need further assistance, please don't hesitate to contact us.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Refer Now Modal -->
+                <div class="modal fade" id="inviteModal" tabindex="-1" aria-labelledby="inviteModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-xl"> <!-- Center the modal -->
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title modal-title-color" id="inviteModalLabel">Invite friends</h5>
+                                <button type="button" class="btn-close" ng-click="closeModal()" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form>
+                                    <div class="row" style="text-align:left;">
+                                        <div class="col-md-6" style="text-align:left;">
+                                            <div class="form-group">
+                                                <label for="firstName" class="form-label">First Name<span class="required-asterisk" style="color:red;">*</span></label>
+                                                <input type="text" class="form-control" id="firstName" placeholder="Doe" ng-model="newLead.FirstName"/>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6" style="text-align:left;">
+                                            <div class="form-group">
+                                                <label for="lastName" class="form-label">Last Name<span class="required-asterisk" style="color:red;">*</span></label>
+                                                <input type="text" class="form-control" id="lastName" placeholder="Doe" ng-model="newLead.LastName"/>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="email" class="form-label">Email ID</label>
+                                                <input type="text" class="form-control" id="email" placeholder="john@gmail.com" ng-model="newLead.Email"/>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="phoneNumber" class="form-label">Phone Number</label>
+                                                <div class="input-group">
+                                                    <div class="input-group-text" style="border-top-left-radius:8px; border-bottom-left-radius:8px;">+91</div>
+                                                    <input type="tel" class="form-control" style="border-top-left-radius:0 !important;border-bottom-left-radius:0 !important;" id="phoneNumber" placeholder="Enter your friend's mobile number" ng-model="newLead.Phone"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="project" class="form-label">Project<span class="required-asterisk" style="color:red;">*</span></label>
+                                                <select class="form-control" id="project" ng-model = "newLead.Project__c">
+                                                    <option ng-repeat = "project in projects" value="{{project.Id}}">{{project.Name}}</option>
+                                                </select>
+                                            </div>
+                                        </div> -->
+                                    </div>
+                                </form>
+                                <div class="button-container mt-5">
+                                    <button type="button" class="contact-sales-button" ng-click="closeModal()">
+                                        Cancel
+                                    </button>
+                                    <button type="button" class="schedule-visit-button" id="sendInviteButton" ng-click="sendInvite()">
+                                        Send Invite
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </body>
+        </div>
+    </html>
+</apex:page>

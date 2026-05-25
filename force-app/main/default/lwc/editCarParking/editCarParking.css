@@ -1,0 +1,152 @@
+/* Styling for the table */
+.slds-table {
+    width: 100%;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+.slds-table th,
+.slds-table td {
+    padding: 1rem;
+    text-align: center;
+    font-size: 14px;
+}
+
+.slds-table tr:hover {
+    background-color: #f4f6f9;  /* Hover effect for rows */
+}
+
+/* Styling for radio buttons in the table */
+.slds-input {
+    margin-top: 0.5rem;  
+}
+
+/* Loading Spinner Styling */
+.slds-spinner {
+    display: block;
+    margin: auto;
+}
+
+/* Styling for the Next button */
+.slds-button_brand {
+    padding: 0.5rem 1rem;
+    font-size: 16px;
+    border-radius: 4px;
+}
+
+/* Flexbox layout for button container */
+.slds-grid {
+    display: flex;
+    justify-content: flex-end;  
+    margin-top: 1rem;
+}
+
+/* Styling for the parent card */
+.slds-card {
+    background: linear-gradient(135deg, #f4f6f9, #ffffff);
+    border-radius: 8px;
+}
+
+.slds-card__header {
+    font-weight: bold;
+    font-size: 1.3rem;
+}
+
+/* Conditional text when no cost sheets are available */
+.slds-text-align_center {
+    font-size: 1.2rem;
+    color: var(--lwc-colorTextWeak);
+    margin-top: 1rem;
+}
+
+/* When there's no cost sheet */
+.slds-text-align_center p {
+    color: #a63232;
+    font-weight: bold;
+    padding-left: 20px;
+}
+
+/* Margin and alignment adjustments for buttons */
+.slds-m-top_medium {
+    margin-top: 1rem;
+}
+
+.slds-text-align_right {
+    text-align: right;
+}
+
+/* Styling the Next button and making sure it aligns to the right */
+.slds-grid_vertical-align-end {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+/* Add styling for padding/margins in the table headers */
+.slds-table th {
+    padding: 0.75rem 1rem;
+    font-size: 14px;
+}
+
+/* Adjust padding for the table cells */
+.slds-table td {
+    padding: 1rem;
+    font-size: 14px;
+}
+
+/* Adding a hover effect to table rows */
+.slds-table tr:hover {
+    background-color: #f4f6f9; 
+}
+
+/* Button group for actions like Next button */
+.slds-col.slds-text-align_right {
+    margin-right: 1rem;
+}
+
+.slds-card {
+    background: #f4f6f9;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+}
+
+/* Styling for the card and table headers */
+.slds-card__header {
+    font-weight: bold;
+    font-size: 1.5rem;
+    padding: 10px;
+}
+
+/* Responsive table adjustments */
+.slds-table {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* Additional tweaks for button appearance */
+.slds-button {
+    border-radius: 5px;
+    padding: 0.5rem 1rem;
+}
+
+/* Table container for better structure */
+.table-container {
+    overflow-x: auto;  
+    margin-top: 1rem;
+}
+
+/* Make the loading spinner large and center-aligned */
+.slds-spinner {
+    display: block;
+    margin: auto;
+}
+
+/* Flexbox layout for the Next button alignment */
+.slds-grid.slds-grid_vertical-align-end {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-top: 1rem;
+}

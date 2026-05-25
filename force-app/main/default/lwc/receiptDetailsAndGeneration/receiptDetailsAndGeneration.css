@@ -1,0 +1,46 @@
+.mainDiv{
+    background-color: white;
+    border-radius: 5px;
+}
+.mainDiv_header{
+    text-align: center;
+    padding: 1%;
+    font-weight: 700;
+    font-size: 20px;
+    background-color: #e6e6e6;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+.body{
+    padding: 1%;
+}
+.bodyButtons{
+    padding: 1%;
+    margin-bottom: 1%;
+}
+.checkboxCss{
+    padding-top: 30px;
+}
+.modeOdPay{
+    padding-bottom: 5px;
+    padding-top: 5px;
+    font-size: 12px;
+}
+.radio{
+    padding-right: 70px;
+}
+.secondDiv{
+    /* border-top: 1px solid black; */
+    padding: 1%;
+}
+.headerTitle{
+    font-size: 14px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 10px;
+}
+.contentBody{
+    padding-top: 7px;
+    padding-bottom: 7px;
+    padding-left: 10px;
+}

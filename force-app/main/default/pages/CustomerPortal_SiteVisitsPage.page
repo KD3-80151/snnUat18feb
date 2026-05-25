@@ -1,0 +1,773 @@
+<apex:page showHeader="false" standardStylesheets="false" sidebar="false" docType="html-5.0" controller="CustomerPortalController">
+   <html>
+        <div ng-controller="sitevisit_ctrl">
+            <!-- Include Bootstrap CSS -->
+            <head>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous"/>
+                <script src="https://code.angularjs.org/1.8.2/i18n/angular-locale_en-in.js"></script>
+                <script>
+                    var purposeOfBuying = JSON.parse('{!purposeOfBuying}');
+                </script>
+            </head>
+
+            <style>
+                /* Custom CSS for Tabs */
+                .title-color {
+                    color: #0B1E35;
+                }
+                .nav-tabs {
+                    border-bottom: 1px solid #dee2e6 !important;
+                    flex-wrap: nowrap !important;
+                }
+                .nav-tabs .nav-link {
+                    border: none !important;
+                    color: #000 !important;
+                }
+                .nav-tabs .nav-link.active {
+                    color: #000 !important;
+                    border-bottom: 3px solid #dc3545 !important;
+                }
+                .card {
+                    border: none !important;
+                    border-radius: 10px !important;
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+                    margin-bottom: 20px !important;
+                }
+                .card-body {
+                    padding: 15px !important;
+                }
+                .card-title {
+                    font-size: 18px !important;
+                    font-weight: bold !important;
+                    color: #0B1E35 !important;
+                }
+                .card-text {
+                    font-size: 14px !important;
+                    color: #6c757d !important;
+                }
+                .btn-custom {
+                    background-color: #9D6200 !important;
+                    color: white !important;
+                    border: none !important;
+                    font-size: 14px !important;
+                    padding: 8px 20px !important;
+                    border-radius: 5px !important;
+                    margin-right: 5px !important;
+                }
+                .btn-custom:hover {
+                    background-color: #724906 !important;
+                }
+                .btn-outline-custom {
+                    background-color: transparent !important;
+                    color: #9D6200 !important;
+                    border: 1px solid #9D6200 !important;
+                    font-size: 14px !important;
+                    padding: 8px 20px !important;
+                    border-radius: 5px !important;
+                }
+                .btn-outline-custom:hover {
+                    background-color: #9D6200 !important;
+                    color: white !important;
+                }
+                .carousel-inner .img1 {
+                    border-radius: 15px 15px 0 0;
+                    width: 100%;
+                    height: 200px;
+                    object-fit: cover;
+                }
+                .carousel-inner .img1 {
+                    height: 150px; /* Adjust image height for better layout */
+                }
+                .scrollable-cards {
+                    display: flex; /* Use flexbox for layout */
+                    overflow-x: auto; /* Enable horizontal scrolling for mobile */
+                    max-width: 100%; /* Ensure it takes full width */
+                    margin-top: 20px; /* Add some spacing above */
+                    padding: 10px; /* Optional: padding inside the scrollable area */
+                    scroll-snap-type: x mandatory; /* Snap scrolling */
+                }
+                .visit-card {
+                    min-width: 240px !important;
+                    min-height: 450px;
+                }
+                @media (max-width: 768px) {
+                    .scrollable-cards {
+                        flex-direction: row; /* Horizontal alignment for mobile */
+                    }
+                }
+                @media (min-width: 769px) {
+                    .scrollable-cards {
+                        flex-direction: column; /* Stack vertically on larger screens */
+                        overflow: visible; /* Remove scrolling on larger screens */
+                    }
+                }
+                @media (max-width: 1050px) {
+                    #upcomingCard {
+                        flex: 0 0 45%;
+                        max-width: 45%;
+                    }
+                    #completedCard {
+                        flex: 0 0 45%;
+                        max-width: 45%;
+                    }
+                    #incompleteCard {
+                        flex: 0 0 45%;
+                        max-width: 45%;
+                    }
+                }
+                @media (max-width: 840px) {
+                    #upcomingCard {
+                        flex: 0 0 49%;
+                        max-width: 50%;
+                    }
+                    #completedCard {
+                        flex: 0 0 49%;
+                        max-width: 50%;
+                    }
+                    #incompleteCard {
+                        flex: 0 0 49%;
+                        max-width: 50%;
+                    }
+                }
+            </style>
+            <body>
+                <div ng-show = "mainPage">
+                    <div class="container-fluid">
+                        <h2 class="mb-4 title-color">My Visits</h2>
+                        <p>Schedule and manage your site visits effortlessly with SNN Estates Pvt. Ltd. Stay updated on your visit appointments, access location details, and receive reminders for upcoming visits. Our team is dedicated to providing you with a smooth and informative site visit experience. For any questions or additional assistance, please don't hesitate to contact our support team.</p>
+                        <ul class="nav nav-tabs">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="upcoming-tab" data-bs-toggle="tab" href="#upcoming" role="tab">Upcoming Site Visits</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="completed-tab" data-bs-toggle="tab" href="#completed" role="tab">Completed Site Visits</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="incomplete-tab" data-bs-toggle="tab" href="#incomplete" role="tab">Incomplete Site Visits</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content mt-3">
+                            <!-- Upcoming Site Visits -->
+                            <div class="tab-pane fade show active" id="upcoming" role="tabpanel" aria-labelledby="upcoming-tab">
+                                <div ng-if = "upcomingSiteVisit.length > 0" class="row rowLP d-none d-md-flex">
+                                    <div id="upcomingCard" class="col-md-4" ng-repeat="visit in upcomingSiteVisit">
+                                        <div class="card visit-card">
+                                            <div id="carousel-{{visit.Id}}" class="carousel slide" data-bs-ride="carousel">
+                                                <div class="carousel-inner">
+                                                    <div ng-if = "visit.Project__r != undefined && visit.Project__r.Sub_Documents__r != undefined" class="carousel-item" ng-class="{'active': $index === 0}" ng-repeat="image in visit.Project__r.Sub_Documents__r">
+                                                        <img src="{{image.File_URL__c}}" class="img1 d-block w-100" alt="{{visit.Project__r.Name}}"/>
+                                                    </div>
+                                                    <div ng-if="visit.Project__r == undefined || visit.Project__r.Sub_Documents__r == undefined">
+                                                        <div class="noImg1"></div>
+                                                    </div>
+                                                </div>
+                                                <button class="carousel-control-prev" type="button" data-bs-target="#carousel-{{visit.Id}}" data-bs-slide="prev">
+                                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                                    <span class="visually-hidden">Previous</span>
+                                                </button>
+                                                <button class="carousel-control-next" type="button" data-bs-target="#carousel-{{visit.Id}}" data-bs-slide="next">
+                                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                                    <span class="visually-hidden">Next</span>
+                                                </button>
+                                            </div>
+                                            <div class="card-body">
+                                                <h5 class="card-title">{{visit.Project__r.Name}}</h5>
+                                                <p class="card-text">{{visit.Project__r.Project_Address__c}}</p>
+                                                <p class="card-text"><strong>Visit Date:</strong> {{visit.Actual_Visit_Date__c}}</p>
+                                                <p class="card-text"><strong>Agent Name:</strong> {{visit.CreatedBy.Name}}</p>
+                                            </div>
+                                            <div style="margin-top:auto;" class="button-container">
+                                                <button ng-show = "!visit.showContact" class="contact-sales-button" ng-click="showPhone(visit)">Call CRM</button>
+                                                <button ng-show = "visit.showContact" class="contact-sales-button" ng-click="showPhone(visit)">Contact :- +91 {{visit.Project__r.Owner.Phone}}</button>
+                                                <button class="schedule-visit-button" ng-click = "showDetails(visit)">View Details</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div ng-if="upcomingSiteVisit.length == 0" class="no-payment-card">
+                            <div class="card-body">
+                                <h5 class="card-title">UpComing Site Visits Not Found</h5>
+                                <p class="card-text">No UpComing Site Visits are available. Please contact support for further assistance.</p>
+                            </div>
+                        </div>
+                                <div class="d-md-none scrollable-cards" >
+                                    <div class="col-md-4" style="margin:20px;" ng-repeat="visit in upcomingSiteVisit">
+                                        <div class="card visit-card">
+                                            <div id="carousel-{{visit.Id}}" class="carousel slide" data-bs-ride="carousel">
+                                                <div class="carousel-inner">
+                                                    <div ng-if = "visit.Project__r != undefined && visit.Project__r.Sub_Documents__r != undefined" class="carousel-item" ng-class="{'active': $index === 0}" ng-repeat="image in visit.Project__r.Sub_Documents__r">
+                                                        <img src="{{image.File_URL__c}}" class="img1 d-block w-100" alt="{{visit.Project__r.Name}}"/>
+                                                    </div>
+                                                    <div ng-if="visit.Project__r == undefined || visit.Project__r.Sub_Documents__r == undefined">
+                                                        <div class="noImg2"></div>
+                                                    </div>
+                                                </div>
+                                                <button class="carousel-control-prev" type="button" data-bs-target="#carousel-{{visit.Id}}" data-bs-slide="prev">
+                                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                                    <span class="visually-hidden">Previous</span>
+                                                </button>
+                                                <button class="carousel-control-next" type="button" data-bs-target="#carousel-{{visit.Id}}" data-bs-slide="next">
+                                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                                    <span class="visually-hidden">Next</span>
+                                                </button>
+                                            </div>
+                                            <div class="card-body">
+                                                <h5 class="card-title">{{visit.Project__r.Name}}</h5>
+                                                <p class="card-text">{{visit.Project__r.Project_Address__c}}</p>
+                                                <p class="card-text"><strong>Visit Date:</strong> {{visit.Actual_Visit_Date__c}}</p>
+                                                <p class="card-text"><strong>Agent Name:</strong> {{visit.CreatedBy.Name}}</p>
+                                            </div>
+                                            <div style="margin-top:auto;" class="button-container">
+                                                <button ng-show = "!visit.showContact" class="contact-sales-button" ng-click="showPhone(visit)">Call Agent</button>
+                                                <button ng-show = "visit.showContact" class="contact-sales-button" ng-click="showPhone(visit)">Contact :- +91 {{visit.Project__r.Owner.Phone}}</button>
+                                                <button class="schedule-visit-button" ng-click = "showDetails(visit)">View Details</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Completed Site Visits -->
+                            <div class="tab-pane fade" id="completed" role="tabpanel" aria-labelledby="completed-tab">
+                                <div ng-if = "completedSiteVisit.length > 0"  class="row rowLP d-none d-md-flex">
+                                    <div id="completedCard" class="col-md-4" ng-repeat="visit in completedSiteVisit">
+                                        <div class="card visit-card">
+                                            <div id="carousel-{{visit.Id}}" class="carousel slide" data-bs-ride="carousel">
+                                                <div class="carousel-inner">
+                                                    <div ng-if = "visit.Project__r != undefined && visit.Project__r.Sub_Documents__r != undefined" class="carousel-item" ng-class="{'active': $index === 0}" ng-repeat="image in visit.Project__r.Sub_Documents__r">
+                                                        <img src="{{image.File_URL__c}}" class="img1 d-block w-100" alt="{{visit.Project__r.Name}}"/>
+                                                    </div>
+                                                    <div ng-if="visit.Project__r == undefined || visit.Project__r.Sub_Documents__r == undefined">
+                                                        <div class="noImg1"></div>
+                                                    </div>
+                                                </div>
+                                                <button class="carousel-control-prev" type="button" data-bs-target="#carousel-{{visit.Id}}" data-bs-slide="prev">
+                                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                                    <span class="visually-hidden">Previous</span>
+                                                </button>
+                                                <button class="carousel-control-next" type="button" data-bs-target="#carousel-{{visit.Id}}" data-bs-slide="next">
+                                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                                    <span class="visually-hidden">Next</span>
+                                                </button>
+                                            </div>
+                                            <div class="card-body">
+                                                <h5 class="card-title">{{visit.Project__r.Name}}</h5>
+                                                <p class="card-text">{{visit.Project__r.Project_Address__c}}</p>
+                                                <p class="card-text"><strong>Visit Date:</strong> {{visit.Actual_Visit_Date__c}}</p>
+                                                <p class="card-text"><strong>Agent Name:</strong> {{visit.CreatedBy.Name}}</p>
+                                            </div>
+                                            <div style="margin-top:auto;" class="button-container">
+                                                <!-- <button class="contact-sales-button">Give Feedback</button> -->
+                                                <button class="schedule-visit-button" ng-click="openFollowUp(visit)">Follow Up Visit</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                                                <div ng-if="completedSiteVisit.length == 0" class="no-payment-card">
+                            <div class="card-body">
+                                <h5 class="card-title">Completed Site Visits Not Found</h5>
+                                <p class="card-text">No Completed Site Visits are available. Please contact support for further assistance.</p>
+                            </div>
+                        </div>
+                                <div class="d-md-none scrollable-cards" >
+                                    <div class="col-md-4" style="margin:20px;" ng-repeat="visit in completedSiteVisit">
+                                        <div class="card visit-card">
+                                            <div id="carousel-{{visit.Id}}" class="carousel slide" data-bs-ride="carousel">
+                                                <div class="carousel-inner">
+                                                    <div ng-if = "visit.Project__r != undefined && visit.Project__r.Sub_Documents__r != undefined" class="carousel-item" ng-class="{'active': $index === 0}" ng-repeat="image in visit.Project__r.Sub_Documents__r">
+                                                        <img src="{{image.File_URL__c}}" class="img1 d-block w-100" alt="{{visit.Project__r.Name}}"/>
+                                                    </div>
+                                                    <div ng-if="visit.Project__r == undefined || visit.Project__r.Sub_Documents__r == undefined">
+                                                        <div class="noImg2"></div>
+                                                    </div>
+                                                </div>
+                                                <button class="carousel-control-prev" type="button" data-bs-target="#carousel-{{visit.Id}}" data-bs-slide="prev">
+                                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                                    <span class="visually-hidden">Previous</span>
+                                                </button>
+                                                <button class="carousel-control-next" type="button" data-bs-target="#carousel-{{visit.Id}}" data-bs-slide="next">
+                                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                                    <span class="visually-hidden">Next</span>
+                                                </button>
+                                            </div>
+                                            <div class="card-body">
+                                                <h5 class="card-title">{{visit.Project__r.Name}}</h5>
+                                                <p class="card-text">{{visit.Project__r.Project_Address__c}}</p>
+                                                <p class="card-text"><strong>Visit Date:</strong> {{visit.Actual_Visit_Date__c}}</p>
+                                                <p class="card-text"><strong>Agent Name:</strong> {{visit.CreatedBy.Name}}</p>
+                                            </div>
+                                            <div style="margin-top:auto;" class="button-container">
+                                                <!-- <button class="contact-sales-button">Give Feedback</button> -->
+                                                <button class="schedule-visit-button" ng-click="openFollowUp(visit)">Follow Up Visit</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Incomplete Site Visits -->
+                            <div class="tab-pane fade" id="incomplete" role="tabpanel" aria-labelledby="incomplete-tab">
+                                <div ng-if = "incompleteSiteVisit.length > 0" class="row rowLP d-none d-md-flex">
+                                    <div id="incompleteCard" class="col-md-4" ng-repeat="visit in incompleteSiteVisit">
+                                        <div class="card visit-card">
+                                            <div id="carousel-{{visit.Id}}" class="carousel slide" data-bs-ride="carousel">
+                                                <div class="carousel-inner">
+                                                    <div ng-if = "visit.Project__r != undefined && visit.Project__r.Sub_Documents__r != undefined" class="carousel-item" ng-class="{'active': $index === 0}" ng-repeat="image in visit.Project__r.Sub_Documents__r">
+                                                        <img src="{{image.File_URL__c}}" class="img1 d-block w-100" alt="{{visit.Project__r.Name}}"/>
+                                                    </div>
+                                                    <div ng-if="visit.Project__r == undefined || visit.Project__r.Sub_Documents__r == undefined">
+                                                        <div class="noImg1"></div>
+                                                    </div>
+                                                </div>
+                                                <button class="carousel-control-prev" type="button" data-bs-target="#carousel-{{visit.Id}}" data-bs-slide="prev">
+                                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                                    <span class="visually-hidden">Previous</span>
+                                                </button>
+                                                <button class="carousel-control-next" type="button" data-bs-target="#carousel-{{visit.Id}}" data-bs-slide="next">
+                                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                                    <span class="visually-hidden">Next</span>
+                                                </button>
+                                            </div>
+                                            <div class="card-body">
+                                                <h5 class="card-title">{{visit.Project__r.Name}}</h5>
+                                                <p class="card-text">{{visit.Project__r.Project_Address__c}}</p>
+                                                <p class="card-text"><strong>Visit Date:</strong> {{visit.Actual_Visit_Date__c}}</p>
+                                                <p class="card-text"><strong>Agent Name:</strong> {{visit.CreatedBy.Name}}</p>
+                                            </div>
+                                            <div style="margin-top:auto;" class="button-container">
+                                                <button class="contact-sales-button" ng-click="openEndVisit(visit)">End Visit</button>
+                                                <button class="schedule-visit-button" ng-click="openRescheduleVisit(visit)">Reschedule Visit</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                 <div ng-if="incompleteSiteVisit.length == 0" class="no-payment-card">
+                            <div class="card-body">
+                                <h5 class="card-title">incomplete Site Visits Not Found</h5>
+                                <p class="card-text">No incomplete Site Visits are available. Please contact support for further assistance.</p>
+                            </div>
+                        </div>
+                                <div class="d-md-none scrollable-cards" >
+                                    <div style="margin:20px;" class="col-md-4" ng-repeat="visit in incompleteSiteVisit">
+                                        <div class="visit-card card">
+                                            <div id="carousel-{{visit.Id}}" class="carousel slide" data-bs-ride="carousel">
+                                                <div class="carousel-inner">
+                                                    <div ng-if = "visit.Project__r != undefined && visit.Project__r.Sub_Documents__r != undefined" class="carousel-item" ng-class="{'active': $index === 0}" ng-repeat="image in visit.Project__r.Sub_Documents__r">
+                                                        <img src="{{image.File_URL__c}}" class="img1 d-block w-100" alt="{{visit.Project__r.Name}}"/>
+                                                    </div>
+                                                    <div ng-if="visit.Project__r == undefined || visit.Project__r.Sub_Documents__r == undefined">
+                                                        <div class="noImg2"></div>
+                                                    </div>
+                                                </div>
+                                                <button class="carousel-control-prev" type="button" data-bs-target="#carousel-{{visit.Id}}" data-bs-slide="prev">
+                                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                                    <span class="visually-hidden">Previous</span>
+                                                </button>
+                                                <button class="carousel-control-next" type="button" data-bs-target="#carousel-{{visit.Id}}" data-bs-slide="next">
+                                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                                    <span class="visually-hidden">Next</span>
+                                                </button>
+                                            </div>
+                                            <div class="card-body">
+                                                <h5 class="card-title">{{visit.Project__r.Name}}</h5>
+                                                <p class="card-text">{{visit.Project__r.Project_Address__c}}</p>
+                                                <p class="card-text"><strong>Visit Date:</strong> {{visit.Actual_Visit_Date__c}}</p>
+                                                <p class="card-text"><strong>Agent Name:</strong> {{visit.CreatedBy.Name}}</p>
+                                            </div>
+                                            <div style="margin-top:auto;" class="button-container">
+                                                <button class="contact-sales-button" ng-click="openEndVisit(visit)">End Visit</button>
+                                                <button class="schedule-visit-button" ng-click="openRescheduleVisit(visit)">Reschedule Visit</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div ng-show = "detailsPage">
+                    <div id="projectDetailsMainContent" class="container-fluid">
+                        <div class="d-flex flex-row" style="justify-content: space-between;">
+                            <span class="mb-4 back-link"><p class="bi bi-arrow-left icon1" ng-click="showMainPage()"></p></span>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="contact-sales-button" ng-click="openCancelVisit()">Cancel Visit</button>
+                                <button class="schedule-visit-button" ng-click="openRescheduleVisit(selectedVisit)">Reschedule Visit</button>
+                            </div>
+                        </div>
+                        <!-- Image Carousel -->
+                        <div id="propertyCarousel" class="carousel slide mt-3" data-bs-ride="carousel">
+                            <div class="carousel-inner">
+                                <div ng-repeat="imageUrl in selectedVisit.Project__r.Sub_Documents__r" class="carousel-item" ng-class="{active: $first}">
+                                    <img ng-src="{{imageUrl.File_URL__c}}" class="img2 d-block w-100" alt="{{selectedVisit.Project__r.Name}}"/>
+                                </div>
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#propertyCarousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#propertyCarousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
+                        </div>
+                        <div class="project-details d-flex flex-column flex-md-row justify-content-between align-items-center mt-4">
+                            <h5 class="mb-0">{{selectedVisit.Project__r.Project_Address__c}}</h5>
+                        </div>
+                        <!-- Property Details -->
+                        <div class="mt-4">
+                            <div class="listing-details">
+                                <table class="table">
+                                    <tr>
+                                        <td><strong>{{selectedVisit.Project__r.Project_Type__c}}</strong><br/>Type</td>
+                                        <td><strong>{{selectedVisit.Project__r.Unit_Type__c}}</strong><br/>Unit Type</td>
+                                        <td><strong>{{selectedVisit.Project__r.Project_Status__c}}</strong><br/>Project Status</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>{{selectedVisit.Project__r.Total_Amount__c || 0 | currency}}</strong><br/>Total Amount</td>
+                                        <td><strong>{{selectedVisit.Project__r.Booking_Amount__c || 0 | currency}}</strong><br/>Booking Amount</td>
+                                        <td><strong>{{selectedVisit.Project__r.Area__c}}</strong><br/>Area</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        <!-- Amenities -->
+                        <div class="mt-4">
+                            <h5>Amenities</h5>
+                            <div class="amenities-container">
+                                <div ng-if="selectedVisit.Project__r.Amenities__r" class="amenity-item" ng-repeat="amenity in selectedVisit.Project__r.Amenities__r">
+                                    <i class="fas fa-{{amenity.Icon_Name__c}}"></i> <span>{{amenity.Name}}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Cancel Visit Madal -->
+                <div class="modal" id="cancelVisitModal" tabindex="-1" aria-labelledby="cancelVisitModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-body schedule-visit-modal">
+                                <button type="button" class="close-button" ng-click="closeModal()" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                                <!--hide after click Cancel a Visit start-->
+                                <div id="visitForm1" class="content-wrapper">
+                                    <h5 class="modal-title mb-3 modal-title-custom" id="cancelVisitModalLabel">Cancel Visit</h5>
+                                    <p>We understand that you need to cancel your upcoming site visit with SNN Estates Pvt. Ltd. due to unforeseen circumstances. If you have any questions or need further assistance, please feel free to reach out to us. We apologize for any inconvenience caused!</p>
+                                    <div class="row rowLP mb-3">
+                                        <div class="col-md-6">
+                                            <div class="row rowLP">
+                                                <div class="col-md-3 text-start">
+                                                    <label for="property"><strong>Property:</strong></label>
+                                                </div>
+                                                <div class="col-md-9 text-start">
+                                                    <span id="property">{{selectedVisit.Project__r.Name}}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="row rowLP">
+                                                <div class="col-md-3 text-start">
+                                                    <label for="type"><strong>Type:</strong></label>
+                                                </div>
+                                                <div class="col-md-9 text-start">
+                                                    <span id="type">{{selectedVisit.Project__r.Unit_Type__c}}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row rowLP mb-3">
+                                        <div class="col-md-6">
+                                            <div class="row rowLP">
+                                                <div class="col-md-3 text-start">
+                                                    <label for="address"><strong>Address:</strong></label>
+                                                </div>
+                                                <div class="col-md-9 text-start">
+                                                    <span id="address">{{selectedVisit.Project__r.Project_Address__c}}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="row rowLP">
+                                                <div class="col-md-3 text-start">
+                                                    <label for="location"><strong>Location:</strong></label>
+                                                </div>
+                                                <div class="col-md-9 text-start">
+                                                    <span id="location">{{selectedVisit.Project__r.City__c}}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row rowLP mb-3 text-start">
+                                        <label for="cancellationReason"><strong>Reason for Cancellation</strong></label>
+                                        <textarea type="text" placeholder="Understanding the reason helps us to improve services and may offer insights into customer needs." class="form-control" id="cancellationReason" rows="3" ng-model="visitToCancel.Reason_of_Cancellation__c"/>
+                                    </div>
+                                    <button type="button" class="btn btn-schedule mt-3" ng-click="cancelVisit()">Cancel Visit</button>
+                                </div>
+                                <!--hide after click Cancel a Visit end-->
+                                <!-- Success Message Section -->
+                                <div id="successMessage1" class="content-wrapper" style="display:none;">
+                                    <img src="{!URLFOR($Resource.successScheduleImage)}" alt="Success" class="img-fluid" style="max-width: 180px; margin: 0 auto;"/>
+                                    <h5 class="modal-title mb-3 modal-title-custom">Your site visit has been cancelled!</h5>
+                                    <p>Your site visit to SNN Estates Pvt. Ltd. has been cancelled. We apologize if any inconvenience caused. If you have any questions or need further assistance, please don't hesitate to contact us.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Reschedule Visit Modal -->
+                <div class="modal" id="RescheduleVisitModal" tabindex="-1" aria-labelledby="RescheduleVisitModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-body schedule-visit-modal">
+                                <button type="button" class="close-button" ng-click="closeModal()" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                                <!--hide after click Reschedule a Visit start-->
+                                <div id="visitForm2" class="content-wrapper">
+                                    <h5 class="modal-title mb-3 modal-title-custom" id="RescheduleVisitModalLabel">Reschedule Visit</h5>
+                                    <p>We understand that you need to reschedule your site visit with SNN Estates Pvt. Ltd. due to unforeseen circumstances. Please select a new appointment time that works better for you using the options below. Thank you for your cooperation!</p>
+                                    <div class="row rowLP mb-3">
+                                        <div class="col-md-6">
+                                            <div class="row rowLP">
+                                                <div class="col-md-3 text-start">
+                                                    <label for="property"><strong>Property:</strong></label>
+                                                </div>
+                                                <div class="col-md-9 text-start">
+                                                    <span id="property">{{selectedVisit.Project__r.Name}}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="row rowLP">
+                                                <div class="col-md-3 text-start">
+                                                    <label for="type"><strong>Type:</strong></label>
+                                                </div>
+                                                <div class="col-md-9 text-start">
+                                                    <span id="type">{{selectedVisit.Project__r.Unit_Type__c}}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row rowLP mb-3">
+                                        <div class="col-md-6">
+                                            <div class="row rowLP">
+                                                <div class="col-md-3 text-start">
+                                                    <label for="address"><strong>Address:</strong></label>
+                                                </div>
+                                                <div class="col-md-9 text-start">
+                                                    <span id="address">{{selectedVisit.Project__r.Project_Address__c}}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="row rowLP">
+                                                <div class="col-md-3 text-start">
+                                                    <label for="location"><strong>Location:</strong></label>
+                                                </div>
+                                                <div class="col-md-9 text-start">
+                                                    <span id="location">{{selectedVisit.Project__r.City__c}}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row rowLP mb-3">
+                                        <div class="col-md-6 text-start">
+                                            <label for="dateOfVisit"><strong>Date Of Visit</strong><span class="required-asterisk" style="color:red;">*</span></label>
+                                            <input type="date" class="form-control form-do" id="dateOfVisit" ng-model="visitToReschedule.Actual_Visit_Date__c"/>
+                                        </div>
+                                        <div class="col-md-6 text-start">
+                                            <label for="timeOfVisit"><strong>Time Of Visit</strong><span class="required-asterisk" style="color:red;">*</span></label>
+                                            <input type="time" class="form-control form-do" id="timeOfVisit" ng-model="visitToReschedule.time"/>
+                                        </div>
+                                    </div>
+                                    <div class="row rowLP mb-3">
+                                        <div class="col-md-6 text-start">
+                                            <label for="rescheduleReason"><strong>Reason for Reschedule</strong><span class="required-asterisk" style="color:red;">*</span></label>
+                                            <input type="text" class="form-control" id="rescheduleReason" rows="3" ng-model="visitToReschedule.Reason_of_Reschedule__c"/>
+                                        </div>
+                                        <div class="col-md-6 text-start">
+                                            <label for="visitDetails"><strong>Visit Details</strong></label>
+                                            <input type="text" class="form-control" id="visitDetails" rows="3" ng-model="visitToReschedule.Visit_Description__c"/>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-schedule mt-3" ng-click="rescheduleVisit()">Reschedule a Visit</button>
+                                </div>
+                                <!--hide after click Reschedule a Visit end-->
+                                <!-- Success Message Section -->
+                                <div id="successMessage2" class="content-wrapper" style="display:none;">
+                                    <img src="{!URLFOR($Resource.successScheduleImage)}" alt="Success" class="img-fluid" style="max-width: 180px; margin: 0 auto;"/>
+                                    <h5 class="modal-title mb-3 modal-title-custom">Your site visit has been rescheduled!</h5>
+                                    <p>Your site visit to SNN Estates Pvt. Ltd. has been rescheduled to {{visitToReschedule.Actual_Visit_Date__c | date:'shortDate'}} at {{visitToReschedule.Visit_Time__c | date:'shortTime':'UTC'}}. We look forward to showing you the property on the new date. If you have any questions or need further assistance, please don't hesitate to contact us.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Follow Visit Modal -->
+                <div class="modal" id="followUpVisitModal" tabindex="-1" aria-labelledby="followUpVisitModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-body schedule-visit-modal">
+                                <button type="button" class="close-button" ng-click="closeModal()" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                                <!--hide after click Follow Up a Visit start-->
+                                <div id="visitForm3" class="content-wrapper">
+                                    <h5 class="modal-title mb-3 modal-title-custom" id="followUpVisitModalLabel">Follow Up Visit</h5>
+                                    <p>We understand you would like to visit the property again with SNN Estates Pvt. Ltd. Please select your preferred date and time for the visit, and we will arrange it accordingly. We look forward to showing you the property once more.</p>
+                                    <div class="row rowLP mb-3">
+                                        <div class="col-md-6">
+                                            <div class="row rowLP">
+                                                <div class="col-md-3 text-start">
+                                                    <label for="property"><strong>Property:</strong></label>
+                                                </div>
+                                                <div class="col-md-9 text-start">
+                                                    <span id="property">{{selectedVisit.Project__r.Name}}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="row rowLP">
+                                                <div class="col-md-3 text-start">
+                                                    <label for="type"><strong>Type:</strong></label>
+                                                </div>
+                                                <div class="col-md-9 text-start">
+                                                    <span id="type">{{selectedVisit.Project__r.Unit_Type__c}}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row rowLP mb-3">
+                                        <div class="col-md-6">
+                                            <div class="row rowLP">
+                                                <div class="col-md-3 text-start">
+                                                    <label for="address"><strong>Address:</strong></label>
+                                                </div>
+                                                <div class="col-md-9 text-start">
+                                                    <span id="address">{{selectedVisit.Project__r.Project_Address__c}}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="row rowLP">
+                                                <div class="col-md-3 text-start">
+                                                    <label for="location"><strong>Location:</strong></label>
+                                                </div>
+                                                <div class="col-md-9 text-start">
+                                                    <span id="location">{{selectedVisit.Project__r.City__c}}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row rowLP mb-3">
+                                        <div class="col-md-6 text-start">
+                                            <label for="dateOfVisit"><strong>Date Of Visit</strong><span class="required-asterisk" style="color:red;">*</span></label>
+                                            <input type="date" class="form-control form-do" id="dateOfVisit" ng-model="visitToFollow.Actual_Visit_Date__c"/>
+                                        </div>
+                                        <div class="col-md-6 text-start">
+                                            <label for="timeOfVisit"><strong>Time Of Visit</strong><span class="required-asterisk" style="color:red;">*</span></label>
+                                            <input type="time" class="form-control form-do" id="timeOfVisit" ng-model="visitToFollow.time"/>
+                                        </div>
+                                    </div>
+                                    <div class="row rowLP mb-3">
+                                        <div class="col-md-6 text-start">
+                                            <label for="purposeOfVisit"><strong>Purpose Of Visit</strong><span class="required-asterisk" style="color:red;">*</span></label>
+                                            <select class="form-control" id="purposeOfVisit" ng-model="visitToFollow.Purpose_Of_Buying__c">
+                                                <option ng-repeat="purpose in purposeOfBuying" value="{{purpose}}">{{purpose}}</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 text-start">
+                                            <label for="visitDetails"><strong>Visit Details</strong></label>
+                                            <input type="text" class="form-control" id="visitDetails" rows="3" ng-model="visitToFollow.Visit_Description__c"/>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-schedule mt-3" ng-click="followUpVisit()">Follow Up Visit</button>
+                                </div>
+                                <!--hide after click Follow Up a Visit end-->
+                                <!-- Success Message Section -->
+                                <div id="successMessage3" class="content-wrapper" style="display:none;">
+                                    <img src="{!URLFOR($Resource.successScheduleImage)}" alt="Success" class="img-fluid" style="max-width: 180px; margin: 0 auto;"/>
+                                    <h5 class="modal-title mb-3 modal-title-custom">Your Follow Up Visit has been Scheduled!</h5>
+                                    <p>Your Follow up visit to SNN Estates Pvt. Ltd. has been Scheduled on {{visitToFollow.Actual_Visit_Date__c | date:'shortDate'}} at {{visitToFollow.Visit_Time__c | date:'shortTime':'UTC'}}. If you have any questions or need further assistance, please don't hesitate to contact us.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- End Visit Madal -->
+                <div class="modal" id="EndVisitModal" tabindex="-1" aria-labelledby="EndVisitModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-body schedule-visit-modal">
+                                <button type="button" class="close-button" ng-click="closeModal()" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                                <!--hide after click End a Visit start-->
+                                <div id="visitForm4" class="content-wrapper">
+                                    <h5 class="modal-title mb-3 modal-title-custom" id="EndVisitModalLabel">End Visit</h5>
+                                    <p>We understand that you need to End your upcoming site visit with SNN Estates Pvt. Ltd. due to unforeseen circumstances. If you have any questions or need further assistance, please feel free to reach out to us. We apologize for any inconvenience caused!</p>
+                                    <div class="row rowLP mb-3">
+                                        <div class="col-md-6">
+                                            <div class="row rowLP">
+                                                <div class="col-md-3 text-start">
+                                                    <label for="property"><strong>Property:</strong></label>
+                                                </div>
+                                                <div class="col-md-9 text-start">
+                                                    <span id="property">{{selectedVisit.Project__r.Name}}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="row rowLP">
+                                                <div class="col-md-3 text-start">
+                                                    <label for="type"><strong>Type:</strong></label>
+                                                </div>
+                                                <div class="col-md-9 text-start">
+                                                    <span id="type">{{selectedVisit.Project__r.Unit_Type__c}}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row rowLP mb-3">
+                                        <div class="col-md-6">
+                                            <div class="row rowLP">
+                                                <div class="col-md-3 text-start">
+                                                    <label for="address"><strong>Address:</strong></label>
+                                                </div>
+                                                <div class="col-md-9 text-start">
+                                                    <span id="address">{{selectedVisit.Project__r.Project_Address__c}}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="row rowLP">
+                                                <div class="col-md-3 text-start">
+                                                    <label for="location"><strong>Location:</strong></label>
+                                                </div>
+                                                <div class="col-md-9 text-start">
+                                                    <span id="location">{{selectedVisit.Project__r.City__c}}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row rowLP mb-3 text-start">
+                                        <label for="endingReason"><strong>Reason for Ending the visit:</strong></label>
+                                        <textarea type="text" placeholder="Understanding the reason helps us to improve services and may offer insights into customer needs." class="form-control" id="endingReason" rows="3" ng-model="visitToEnd.Reason_of_Ending__c"/>
+                                    </div>
+                                    <button type="button" class="btn btn-schedule mt-3" ng-click="endVisit()">End Visit</button>
+                                </div>
+                                <!--hide after click End a Visit end-->
+                                <!-- Success Message Section -->
+                                <div id="successMessage4" class="content-wrapper" style="display:none;">
+                                    <img src="{!URLFOR($Resource.successScheduleImage)}" alt="Success" class="img-fluid" style="max-width: 180px; margin: 0 auto;"/>
+                                    <h5 class="modal-title mb-3 modal-title-custom">Your site visit has been ended!</h5>
+                                    <p>Your site visit to SNN Estates Pvt. Ltd. has been ended. We apologize if any inconvenience caused. If you have any questions or need further assistance, please don't hesitate to contact us.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </body>
+        </div>
+    </html>
+    <!-- Include Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+</apex:page>

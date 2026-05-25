@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>GST_collected__c</fullName>
+    <label>GST collected</label>
+    <summarizedField>Receipt__c.Total_GST__c</summarizedField>
+    <summaryForeignKey>Receipt__c.Opportunity__c</summaryForeignKey>
+    <summaryOperation>sum</summaryOperation>
+    <type>Summary</type>
+</CustomField>

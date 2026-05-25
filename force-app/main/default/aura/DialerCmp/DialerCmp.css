@@ -1,0 +1,311 @@
+.THIS .dial-pad {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.THIS .row {
+    display: flex;
+    gap: 30px;
+    margin: 8px 0;
+    justify-content: center;
+}
+
+
+.THIS .country-code { 
+    font-size: 16px;
+    padding: 5px;
+}
+.THIS .dial-button {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+    background-color: #f1f1f1;
+    border-radius: 50%;
+    border: 1px solid #ddd;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.1s ease-in-out;
+    flex-direction: column;
+    position: relative;
+   
+
+}
+.THIS .number {
+    font-size: 22px;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.THIS .letters {
+    font-size: 9px; 
+    font-weight: bold;
+    position: absolute;
+    bottom: 5px; 
+    line-height: 1; 
+    color: #666; 
+}
+.THIS .dial-button.clicked {
+    background-color: #d1d1d1;
+    transform: scale(0.9);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+.THIS .phone-input {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 5px;
+    background-color: #f9f9f9;
+    width: 300px;
+    margin: 0 auto;
+}
+
+.THIS .country-code-selector {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.THIS .flag-icon {
+    width: 20px;
+    height: auto;
+    border-radius: 3px;
+}
+
+.THIS .country-code {
+    border: none;
+    background: none;
+    font-size: 14px;
+    padding: 0;
+    color: #333;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.THIS .number-display {
+    flex-grow: 1;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    padding: 5px;
+    margin-left: 10px;
+    background-color: transparent;
+    color: #333;
+}
+
+.THIS .clear-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #999;
+    font-size: 16px;
+}
+
+.THIS .clear-button:hover {
+    color: #333;
+}
+.THIS .alphabet {
+    font-size: 10px;
+}
+
+
+.THIS .call-button1 {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 60px;
+    height: 60px;
+    
+}
+.THIS .call-button-container {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.THIS .call-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #3ba755;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    font-size: 24px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+}
+.THIS .call-button {
+    font-size: 22px; 
+    color: white;
+}
+.THIS .call-button:hover {
+    background-color: #3ba755;
+}
+.THIS .call-button:active {
+    transform: scale(0.9); 
+    background-color: #3ba755;
+}
+
+.THIS .inputTable {
+    width: 100%;
+    border-collapse: collapse; 
+    border: 1px solid #ccc; 
+    border-radius: 4px; 
+    border-radius: 5px;
+}
+
+.THIS .inputCell, 
+.THIS .clearButtonCell {
+    padding: 0;
+    border-right: 1px solid #ccc; 
+    border-radius: 5px;
+}
+
+.THIS .clearButtonCell {
+    border-right: none; 
+    text-align: right;
+    border-radius: 5px;
+}
+
+.THIS .countryCodeDropdown {
+    border: none;
+    background-color: #f1f1f1;
+    font-size: 14px;
+    /*width: 80%;*/
+    width: 60px;
+}
+.THIS .dropdownCell {
+    background-color: #f1f1f1;
+}
+
+.THIS .phoneInput {
+    border: none;
+    font-size: 14px;
+    box-sizing: border-box; 
+    width: 260px;
+}
+
+.THIS .clearButton {
+    /* background-color: transparent;*/
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    color: #888;
+    margin-right : 5px;
+}
+
+.THIS .custom-shadow1 {
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2); 
+    border-radius: 5px; 
+}
+
+
+.THIS .inputCell, 
+.THIS .clearButtonCell {
+    padding: 0;
+    border-right: 1px solid #ccc; 
+    border-radius: 5px;
+}
+
+.THIS .clearButtonCell {
+    border-right: none; 
+    text-align: right;
+    border-radius: 5px;
+}
+
+.THIS .countryCodeDropdown {
+    border: none;
+    background-color: #f1f1f1;
+    font-size: 14px;
+    /*width: 80%;*/
+    width: 60px;
+}
+.THIS .dropdownCell {
+    background-color: #f1f1f1;
+}
+
+.THIS .phoneInput {
+    border: none;
+    font-size: 14px;
+    box-sizing: border-box; 
+}
+
+.THIS .clearButton {
+    /* background-color: transparent;*/
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    color: #888;
+    margin-right : 5px;
+}
+
+.THIS .custom-shadow1 {
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2); 
+    border-radius: 5px; 
+}
+.THIS .btnDiv{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+.THIS .btnn{
+   
+    border-radius: 9px;
+    box-shadow: 2px 1px 2px 1px rgb(206 206 206);
+    text-shadow: 1px 0 #667cc2;
+}
+
+/* Ensure parent container has relative positioning */
+.THIS .scrollable-card {
+    flex: 1;
+    overflow: visible;
+    padding-right: 2px;
+    padding-left: 2px;
+    position: relative;  /* Ensure relative positioning */
+    z-index: 1;          /* Added z-index */
+}
+
+.THIS .buttoncard {
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 7px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    position: relative;  /* Ensure relative positioning */
+    z-index: 2;          /* Slightly higher than scrollable-card */
+}
+
+.THIS .dropdown-style {
+    position: fixed; /* Changed from absolute to fixed */
+    /*top: 57px;*/
+    left: 10px;  /* Adjust based on your layout */
+    right: 10px; /* Adjust based on your layout */
+    max-height: 150px;
+    min-height: 50px; /* Ensures the dropdown doesn't collapse */
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    padding: 5px;
+    background: white;
+    z-index: 99999;  /* High z-index to stay on top */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+}
+
+
+/* Dropdown item hover effect */
+.THIS .dropdown-item {
+    cursor: pointer;
+    padding: 8px 10px;
+    transition: background-color 0.3s ease;
+}
+
+.THIS .dropdown-item:hover {
+    background-color: #f0f0f0;
+}

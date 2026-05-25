@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomLabels xmlns="http://soap.sforce.com/2006/04/metadata">
+    <labels>
+        <fullName>Channel_Partner_User_Id</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Channel Partner User Id</shortDescription>
+        <value>005bb00000dJkWxAAK</value>
+    </labels>
+    <labels>
+        <fullName>Create_Mcube_Log</fullName>
+        <categories>Mcube log Creation</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Create_Mcube_Log</shortDescription>
+        <value>Yes</value>
+    </labels>
+    <labels>
+        <fullName>DemandLetterName</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>DemandLetterName</shortDescription>
+        <value>True</value>
+    </labels>
+    <labels>
+        <fullName>Guest_User_approval_submitter</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>This user will fire approval on behalf of guest portal users.</shortDescription>
+        <value>005Hp00000irn9nIAA</value>
+    </labels>
+    <labels>
+        <fullName>Max_Team_Member_Count</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Max Team Member Count</shortDescription>
+        <value>5</value>
+    </labels>
+    <labels>
+        <fullName>No_Of_Applicants</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>No Of Applicants</shortDescription>
+        <value>6</value>
+    </labels>
+    <labels>
+        <fullName>SNN_Full_Name</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>SNN Full Name</shortDescription>
+        <value>SNN Pvt Ltd</value>
+    </labels>
+</CustomLabels>

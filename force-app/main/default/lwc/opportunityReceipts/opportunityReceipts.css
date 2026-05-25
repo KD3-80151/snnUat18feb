@@ -1,0 +1,35 @@
+.header-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 0.5rem 1rem;
+    gap: 1rem;
+}
+
+.summary-bar {
+    padding: 0.4rem 0.8rem;
+    border-radius: 0.5rem;
+    background: #f3f6ff;
+    display: flex;
+    gap: 0.4rem;
+    font-weight: 600;
+    margin-top: 1.25rem;
+}
+
+.summary-label {
+    color: #4b5563;
+}
+
+.summary-value {
+    color: #1d4ed8;
+}
+
+.header-controls {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.75rem;
+}
+
+.date-input {
+    min-width: 180px;
+}

@@ -1,0 +1,1038 @@
+<apex:page controller="ChannelPartner_Controller" showHeader="false" standardStylesheets="false" sidebar="false" docType="html-5.0">
+    
+    <!-- Include Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous"/>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/7.29.2/sweetalert2.all.js"></script>
+    <!-- Include Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" rel="stylesheet" crossorigin="anonymous"/>
+    
+    <!-- Include AngularJS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.js"/>
+    
+    <style>
+        .custom-btn {
+            background-color: #9D6200 !important;
+            color: white !important;
+            font-weight: 500 !important;
+        }
+        
+        .bg-image-vertical {
+            position: relative;
+            overflow: hidden;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: cover;
+        }
+        
+        .otp-inputs {
+            gap: 8px;
+        }
+        .otp-input-box {
+            width: 48px;
+            height: 48px;
+            border: 1px solid #C7C4C4;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 24px;
+        }
+
+        /* .left-side-image-container img {
+            opacity: 0.85;
+        } */
+    
+        /* Custom styles for labels */
+        .form-label {
+            font-weight: bold;
+            text-align: left;
+            display: block;
+        }
+        
+        /* Custom styles for the text below the heading */
+        .community-text {
+            margin-top: 16px;
+            text-align: left;
+            margin-bottom: 24px;
+        }
+        .welcome-message {
+            font-size: 28px;
+        }
+
+        .text-left{
+            text-align: left;
+        }
+
+        .mobile-image-container{
+            display: none;
+        }
+        
+        @media (min-width: 1024px) {
+
+            .h-custom-2 {
+                height: 100%;
+            }
+    
+            .left-side-image-container {
+                background-color: #1F1E1E;
+                height: 100vh;
+                /* display: flex;
+                flex-direction: column; */
+                align-items: center;
+                /* justify-content: flex-end; */
+                width: 50%; /* Ensuring the image container takes half */
+            }
+        }
+        
+        /* Custom font size for the welcome message on laptop screens */
+        @media (min-width: 1024px){
+            
+            .text-black {
+                width: 50%; 
+                
+            }
+
+            
+            .col-md-6 {
+                display: flex;               
+                justify-content: flex-end;   
+                align-items: center;         
+            }
+        }
+
+        .scrollable-form {
+            max-height: 60vh;
+            overflow-y: scroll;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+    
+        .scrollable-form::-webkit-scrollbar {
+            display: none;
+        }
+
+        .phoneCon{
+            align-items: center;
+        }
+
+        .size {
+            width: -webkit-fill-available;
+            height: -webkit-fill-available;
+        }
+    
+        @media (max-width: 1024px) {
+            
+            .mobile-image-container {
+                display: block !important;
+                margin-bottom: 40px;
+                background-color: #000;
+                text-align: center;
+                width: 100%; 
+                height: 40vh; 
+                overflow: hidden;
+            }
+
+            .mobile-image-container img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover; 
+            }
+            
+            .left-side-image-container {
+                display: none !important; 
+            }
+
+            .container-fluid{
+                width: 100%;
+            }
+
+            .text-black{
+                width: 100%;
+                font-size:30px;  
+            }
+ 
+        } 
+
+        .logo {
+            width: 15rem;
+            /* height: 128px; */
+            margin-bottom : 5%;
+        }
+    
+        .headerMobile {
+            /* margin-left: -60%; */
+            font-size: 70px;
+        }
+        
+        .text-dark {
+            width: 100%; 
+            margin: 0; 
+            font-size: 17px;
+            font-weight: 400;
+            text-align: center;
+        }
+
+        .input-group{
+            margin-bottom : 20px;
+        }
+
+        .phone-number-input {
+            height: 48px; 
+            padding: 10px; 
+            font-size: 16px; 
+        }
+
+        .custom-btn{
+            height: 48px; 
+            padding: 10px 20px; 
+            font-size: 16px; 
+            border-radius:  20px solid red;
+        }
+
+        .otp-input-box {
+            width: 70px;
+            height: 70px;
+            border: 1px solid #C7C4C4;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 24px;
+        }
+
+        .MobileV{
+            font-size: 30px;
+        }
+
+        .fwh{
+            font-weight: 600;
+            font-size: 28px;
+            text-align : left;
+            margin : 0px;
+        }
+
+        .row2>*{
+            flex-shrink: 0;
+            max-width: 100%;
+            /* padding-right: calc(var(--bs-gutter-x) * .5); */
+            margin-top: var(--bs-gutter-y);
+        }
+
+        .loadingSection {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loadingBackground {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* Dark semi-transparent background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loadingWrapper {
+            position: relative;
+            z-index: 10000; /* Ensures the loader is above the background */
+        }
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid #FFF;
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+    
+    
+    <section id="app" class="vh-100" ng-app="channelPortalApp" ng-controller="channellogin_ctrl">
+        <div class="loadingSection" ng-show="showSpinner">
+            <div class="loadingBackground">
+                <div class="loadingWrapper">
+                    <div class="loader"></div>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="row">
+                
+                <!-- Left Side - Image with Background Color -->
+                <div class="col-sm-6 px-0 left-side-image-container">
+                    <!-- <img src="{!URLFOR($Resource.sidebartridasaLogo)}" alt="Tridasa Logo" style="margin-bottom: 5%; height: 80px; width: 100px;"/> -->
+                    <img src="{!URLFOR($Resource.ChannelPartner_LoginImage)}"
+                         alt="Login image" class="size" style="object-fit: fill; object-position: left;"/>
+                </div>
+
+                <!-- <div class="mobile-image-container">
+                    <img src="{!URLFOR($Resource.ChannelPartner_LoginImage_Mobile)}"
+                         alt="Login image"  class="w-100 h-100"  style="object-fit: cover;"/>
+                </div> -->
+                
+                <!-- Right Side - Form -->
+                <div class="col-sm-12 col-md-6 d-flex align-items-center justify-content-center text-black">
+                    
+                    <div class="text-center w-75">
+                        <div >
+                            <img  src="{!URLFOR($Resource.SnnLogo)}" alt="SNN Logo" class="img-fluid mb-2 logo"  />
+                        </div>
+                        
+                        <!-- Login Form -->
+                        <div ng-show="showLogin" id="loginForm">
+                            <div class="text-center mb-4">
+                                <div class="phoneCon">
+                                    <p>
+                                        <!-- <span class="fwh" style="color: #9D6200;">WELCOME TO BETTER HOMES&nbsp;</span> -->
+                                        <span class="fwh" style="color: #9D6200;"><img  src="{!URLFOR($Resource.welcomeText)}" alt="SNN Logo" class="img-fluid mb-2" style="width: 28rem;" /></span>
+                                    </p>
+                                    
+                                    <div class="text-dark">
+                                        <!-- <span style="color: #1F1E1E; font-weight: 600">At Tridasa, Transparency is a Core Brand Value!</span> -->
+                                        Unlock the door to unparalleled collaboration with our exclusive Channel Partner Portal. Access now and let's drive success together on every property venture!
+                                    </div>
+                                
+                                </div>
+                            </div>
+
+                            
+                            
+                            <!-- Phone Number Input Section -->
+                            <div class="form-group text-start">
+                                <label class="form-label fw-bold">Phone Number</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">+91</span>
+                                    <input ng-model="phoneNumber" class="form-control phone-number-input" type="text" placeholder="Enter Phone Number" />
+                                </div>
+                            </div>
+                            <button class="btn custom-btn w-100 vh-30 mt-3" type="button" ng-click="getOtp()">Get OTP</button>
+                        </div>
+
+                        
+                        
+                        <!-- Verify Mobile Number Form -->
+                        <div ng-show="!showLogin && !showRegister" id="verifyForm" class="w-100">
+                            <div class="d-flex justify-content-center align-items-center mt-4">
+                                <i class="fa fa-arrow-left me-4" style="cursor: pointer;" ng-click="toggleForm('login')"></i>
+                                <h2 class="mb-1 MobileV">Verify Mobile Number</h2>
+                            </div>
+                            <div class="d-flex flex-column align-items-center gap-3">
+                                <div class="d-flex flex-column align-items-center">
+                                    <div class="text-center">Enter the verification code sent to </div>
+                                    <div class="text-center">{{maskedPhoneNumber}}</div>
+                                </div>
+                                <div class="d-flex otp-inputs mt-5">
+                                    <input ng-model="otp[0]" type="text" maxlength="1" class="otp-input-box" placeholder="0" />
+                                    <input ng-model="otp[1]" type="text" maxlength="1" class="otp-input-box" placeholder="0" />
+                                    <input ng-model="otp[2]" type="text" maxlength="1" class="otp-input-box" placeholder="0" />
+                                    <input ng-model="otp[3]" type="text" maxlength="1" class="otp-input-box" placeholder="0" />
+                                    <input ng-model="otp[4]" type="text" maxlength="1" class="otp-input-box" placeholder="0" />
+                                    <input ng-model="otp[5]" type="text" maxlength="1" class="otp-input-box" placeholder="0" />
+                                </div>
+                                <button class="btn custom-btn w-100 mt-3" ng-click="verifyOtp()">Verify OTP</button>
+                                <div>Didn’t get the code? <a href="#" ng-click="getOtp()" class="a-verify-text" style="cursor: pointer;">Resend</a></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Welcome to our community Form -->
+                        <div class="scrollable-form">
+                            <div ng-show="showRegister" id="registerForm" style="width:90%;">
+                                <div class="text-center mb-4">
+                                    <p>
+                                        <span class="fwh" style="color: #9D6200;">Welcome</span>
+                                        <span class="fwh" style="color: #284164;">to our community!</span>
+                                    </p>
+                                    <div class="text-dark community-text">Unlock the door to exclusive opportunities by registering with our Channel Partner Portal. Sign up now and let's embark on a journey of success together in every property venture!</div>
+                                </div>
+                                <form>
+                                    <!-- Channel Partner RERA Name -->
+                                    <div class="form-group mb-3">
+                                        <label class="form-label">Channel Partner Name as per RERA<span class="required-asterisk" style="color:red;">*</span></label>
+                                        <input type="text" class="form-control" placeholder="Enter Channel Partner Name as per RERA" ng-model="newAcc.Name"/>
+                                    </div>
+                                    <!-- Channel Partner RERA Number -->
+                                    <div class="form-group mb-3">
+                                        <label class="form-label">RERA Registration Number<span class="required-asterisk" style="color:red;">*</span></label>
+                                        <input type="text" class="form-control" placeholder="Enter RERA Registration Number" ng-model="newAcc.RERA_Number__c"/>
+                                    </div>
+                                    <!-- Channel Partner Email ID -->
+                                    <div class="form-group mb-3">
+                                        <label class="form-label">Channel Partner Email ID</label>
+                                        <input type="email" class="form-control" placeholder="Channel Partner email id" ng-model="newAcc.Email__c"/>
+                                    </div>
+                                    <!-- Channel Partner PAN Number -->
+                                    <div class="form-group mb-3">
+                                        <label class="form-label">Channel Partner PAN Number<span class="required-asterisk" style="color:red;">*</span></label>
+                                        <input type="text" class="form-control" placeholder="Enter Channel Partner PAN Number" ng-model="newAcc.PAN__c"/>
+                                    </div>
+                                    <!-- PAN Image -->
+                                    <div class="form-group mb-3">
+                                        <label class="form-label" for="panImage">PAN Image<span class="required-asterisk" style="color:red;">*</span></label>
+                                        <input type="file" id="panImage" class="form-control"/>
+                                    </div>
+                                    <!-- GST Number -->
+                                    <div class="form-group mb-3">
+                                        <label class="form-label">GST Number</label>
+                                        <input type="text" class="form-control" placeholder="Enter GST Number" ng-model="newAcc.GST_Number__c"/>
+                                    </div>
+                                    <!-- Focus Areas -->
+                                    <div class="form-group mb-3">
+                                        <label class="form-label">Focus Areas</label>
+                                        <div class="d-flex flex-wrap">
+                                            <div class="form-check me-3" ng-repeat="value in focusAreas">
+                                                <input type="checkbox" ng-model="selectedFocusArea[value]" ng-value="value" ng-change="changeOfFocusAreas()" />
+                                                <label>{{value}}</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Product of Interest -->
+                                    <div class="form-group mb-3">
+                                        <label class="form-label">Product of Interest</label>
+                                        <div class="d-flex flex-wrap">
+                                            <div class="form-check me-3" ng-repeat="value in ProductInterest">
+                                                <input type="checkbox" ng-model="selectedPdtInt[value]" ng-value="value" ng-change="changeOfProductInterest()" />
+                                                <label>{{value}}</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Additional fields -->
+                                    <div class="form-group mb-3">
+                                        <label class="form-label">Company Type Filled in RERA Form</label>
+                                        <div class="d-flex flex-wrap">
+                                            <div class="row2" style="display:flex;">
+                                                <div class="form-check me-3" ng-repeat="value in companyType">
+                                                    <input type="radio" ng-model="newAcc.Company_Type__c" ng-value="value" ng-change="changeOfCompanyType(value)" />
+                                                    <label>{{value}}</label>
+                                                </div>
+                                            </div>
+                                            <!-- <div class="form-check me-3">
+                                                <input class="form-check-input" type="checkbox" id="company"/>
+                                                <label class="form-check-label" for="company">Company</label>
+                                            </div> -->
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group mb-3">
+                                        <label class="form-label">Channel Partner RERA Certificate Expiry<span class="required-asterisk" style="color:red;">*</span></label>
+                                        <input type="date" class="form-control" ng-model="newAcc.RERA_Certificate_Expiry_Date__c"/>
+                                    </div>
+
+                                    <div class="form-group mb-3">
+                                        <label class="form-label">MSME</label>
+                                        <select class="form-select" aria-label="MSME" ng-model="newAcc.MSME__c">
+                                            <option ng-repeat="value in msmeValues" ng-selected="true">{{value}}</option>
+                                        </select>
+                                        <!-- <label class="form-label">MSME</label>
+                                        <select class="form-select">
+                                            <option>Select MSME</option>
+                                            <option value="1">Option 1</option>
+                                            <option value="2">Option 2</option>
+                                        </select> -->
+                                    </div>
+
+                                    <div class="form-group mb-3">
+                                        <label class="form-label" for="msmeCerti">MSME Certificate</label>
+                                        <input type="file" id="msmeCerti" class="form-control"/>
+                                    </div>
+
+                                    <div class="form-group mb-3">
+                                        <label class="form-label">Channel Partner Office Address</label>
+                                        <!-- <input type="text" class="form-control mb-2" placeholder="Enter Flat no/apartment no" ng-model="newAcc.BillingAddress"/> -->
+                                        <input type="text" class="form-control mb-2" placeholder="Enter Street Address" ng-model="newAcc.BillingStreet"/>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-2">
+                                                <input type="text" class="form-control" placeholder="Enter State" ng-model="newAcc.BillingState"/>
+                                            </div>
+                                            <div class="col-md-6 mb-2">
+                                                <input type="text" class="form-control" placeholder="Enter PIN Code" ng-model="newAcc.BillingPostalCode"/>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group mb-3">
+                                        <label class="form-label" for="rearCerti">Channel Partner RERA Certificate<span class="required-asterisk" style="color:red;">*</span></label>
+                                        <input type="file" id="rearCerti" class="form-control"/>
+                                    </div>
+
+                                    <div class="form-group mb-3">
+                                        <label class="form-label" for="canCheque">Cancelled Cheque<span class="required-asterisk" style="color:red;">*</span></label>
+                                        <input type="file" id="canCheque" class="form-control"/>
+                                    </div>
+                                    <!-- <div>
+                                        <div style="color: #284164; text-align: start; font-weight: bold; margin-bottom: 10px; font-size: larger;">Bank Details</div>
+                                        <div class="form-group mb-3">
+                                            <div class="row">
+                                                <div class="col-md-6 mb-2" style="display: block;">
+                                                    <label class="form-label" for="bankName">Bank Name<span class="required-asterisk" style="color:red;">*</span></label>
+                                                    <input type="text" id="bankName" class="form-control" ng-model="newAcc.Bank_Name__c" placeholder="Enter Bank Name"/>
+                                                </div>
+                                                <div class="col-md-6 mb-2" style="display: block;">
+                                                    <label class="form-label" for="accName">Bank Account Holder Name<span class="required-asterisk" style="color:red;">*</span></label>
+                                                    <input type="text" id="accName" class="form-control" ng-model="newAcc.Bank_Account_Holder_Name__c" placeholder="Enter Bank Name"/>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6 mb-2" style="display: block;">
+                                                    <label class="form-label" for="bankAccNum">Bank Account Number<span class="required-asterisk" style="color:red;">*</span></label>
+                                                    <input type="number" id="bankAccNum" class="form-control" ng-model="newAcc.Bank_Account_Number__c" placeholder="Enter Bank Account Number"/>
+                                                </div>
+                                                <div class="col-md-6 mb-2" style="display: block;">
+                                                    <label class="form-label" for="bankAccType">Bank Account Type<span class="required-asterisk" style="color:red;">*</span></label>
+                                                    <div class="d-flex flex-wrap">
+                                                        <div class="row2" style="display:flex;">
+                                                            <div class="form-check me-3" ng-repeat="value in BankAccType">
+                                                                <input type="radio" ng-model="newAcc.Bank_Account_Type__c" ng-value="value" ng-change="changeOfBankAccType(value)" />
+                                                                <label>{{value}}</label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6 mb-2" style="display: block;">
+                                                    <label class="form-label" for="ifscCode">IFSC Code<span class="required-asterisk" style="color:red;">*</span></label>
+                                                    <input type="text" id="ifscCode" class="form-control" ng-model="newAcc.IFSC_Code__c" placeholder="Enter Bank IFSC Code"/>
+                                                </div>
+                                                <div class="col-md-6 mb-2" style="display: block;">
+                                                    <label class="form-label" for="branchName">Branch Name<span class="required-asterisk" style="color:red;">*</span></label>
+                                                    <input type="text" id="branchName" class="form-control" ng-model="newAcc.Branch_Name__c" placeholder="Enter Branch Name"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div> -->
+                                    
+                                    <!-- Submit Button -->
+                                    <button id="submitApproval" class="btn custom-btn w-100 mt-3" type="submit" ng-click="submitApproval()">Submit For Approval</button>
+                                    <!-- <button id="loadButton" class="btn custom-btn w-100 mt-3" style="text-align: center; display:none;" type="submit"><div class="loader"></div></button> -->
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+                
+            </div>
+        </div>
+    </section>
+    
+    <script>
+        var app = angular.module('channelPortalApp', []);
+        var companyType = JSON.parse('{!companyType}');
+        var msmeValues = JSON.parse('{!msmeValues}');
+        var focusAreas = JSON.parse('{!focusAreas}');
+        var ProductInterest = JSON.parse('{!ProductInterest}');
+        //var BankAccType = JSON.parse('{!BankAccType}');
+        var maxStringSize = 6000000; //Maximum String size is 6,000,000 characters
+
+        app.controller('channellogin_ctrl', ['$scope', function($scope) {
+            debugger;
+            var self = this;
+            $scope.companyType = companyType;
+            $scope.msmeValues = msmeValues;
+            $scope.focusAreas = focusAreas;
+            $scope.ProductInterest = ProductInterest;
+            //$scope.BankAccType = BankAccType;
+            $scope.showLogin = true;
+            $scope.showRegister = false;
+            $scope.showSpinner = false;
+            $scope.phoneNumber = '';
+            $scope.otp = ['', '', '', '', '', ''];
+            $scope.maskedPhoneNumber = '';
+            $scope.errorMessage = '';
+            $scope.generatedOTP = '';
+            $scope.newAcc = {"Name" : ""};
+            $scope.selectedPdtInt = [];
+            $scope.selectedFocusArea = [];
+
+            $scope.changeOfCompanyType = function(value){
+                debugger;
+                $scope.newAcc.Company_Type__c = value;
+            }
+
+            // $scope.changeOfBankAccType = function(value){
+            //     debugger;
+            //     $scope.newAcc.Bank_Account_Type__c = value;
+            // }
+
+            $scope.changeOfProductInterest = function(){
+                debugger;
+                let selected = [];
+                for (let option in $scope.selectedPdtInt) {
+                    if (option != 'remove' && $scope.selectedPdtInt[option]) {
+                        selected.push(option);
+                    }
+                }
+                // Convert the array to a semicolon-separated string
+                $scope.newAcc.Product_of_Interest__c = selected.join(';');
+                $scope.$apply();
+            }
+
+            $scope.changeOfFocusAreas = function(){
+                debugger;
+                let selected = [];
+                for (let option in $scope.selectedFocusArea) {
+                    if (option != 'remove' && $scope.selectedFocusArea[option]) {
+                        selected.push(option);
+                    }
+                }
+                // Convert the array to a semicolon-separated string
+                $scope.newAcc.Focus_Areas__c = selected.join(';');
+                $scope.$apply();
+            }
+
+            $scope.toggleForm = function(form) {
+                debugger;
+                $scope.showLogin = false;
+                $scope.showRegister = false;
+
+                if (form === 'login') {
+                    $scope.showLogin = true;
+                    $scope.generatedOTP = '';
+                } else if (form === 'register') {
+                    $scope.showRegister = true;
+                }
+            };
+
+            $scope.getOtp = function() {
+                debugger;
+                const phoneNumber = $scope.phoneNumber;
+                $scope.maskedPhoneNumber = `+91 ${phoneNumber.substring(0, 2)}XXXXXX${phoneNumber.substring(8)}`;
+                if($scope.phoneNumber.length == 10){
+                    $scope.toggleForm('verify');
+                    // ChannelPartner_Controller.sendOTP($scope.phoneNumber, function(result, event){
+                    //     debugger;
+                    //     if(event.status && result){
+                    //         if($scope.generatedOTP == ''){
+                    //             $scope.generatedOTP = result;
+                    //         }else{
+                                $scope.generatedOTP = '000000';
+                    //             swal('Info', 'OTP has been resent to your phone number!', 'info');
+                    //         }
+                    //     }
+                    // })
+                }else {
+                    swal('Info', 'Please enter valid phone number!', 'info');
+                }
+            };
+
+            $scope.verifyOtp = function() {
+                debugger;
+                // Combine entered OTP values into a single string
+                var enteredOtp = $scope.otp.join('');
+                // Check if entered OTP matches the expected value
+                if (enteredOtp === $scope.generatedOTP) {
+                    const phoneNumber = $scope.phoneNumber;
+                    $scope.errorMessage = ''; // Clear any previous error messages
+                    // Call Apex method via Visualforce remoting
+                    ChannelPartner_Controller.checkAccount(phoneNumber, function(result, event) {
+                        debugger;
+                        if (event.status) {
+                            if(result.str == 'Not Channel Partner Account'){
+                                swal('Info', 'Not the right page to Log In !', 'info');
+                                $scope.showSpinner = false;
+                                // $("#loadButton").hide();
+                                // $("#submitApproval").show();
+                            } else if (result.str == 'No Account found') {
+                                // Show registration form instead of error message
+                                $scope.toggleForm('register');
+                                $scope.showSpinner = false;
+                                // $("#loadButton").hide();
+                                // $("#submitApproval").show();
+                            } else if(result.str == 'Please enter a valid phone number'){
+                                swal('Info', result.str+' !', 'info');
+                                $scope.showSpinner = false;
+                                // $("#loadButton").hide();
+                                // $("#submitApproval").show();
+                            } else {
+                                // Account exists, proceed to OTP verification
+                                if(result.acc.Approval_Status__c && result.acc.Approval_Status__c == 'Pending'){
+                                    var sitePrefix1 = window.location.href.includes('/apex') ? '/apex' : '/ChannelPartnerPortal';
+                                    var underApprovalUrl = window.location.origin + sitePrefix1 + '/ChannelPartner_ApprovalPage';
+                                    window.location.href = underApprovalUrl;
+                                }else{
+                                    $scope.hashCode = result.str;
+                                    if(result.acc.Team_Member__c){
+                                        localStorage.setItem('teamHead', false);
+                                        $scope.showSpinner = false;
+                                        // $("#loadButton").hide();
+                                        // $("#submitApproval").show();
+                                    }else{
+                                        localStorage.setItem('teamHead', true);
+                                        $scope.showSpinner = false;
+                                        // $("#loadButton").hide();
+                                        // $("#submitApproval").show();
+                                    }
+                                    localStorage.setItem('hashCode', $scope.hashCode);
+                                    let value = localStorage.getItem('hashCode');
+                                    // console.log(value); // Output: 'value'
+                                    // $scope.toggleForm('verify');
+                                    var currentdate = new Date();
+                                    localStorage.setItem('LogIn Time', currentdate);
+                                    swal('Success', 'Login successful!', 'success');
+                                    // Determine the site prefix depending on the URL
+                                    var sitePrefix = window.location.href.includes('/apex') ? '/apex' : '/ChannelPartnerPortal';
+                                    // Debugging output to check variables
+                                    // console.log("sitePrefix:", sitePrefix);
+                                    // console.log("Log In Hash Code:", $scope.hashCode);
+                                    // Check if Log In Hash Code is valid
+                                    if (!$scope.hashCode) {
+                                        console.error('Error: Log In Hash Code is not defined');
+                                        return;
+                                    }
+                                    // Construct the new URL
+                                    var newUrl = window.location.origin + sitePrefix + '/ChannelPartner_SidebarPage?id=' + $scope.hashCode + '#/ChannelPartner_DashboardPage';
+                                    // console.log("Redirecting to:", newUrl);
+                                    window.location.href = newUrl;
+                                }
+                            }
+                        } else {
+                            // Show error message if there's a remoting error
+                            $scope.errorMessage = 'Error occurred while verifying account.';
+                            $scope.showSpinner = false;
+                            // $("#loadButton").hide();
+                            // $("#submitApproval").show();
+                        }
+                        $scope.$apply(); // Apply scope changes
+                    });
+                }else {
+                    swal('Error', 'Please enter correct OTP!', 'error');
+                }
+                    // var currentdate = new Date();
+                    // localStorage.setItem('LogIn Time', currentdate);
+                    // alert('Login successful!');
+                    // // Determine the site prefix depending on the URL
+                    // var sitePrefix = window.location.href.includes('/apex') ? '/apex' : '/ChannelPartnerPortal';
+                    // // Debugging output to check variables
+                    // console.log("sitePrefix:", sitePrefix);
+                    // console.log("Log In Hash Code:", $scope.hashCode);
+                    // // Check if Log In Hash Code is valid
+                    // if (!$scope.hashCode) {
+                    //     console.error('Error: Log In Hash Code is not defined');
+                    //     return;
+                    // }
+                    // // Construct the new URL
+                    // var newUrl = window.location.origin + sitePrefix + '/ChannelPartner_SidebarPage?id=' + $scope.hashCode + '#/ChannelPartner_DashboardPage';
+                    // console.log("Redirecting to:", newUrl);
+                    // window.location.href = newUrl;
+                
+                // } else {
+                //     // Show error message for invalid OTP
+                //     $scope.errorMessage = 'Invalid OTP. Please try again.';
+                // }
+                
+            };
+
+            $scope.submitApproval = function(){
+                return new Promise(function (resolve, reject) {
+                    debugger;
+                    if($scope.newAcc.Name == undefined || $scope.newAcc.Name == ''){
+                        swal(
+                            'Info',
+                            'Please Enter Channel Partner Name as per RERA!',
+                            'info'
+                            );
+                        return reject('Please Enter Channel Partner Name as per RERA!');
+                    }
+                    if($scope.newAcc.RERA_Number__c == undefined || $scope.newAcc.RERA_Number__c == ''){
+                        swal(
+                            'Info',
+                            'Please Enter RERA Registration Number!',
+                            'info'
+                            );
+                        return reject('Please Enter RERA Registration Number!');
+                    }
+                    if($scope.newAcc.PAN__c == undefined || $scope.newAcc.PAN__c == ''){
+                        swal(
+                            'Info',
+                            'Please Enter Channel Partner PAN Number!',
+                            'info'
+                            );
+                        return reject('Please Enter Channel Partner PAN Number!');
+                    }
+                    if($scope.newAcc.RERA_Certificate_Expiry_Date__c == undefined || $scope.newAcc.RERA_Certificate_Expiry_Date__c == ''){
+                        swal(
+                            'Info',
+                            'Please Enter Channel Partner RERA Certificate Expiry!',
+                            'info'
+                            );
+                        return reject('Please Enter Channel Partner RERA Certificate Expiry!');
+                    }
+                    // if($scope.newAcc.Bank_Account_Type__c == undefined || $scope.newAcc.Bank_Account_Type__c == ''){
+                    //     swal(
+                    //         'Info',
+                    //         'Please Enter Bank Account Type!',
+                    //         'info'
+                    //         );
+                    //     return reject('Please Enter Bank Account Type!');
+                    // }
+                    // if($scope.newAcc.Bank_Name__c == undefined || $scope.newAcc.Bank_Name__c == ''){
+                    //     swal(
+                    //         'Info',
+                    //         'Please Enter Bank Name!',
+                    //         'info'
+                    //         );
+                    //     return reject('Please Enter Bank Name!');
+                    // }
+                    // if($scope.newAcc.Bank_Account_Number__c == undefined || $scope.newAcc.Bank_Account_Number__c == ''){
+                    //     swal(
+                    //         'Info',
+                    //         'Please Enter Bank Account Number!',
+                    //         'info'
+                    //         );
+                    //     return reject('Please Enter Bank Account Number!');
+                    // }
+                    // if($scope.newAcc.Branch_Name__c == undefined || $scope.newAcc.Branch_Name__c == ''){
+                    //     swal(
+                    //         'Info',
+                    //         'Please Enter Branch Name!',
+                    //         'info'
+                    //         );
+                    //     return reject('Please Enter Branch Name!');
+                    // }
+                    // if($scope.newAcc.IFSC_Code__c == undefined || $scope.newAcc.IFSC_Code__c == ''){
+                    //     swal(
+                    //         'Info',
+                    //         'Please Enter IFSC Code!',
+                    //         'info'
+                    //         );
+                    //     return reject('Please Enter IFSC Code!');
+                    // }
+                    if(document.getElementById("panImage").files[0] == undefined){
+                        swal(
+                            'Info',
+                            'Please upload PAN image!',
+                            'info'
+                            );
+                        return reject('Please upload PAN image!');
+                    }else {
+                        var PANfile = document.getElementById("panImage").files[0];
+                        var fileName = PANfile.name;
+                        var typeOfFile = fileName.split(".");
+                        var lengthOfType = typeOfFile.length;
+                        if (PANfile.size > '3000000') {
+                            swal("info", "PAN file must be under 3 mb in size. Your file is too large. Please try again.", "info");
+                            return reject('PAN File too large');
+                        }
+                        if(typeOfFile[lengthOfType - 1] != 'pdf' && typeOfFile[lengthOfType - 1] != 'jpeg' && typeOfFile[lengthOfType - 1] != 'jpg' && typeOfFile[lengthOfType - 1] != 'png'){
+                            swal('info', 'Please choose pdf/jpg/jpeg/png PAN file only.', 'info');
+                            return reject('Invalid file format');
+                        }
+                    }
+                    // if(document.getElementById("msmeCerti").files[0] == undefined){
+                    //     swal(
+                    //         'Info',
+                    //         'Please upload MSME Certificate!',
+                    //         'info'
+                    //         );
+                    //     return reject('Please upload MSME Certificate!');
+                    // }
+                    // else {
+                    var MSMEfile = document.getElementById("msmeCerti").files[0];
+                    if (MSMEfile) {
+                        var fileName = MSMEfile.name;
+                        var typeOfFile = fileName.split(".");
+                        var lengthOfType = typeOfFile.length;
+                        var fileExtension = typeOfFile[lengthOfType - 1].toLowerCase();
+                        if (MSMEfile.size > '3000000') {
+                            swal("info", "MSME File must be under 3 mb in size. Your file is too large. Please try again.", "info");
+                            return reject('MSME File too large');
+                        }
+                        if (['pdf', 'jpeg', 'jpg', 'png'].indexOf(fileExtension) === -1) {
+                            swal('Info', 'Please choose a PDF, JPG, JPEG, or PNG MSME file only.', 'info');
+                            return reject('Invalid MSME file format');
+                        }
+                    }
+                    if(document.getElementById("rearCerti").files[0] == undefined){
+                        swal(
+                            'Info',
+                            'Please upload RERA Certificate!',
+                            'info'
+                            );
+                        return reject('Please upload RERA Certificate!');
+                    }else {
+                        var RERAfile = document.getElementById("rearCerti").files[0];
+                        var fileName = RERAfile.name;
+                        var typeOfFile = fileName.split(".");
+                        var lengthOfType = typeOfFile.length;
+                        if (RERAfile.size > '3000000') {
+                            swal("info", "RERA File must be under 3 mb in size. Your file is too large. Please try again.", "info");
+                            return reject('RERA File too large');
+                        }
+                        if(typeOfFile[lengthOfType - 1] != 'pdf' && typeOfFile[lengthOfType - 1] != 'jpeg' && typeOfFile[lengthOfType - 1] != 'jpg' && typeOfFile[lengthOfType - 1] != 'png'){
+                            swal('info', 'Please choose pdf/jpg/jpeg/png RERA file only.', 'info');
+                            return reject('Invalid file format');
+                        }
+                    }
+                    if(document.getElementById("canCheque").files[0] == undefined){
+                        swal(
+                            'Info',
+                            'Please upload Cancelled Cheque!',
+                            'info'
+                            );
+                        return reject('Please upload Cancelled Cheque!');
+                    }else {
+                        var RERAfile = document.getElementById("canCheque").files[0];
+                        var fileName = RERAfile.name;
+                        var typeOfFile = fileName.split(".");
+                        var lengthOfType = typeOfFile.length;
+                        if (RERAfile.size > '3000000') {
+                            swal("info", "Cancelled Cheque must be under 3 mb in size. Your file is too large. Please try again.", "info");
+                            return reject('Cancelled Cheque too large');
+                        }
+                        if(typeOfFile[lengthOfType - 1] != 'pdf' && typeOfFile[lengthOfType - 1] != 'jpeg' && typeOfFile[lengthOfType - 1] != 'jpg' && typeOfFile[lengthOfType - 1] != 'png'){
+                            swal('info', 'Please choose pdf/jpg/jpeg/png Cancelled Cheque file only.', 'info');
+                            return reject('Invalid file format');
+                        }
+                    }
+
+                    if ($scope.newAcc.RERA_Certificate_Expiry_Date__c != undefined && $scope.newAcc.RERA_Certificate_Expiry_Date__c != '') {
+                        const dateString = $scope.newAcc.RERA_Certificate_Expiry_Date__c;
+                        // Create a new Date object from the date string
+                        const dateObject = new Date(dateString);
+                        // Get the Unix timestamp (milliseconds since the Unix epoch)
+                        const unixTimestamp = dateObject.getTime();
+                        // Update the $scope.SLIlist[i].Actual_date_of_dispatch__c with the Unix timestamp
+                        $scope.newAcc.RERA_Certificate_Expiry_Date__c = unixTimestamp;
+                    }
+                    $scope.showSpinner = true;
+                    // $("#loadButton").show();
+                    // $("#submitApproval").hide();
+                    // console.log(JSON.stringify($scope.newAcc));
+                    $scope.newAcc.Phone = $scope.phoneNumber;
+                    ChannelPartner_Controller.submitAcc($scope.newAcc,function(result,event){
+                        debugger;
+                        if(event && result.length <= 18){
+                            $scope.accId = result;
+                            setTimeout(() => {
+                                $scope.uploadDoc('PAN')
+                                .then(() => $scope.uploadDoc('RERA Certificate'))
+                                .then(() => {
+                                    var MSMEfile = document.getElementById("msmeCerti").files[0];
+                                    if (MSMEfile) {
+                                        return $scope.uploadDoc('MSME Certificate');
+                                    }
+                                })
+                                .then(() => $scope.uploadDoc('Cancelled Cheque'))
+                                .then(() => $scope.submitAccApproval($scope.accId))
+                                .then(() => $scope.verifyOtp())
+                                .then(resolve)
+                                .catch(reject);
+                            }, 1000);
+                            resolve(result);
+                        }else{
+                            console.log('Error creating account');
+                            reject('event.result');
+                        }
+                    });
+                    $scope.$apply();
+                });
+            }
+
+            $scope.uploadDoc = function(type){
+                return new Promise(function (resolve, reject) {
+                    var file;
+                    if(type == 'PAN'){
+                        file = document.getElementById("panImage").files[0];
+                    }else if(type == 'MSME Certificate'){
+                        file = document.getElementById("msmeCerti").files[0];
+                    }else if(type == 'RERA Certificate'){
+                        file = document.getElementById("rearCerti").files[0];
+                    }
+                    else if(type == 'Cancelled Cheque'){
+                        file = document.getElementById("canCheque").files[0];
+                    }
+                    fileName = file.name;
+                    debugger;
+                    attachmentName = file.name;
+                    var fileReader = new FileReader();
+                    fileReader.onloadend = function (e) {
+                        attachment = window.btoa(this.result);  // Base 64 encode the file before sending it
+                        positionIndex = 0;
+                        fileSize = attachment.length;
+                        attachmentBody = attachment.substring(positionIndex);
+                        // $scope.showSpinnereditProf = false;
+                        debugger;
+                        if (fileSize < maxStringSize) {
+                            // Call the function to upload the attachment
+                            ChannelPartner_Controller.uploadDocuments($scope.accId, attachmentName, attachmentBody, fileSize, type, file.type, function(result, event){
+                                debugger;
+                                if(event.status && result && result.subDocUrl){
+                                    $scope.fileURL = result.subDocUrl;
+                                    resolve('Success uploading' + type);
+                                }else{
+                                    console.log('Error while uploading ' + type + ' ---> ' + JSON.stringify(event));
+                                    reject(result);
+                                }
+                                $scope.$apply();
+                            });
+                        } else {
+                            swal("info", "Base 64 Encoded file is too large. Maximum size is " + maxStringSize + " your file is " + fileSize + ".", "info");
+                            return reject('File too large');
+                        }
+                    };
+
+                    fileReader.onerror = function () {
+                        swal("info", "There was an error reading the file. Please try again.", "info");
+                        return reject('File reading error');
+                    };
+
+                    fileReader.onabort = function () {
+                        swal("info", "There was an error reading the file. Please try again.", "info");
+                        return reject('File read aborted');
+                    };
+
+                    fileReader.readAsBinaryString(file);  // Read the body of the file
+                })
+            }
+
+            $scope.submitAccApproval = function(value){
+                return new Promise(function (resolve, reject) {
+                    debugger;
+                    ChannelPartner_Controller.submitApproval($scope.accId, function(result, event){
+                        if(event.status && result.includes('success')){
+                            resolve(result);
+                        }else{
+                            reject(result);
+                        }
+                    })
+                })
+            }
+        }]);
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const otpInputs = document.querySelectorAll('.otp-input-box');
+            
+            otpInputs.forEach((input, index) => {
+                input.addEventListener('input', () => {
+                    if (input.value.length === 1 && index < otpInputs.length - 1) {
+                        otpInputs[index + 1].focus();
+                    }
+                });
+
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && input.value.length === 0 && index > 0) {
+                        otpInputs[index - 1].focus();
+                    }
+                });
+            });
+        });
+    </script>
+</apex:page>

@@ -1,0 +1,223 @@
+<!--Created by - Abhinav singh
+ Created date - 01-10-2024
+ Modified Date - 03-10-2024
+ Purpose - Getting all call history in utility panel 
+-->
+
+<aura:component controller ="DialerCmpCntrl" implements="flexipage:availableForAllPageTypes,lightning:utilityItem" access="global"  >
+    <!--DialerCmpCntrl-->
+    <aura:attribute name="callHistory" type="List" default="[]" /> 
+    <aura:attribute name="spinner" type="boolean" default="false"/>
+    <aura:attribute name="offset" type="Integer" default="0"/>
+    <aura:attribute name="indexCall" type="Integer" default=""/>
+    <aura:attribute name="limit" type="Integer" default="20"/>
+    <aura:attribute name="totalRecords" type="Integer" default="0"/>
+    <aura:attribute name="showLoadMore" type="Boolean" default="false"/>
+    
+    
+    <aura:handler name="scroll" value="{!v.checkedIn}" action="{!c.handleScroll}"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <div class="slds-item slds-p-around_small " >
+        <div class="scrollable-tab-content slds-grid slds-wrap slds-grid_vertical"> <!-- Added slds-grid_vertical for new lines -->
+            
+            <!-- Getting all the call data  in iteration to show -->
+            <aura:iteration items="{!v.callHistory}" var="call" indexVar="index">
+                
+                <!-- Wrap each call log in a new div for new line -->
+                <div class="slds-media slds-m-bottom_medium call-log"  
+                     data-id="{!call.Id}" 
+                     onclick="{!c.onclickNumber}"
+                     data-index="{!index}"> 
+                    <!-- Call type icons based on the call type -->
+                    
+                    <aura:if isTrue="{!call.Call_Type__c != null}">
+                        
+                        <!-- Inbond Call-->
+                        <aura:if isTrue="{!call.Call_Type__c == 'Inbound Call'}">
+                            
+                            <!-- Missed Call-->
+                            <aura:if isTrue="{!call.Status__c == 'Missed'}">
+                                <div class="slds-media__figure slds-m-right_x-small">
+                                    <lightning:icon iconName="utility:missed_call" 
+                                                    size="small" 
+                                                    alternativeText="Missed"
+                                                    class="slds_missed"/>
+                                </div> 
+                            </aura:if>
+                            <aura:if isTrue="{!call.Status__c != 'Missed'}"> 
+                                <div class="slds-media__figure slds-m-right_x-small">
+                                    <lightning:icon iconName="utility:incoming_call" 
+                                                    size="small" 
+                                                    alternativeText="Incoming"
+                                                    class="slds_incoming"/>
+                                </div> 
+                            </aura:if>
+                        </aura:if>
+                        
+                        <!-- Outbound Call-->
+                        <aura:if isTrue="{!call.Call_Type__c == 'Outbound Call'}">
+                            <div class="slds-media__figure slds-m-right_x-small">
+                                <lightning:icon iconName="utility:outbound_call" 
+                                                size="small" 
+                                                alternativeText="Outgoing" 
+                                                class="slds_outgoing"/>
+                            </div> 
+                        </aura:if>
+                    </aura:if>
+                    
+                    <!-- null call type-->
+                    <aura:if isTrue="{!call.Call_Type__c == null}">
+                        
+                        <!-- Missed Call-->
+                        <aura:if isTrue="{!call.Status__c == 'Missed'}">
+                            <div class="slds-media__figure slds-m-right_x-small">
+                                <lightning:icon iconName="utility:missed_call" size="small" alternativeText="Missed" class="slds_missed"/>
+                            </div> 
+                        </aura:if>
+                        
+                        <!-- ANSWER Call-->
+                        <aura:if isTrue="{!call.Status__c == 'ANSWER'}">
+                            <div class="slds-media__figure slds-m-right_x-small">
+                                <lightning:icon iconName="utility:call" size="small" alternativeText="Answer" class="slds_incoming"/>
+                            </div> 
+                        </aura:if>
+                        
+                        <!-- CONNECTING Call-->
+                        <aura:if isTrue="{!call.Status__c == 'CONNECTING'}">
+                            <div class="slds-media__figure slds-m-right_x-small">
+                                <lightning:icon iconName="utility:dialing" size="small" alternativeText="Dialing" class="slds_incoming"/>
+                            </div> 
+                        </aura:if>
+                        
+                        <!-- Connected Call-->
+                        <aura:if isTrue="{!call.Status__c == 'Connected'}">
+                            <div class="slds-media__figure slds-m-right_x-small">
+                                <lightning:icon iconName="utility:call" size="small" alternativeText="Connected" class="slds_incoming"/>
+                            </div> 
+                        </aura:if>
+                        
+                        <!-- Customer Busy Call-->
+                        <aura:if isTrue="{!call.Status__c == 'Customer Busy'}">
+                            <div class="slds-media__figure slds-m-right_x-small">
+                                <lightning:icon iconName="utility:call" size="small" alternativeText="Customer Busy" class="slds_incoming"/>
+                            </div> 
+                        </aura:if>
+                        
+                        <!-- Originate Call-->
+                        <aura:if isTrue="{!call.Status__c == 'Originate'}">
+                            <div class="slds-media__figure slds-m-right_x-small">
+                                <lightning:icon iconName="utility:call" size="small" alternativeText="Originate" class="slds_incoming"/>
+                            </div> 
+                        </aura:if>
+                        
+                        <!-- Call Complete Call-->
+                        <aura:if isTrue="{!call.Status__c == 'Call Complete'}">
+                            <div class="slds-media__figure slds-m-right_x-small">
+                                <lightning:icon iconName="utility:call" size="small" alternativeText="Call Completed" class="slds_outgoing"/>
+                            </div> 
+                        </aura:if>
+                        
+                        <!-- BUSY Call-->
+                        <aura:if isTrue="{!call.Status__c == 'BUSY'}">
+                            <div class="slds-media__figure slds-m-right_x-small">
+                                <lightning:icon iconName="utility:missed_call" size="small" alternativeText="Busy" class="slds_missed"/>
+                            </div> 
+                        </aura:if>
+                        
+                        <!-- CANCEL Call-->
+                        <aura:if isTrue="{!call.Status__c == 'CANCEL'}">
+                            <div class="slds-media__figure slds-m-right_x-small">
+                                <lightning:icon iconName="utility:end_call" size="small" alternativeText="CANCEL" class="slds_missed"/>
+                            </div> 
+                        </aura:if>
+                        <aura:if isTrue="{!call.Status__c == null}">
+                            <div class="slds-media__figure slds-m-right_x-small">
+                                <lightning:icon iconName="utility:end_call" size="small" alternativeText="call" class="slds_missed" />
+                            </div> 
+                        </aura:if>
+                    </aura:if>
+                    
+                    <!-- Call details -->
+                    <div class="slds-media__body slds-m-left_x-small">
+                        <aura:if isTrue="{!OR(call.Lead__c != null, call.Account__c != null)}">
+                            <h3 class="slds-text-body_medium slds-text-title_bold">{!call.Call_to_name__c}</h3>
+                        </aura:if>
+                        <aura:if isTrue="{!OR(call.Case__c != null,call.Contact__c != null)}">
+                            <h3 class="slds-text-body_medium slds-text-title_bold">{!call.Call_to_name__c}</h3>
+                        </aura:if>
+                        <h4 class="slds-text-body_medium slds-text-title_bold">{!call.Call_to_number__c}</h4>
+                        
+                        <!-- Time taken for calls -->
+                        <div style="white-space: nowrap;">
+                            <lightning:formattedDateTime value="{!call.Start_Time__c}" 
+                                                         year="numeric" 
+                                                         month="numeric" 
+                                                         day="numeric" 
+                                                         hour="2-digit"
+                                                         minute="2-digit"  
+                                                         hour12="true"/> - 
+                            <aura:if isTrue="{!call.End_Time__c != null}">
+                                <lightning:formattedDateTime value="{!call.End_Time__c}" 
+                                                             year="numeric" 
+                                                             month="numeric" 
+                                                             day="numeric" 
+                                                             hour="2-digit"
+                                                             minute="2-digit"  
+                                                             hour12="true"/> 
+                            </aura:if>
+                            <aura:if isTrue="{!call.End_Time__c == null}">
+                                <lightning:formattedDateTime value="{!call.Start_Time__c}" 
+                                                             year="numeric" 
+                                                             month="numeric" 
+                                                             day="numeric" 
+                                                             hour="2-digit"
+                                                             minute="2-digit"  
+                                                             hour12="true"/> 
+                            </aura:if>
+                        </div>
+                        
+                        <p class="slds-text-body_small">{!call.Status__c}</p>
+                        
+                        <!--Calling button -->
+                        <!-- <aura:if isTrue="{!v.indexCall == index}">
+                            <div class="{!v.indexCall == index ? 'call-log-slide active' : 'call-log-slide'}">
+                                <div class="slds-media__figure slds-m-right_x-small slds-align_absolute-center">
+                                    <lightning:icon iconName="action:call" size="small" alternativeText="Call" />
+                                </div>
+                            </div>
+                        </aura:if>-->
+                    </div>
+                    
+                    <!-- Call duration -->
+                    <div class="slds-grid slds-item ">
+                        <p class="slds-text-body_small ">
+                            Duration: 
+                            <aura:if isTrue="{!not(empty(call.Duration_in_Minutes__c))}">
+                                {!call.Duration_in_Minutes__c} mins
+                                <aura:set attribute="else">
+                                    0 mins
+                                </aura:set>
+                            </aura:if>
+                        </p>
+                    </div>
+                    
+                </div> 
+                <!-- End of each call record -->
+            </aura:iteration>
+            
+            <!-- Load more call data -->
+            <aura:if isTrue="{!v.showLoadMore}">
+                <div class="slds-align_absolute-center">
+                    <div class="slds-p-around_medium call-log slds-Custom_button blue-text" 
+                         onclick="{!c.handleScroll}">Load More</div>
+                </div>
+            </aura:if>
+        </div>
+    </div>
+    
+    <!-- Loading spinner -->
+    <aura:if isTrue="{!v.spinner}">
+        <lightning:spinner class="spins" size="small" variant="brand" alternativeText="Loading" />
+    </aura:if>
+</aura:component>

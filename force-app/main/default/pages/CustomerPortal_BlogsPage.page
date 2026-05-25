@@ -1,0 +1,158 @@
+<apex:page showHeader="false" standardStylesheets="false" sidebar="false" docType="html-5.0" controller="CustomerPortalController">
+    <html>
+        <div ng-controller="blogs_ctrl">
+            <head>
+                <!-- Include Bootstrap CSS -->
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous"/>
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+                <!-- Include Font Awesome -->
+                <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" rel="stylesheet" crossorigin="anonymous"/>
+            </head>
+        
+            <style>
+                .title-color {
+                    color: #1F1E1E;
+                }
+                .blog-card {
+                    border: 1px solid #ddd;
+                    border-radius: 10px;
+                    overflow: hidden;
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                    margin-right: 15px; /* Space between cards */
+                    flex: 0 0 auto; /* Prevent shrinking */
+                    width: 300px; /* Fixed width for cards */
+                    min-height: 400px;
+                }
+                .blog-card img {
+                    width: 100%;
+                    height: 180px;
+                }
+                .blog-card-body {
+                    padding: 15px;
+                    min-height: 137px;
+                }
+                .blog-card-title {
+                    font-size: 16px;
+                    font-weight: bold;
+                    color: #0B1E35;
+                    max-height: 20px;
+                    overflow: hidden;
+                }
+                .blog-card-text {
+                    font-size: 14px;
+                    color: #555;
+                    max-height: 79px;
+                    overflow: hidden;
+                    display: -webkit-box;
+                    -webkit-line-clamp: 4; /* Limits the text to 4 lines */
+                    -webkit-box-orient: vertical;
+                    text-overflow: ellipsis;
+                }
+                .blog-card-button {
+                    background: var(--Primary, #9D6200);
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    margin: 15px; /* Add top margin here */
+                }
+                .blog-card-button:hover {
+                    background-color: #9D6200;
+                }
+                .detailed-view {
+                    display: none;
+                }
+                .detailed-view.active {
+                    display: block;
+                }
+                .card1 {
+                    border: 1px solid #ccc; /* Border around the card */
+                    border-radius: 8px; /* Rounded corners */
+                    overflow: hidden; /* Ensure rounded corners are applied */
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Shadow effect */
+                    max-width: 1000px; /* Set a max width for the card */
+                    margin: 20px; /* Margin around the card */
+                }
+                .card1 img {
+                    width: 160%; /* Image takes full width of the card */
+                    height: auto; /* Maintain aspect ratio */
+                }
+                /* Container for horizontal scrolling on mobile devices */
+                @media (max-width: 767.98px) {
+                    .blog-container {
+                        display: flex;
+                        overflow-x: auto; /* Enable horizontal scrolling */
+                        padding: 10px 0; /* Optional padding for aesthetics */
+                    }
+                    .blog-card {
+                        flex: 0 0 80%; /* Take full width with a bit of margin */
+                        margin: 0 10px; /* Margin on the left and right */
+                    }
+                    /* Hide scrollbars for a cleaner look */
+                    /* .blog-container::-webkit-scrollbar {
+                        display: none;
+                    } */
+                }
+
+                /* Styles for desktop */
+                @media (min-width: 768px) {
+                    .blog-container {
+                        display: flex;
+                        flex-wrap: wrap; /* Allow wrapping of items */
+                        padding: 10px 0; /* Optional padding for aesthetics */
+                    }
+                    .blog-card {
+                        flex: 0 1 calc(33.33% - 20px); /* Adjust to desired width, accounting for margin */
+                        margin: 10px; /* Margin around each card */
+                    }
+                }
+                .blog-footer {
+                    margin-top: auto; /* Pushes buttons to the bottom */
+                    text-align: center;
+                }
+                .noImg {
+                    min-height: 180px;
+                }
+            </style>
+        
+            <body>
+                <div class="container-fluid">
+                    <h2 class="mb-4 title-color">Blogs <small>(This Page needs to be integrated with SNN Estates Website)</small></h2>
+                    <p>Discover insightful articles and updates on SNN Estates's blog. Gain valuable insights into property trends, market updates, and expert tips. Our blog aims to provide valuable information and resources. For more details or specific inquiries, please feel free to reach out to our team.</p>
+                    <p>To access our blogs <a href="https://www.snnestates.com/">Click Here</a></p>
+                <!-- <div ng-if="!selectedBlog">
+                        <div class="blog-container">
+                            <div ng-repeat="blog in Blogs">
+                                <div class="blog-card">
+                                    <div ng-if="blog.Sub_Documents__r != undefined">
+                                        <img src="{{blog.Sub_Documents__r[0].File_URL__c}}" class="img1 d-block w-100" alt="{{blog.Name}}"/>
+                                    </div>
+                                    <div ng-if="blog.Sub_Documents__r == undefined">
+                                        <div class="noImg"></div>
+                                    </div>
+                                    <div class="card-body blog-card-body">
+                                        <h5 class="card-title blog-card-title">{{blog.Topic__c}}</h5>
+                                        <p class="card-text blog-card-text">{{blog.Description__c}}</p>
+                                    </div>
+                                    <div class="blog-footer">
+                                        <button type="button" class="blog-card-button" ng-click="viewBlogDetail(blog)">Read more</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div ng-if="selectedBlog" class="detailed-view active">
+                        <h3>{{selectedBlog.Topic__c}}</h3>
+                        <div class="card1 blog-card1">
+                            <apex:image url="https://site-computing-644--tridasadev.sandbox.my.salesforce.com/sfc/p/Im000000H0KF/a/Im000000CzoV/QoqxSW4lgkQyGein6QHBBLSjNuupIQp1jsr25uwT5Cg" width="100" height="70" alt="Blog Image" />
+                        </div>
+                        <p>{{selectedBlog.Description__c}}</p>
+                        <button type="button" class="btn btn-secondary" ng-click="backToList()">Back to Blogs</button>
+                    </div> -->
+                </div>
+            </body>
+        </div>
+    </html>
+</apex:page>

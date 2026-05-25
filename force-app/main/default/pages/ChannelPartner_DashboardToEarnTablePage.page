@@ -1,0 +1,123 @@
+<apex:page showHeader="false" standardStylesheets="false" sidebar="false" docType="html-5.0">
+
+    <style>
+        .back-link {
+            font-size: 24px; 
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            color: black; /* Gray color for the text */
+            font-weight: 500;
+        }
+        .back-link i {
+            margin-right: 8px;
+        }
+        .title-color {
+            color: #0B1E35;
+            font-weight: 600;
+        }
+        .table th, .table td {
+            vertical-align: middle;
+            font-size: 14px;
+        }
+        .table-header-custom {
+            background-color: #6886AA;
+            color: white;
+        }
+        .table-container {
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Shadow effect for the table */
+        }
+        .table-header-custom th {
+            border-top: none;
+            border-left: none;
+            border-right: none;
+        }
+        .table-header-custom th:first-child {
+            border-top-left-radius: 10px; /* Round top-left corner */
+        }
+        .table-header-custom th:last-child {
+            border-top-right-radius: 10px; /* Round top-right corner */
+        }
+    </style>
+
+    <div class="container-fluid my-5">
+      
+
+        <!-- Table -->
+        <div class="table-responsive table-container">
+            <table class="table mb-0">
+                <thead class="table-header-custom">
+                    <tr>
+                        <th scope="col">Sr.</th>
+                        <th scope="col">Channel Partner ID</th>
+                        <th scope="col">Channel partner</th>
+                        <th scope="col">Project name</th>
+                        <th scope="col">Apartment Number</th>
+                        <th scope="col">Total Earnings</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">1</th>
+                        <td>CP001</td>
+                        <td>SNN Estates</td>
+                        <td>SNN Heights</td>
+                        <td>506</td>
+                        <td>₹1,50,000</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">2</th>
+                        <td>CP002</td>
+                        <td>SNN Estates</td>
+                        <td>SNN Villas</td>
+                        <td>403</td>
+                        <td>₹1,20,000</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">3</th>
+                        <td>CP003</td>
+                        <td>SNN Estates</td>
+                        <td>SNN Greens</td>
+                        <td>602</td>
+                        <td>₹1,80,000</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">4</th>
+                        <td>CP004</td>
+                        <td>SNN Estates</td>
+                        <td>SNN Residency</td>
+                        <td>504</td>
+                        <td>₹1,60,000</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">5</th>
+                        <td>CP005</td>
+                        <td>SNN Estates</td>
+                        <td>SNN Towers</td>
+                        <td>420</td>
+                        <td>₹1,40,000</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">6</th>
+                        <td>CP006</td>
+                        <td>SNN Estates</td>
+                        <td>SNN Towers</td>
+                        <td>610</td>
+                        <td>₹1,70,000</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">7</th>
+                        <td>CP007</td>
+                        <td>SNN Estates</td>
+                        <td>SNN Towers</td>
+                        <td>556</td>
+                        <td>₹1,90,000</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</apex:page>

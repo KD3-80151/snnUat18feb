@@ -1,0 +1,47 @@
+.slds-table {
+	width: 100%;
+    background-color: white;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+.slds-table th, .slds-table td {
+    padding: 10px;
+    text-align: left;
+}
+
+.slds-table thead th {
+    background-color: #5D5D5D;  /* Set the background color for the table header */
+    color: white;               /* Set the text color to white */
+}
+
+.slds-table td input[type="radio"] {
+    transform: scale(1.2);
+}
+.slds-table tbody tr:nth-child(even) {
+    background-color: #F4F4F4; /* Set the background color for even-numbered rows */
+}
+
+.lightning-card {
+    margin: 20px;
+}
+
+
+
+
+
+.scrollable-x {
+    overflow-x: auto;
+    margin-bottom: 20px;
+}
+
+/* Custom CSS to style and center the <h1> title */
+.center-title {
+    background-color: #9D6200;  /* Set the background color */
+    color: white;               /* Set the text color to white */
+    text-align: center;         /* Center the title */
+    margin: 0;                  /* Remove default margin */
+    padding: 10px;              /* Add some padding to the header */
+    font-size: 1.5rem;          /* Adjust the font size as needed */
+    font-weight: 600;           /* Adjust the weight if needed */
+}

@@ -1,0 +1,2 @@
+<aura:event  type="APPLICATION" description="Event to invoke parent's JS method">
+</aura:event>

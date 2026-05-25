@@ -1,0 +1,52 @@
+<apex:page showHeader="false" standardStylesheets="false" sidebar="false" docType="html-5.0">
+    <html>
+        <div ng-controller="tdsfaq_ctrl">
+            <head>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous"/>
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+                <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" rel="stylesheet" crossorigin="anonymous"/>
+                <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css" rel="stylesheet" crossorigin="anonymous"/>
+            </head>
+        
+            <style>
+                .title-color {
+                    color: #1F1E1E;
+                }
+                .info-section {
+                    background-color: #f8f9fa;
+                    border-radius: 10px;
+                    padding: 20px;
+                    margin-bottom: 20px;
+                }
+                .step img {
+                    max-width: 100%;
+                    border-radius: 10px;
+                }
+                a {
+                    color: #007bff;
+                    text-decoration: none;
+                }
+                a:hover {
+                    text-decoration: underline;
+                }
+            </style>
+        
+        <body>
+            <div class="container-fluid">
+                <h2 class="mb-4 title-color">How to pay TDS through challan 26QB online?</h2>
+                <p>At SNN Estates, we guide you through the TDS payment process. Visit the TIN NSDL website, fill your property details, your &amp; SNN Estates information, buyer and seller information, and the TDS amount. Complete the payment using net banking or debit card, and download the acknowledgment receipt for your records. Here are the detailed steps to be followed:</p>
+                <p><strong>Website Link:</strong> <a href="https://www.incometax.gov.in/iec/foportal/">https://www.incometax.gov.in/iec/foportal/</a></p>
+               
+                
+                <div class="step">
+                    <img src="{!URLFOR($Resource.incomeTaxStep)}" alt="Step 1"/>
+                </div>
+                
+                <!-- Add more steps as necessary -->
+                
+            </div>
+        </body>
+        </div>
+    </html>
+    
+</apex:page>

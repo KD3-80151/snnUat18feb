@@ -1,0 +1,67 @@
+:host {
+    display: block;
+    background-color: white;
+    height: 100%;
+    width: 100%;
+    overflow: hidden; /* Prevent scrolling */
+}
+.headerCss{
+    background-color: #9D6200;  
+    color: white;               
+    text-align: center;         
+    margin: 0;                 
+    padding: 15px;              
+    font-size: 1.2rem;          
+    font-weight: 600;  
+}
+.sectionsCss{
+    padding: 30px 40px;
+}
+.newButtonCss{
+	--slds-c-button-brand-color-background : #4d4d4d;
+    --slds-c-button-brand-color-border : #4d4d4d;
+    --slds-c-button-brand-text-color : white;
+}
+.newButtonCss:hover{
+	--slds-c-button-brand-color-background : #4d4d4d;
+    --slds-c-button-brand-color-border : #4d4d4d;
+    --slds-c-button-brand-text-color : white;
+}
+.table-container {
+    width: 100%;
+    overflow-x: auto; /* Enables horizontal scrolling */
+    border-radius: 8px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    max-height: 600px; /* Set height for vertical scrolling */
+}
+
+.custom-table {
+    width: 100%;
+    min-width: 900px; /* Ensures scrollability on smaller screens */
+    border-collapse: collapse;
+    margin-top: 40px;
+    overflow-y: auto; /* Enables vertical scrolling */
+}
+
+.custom-table th {
+    background-color: #4d4d4d;
+    color: white;
+    font-weight: bold;
+    padding: 12px;
+    text-align: left;
+    border-bottom: 2px solid #ccc;
+}
+
+.custom-table td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.custom-table tr:hover {
+    background-color: #f4f6f9; /* Light hover effect */
+}
+
+.custom-table th,
+.custom-table td {
+    white-space: nowrap; /* Prevents content from wrapping */
+}

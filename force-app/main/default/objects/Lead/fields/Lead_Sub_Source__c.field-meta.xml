@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Lead_Sub_Source__c</fullName>
+    <label>Lead Sub Source</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <type>Picklist</type>
+    <valueSet>
+        <controllingField>LeadSource</controllingField>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Web</fullName>
+                <default>false</default>
+                <label>Web</label>
+            </value>
+            <value>
+                <fullName>Referral</fullName>
+                <default>false</default>
+                <label>Referral</label>
+            </value>
+            <value>
+                <fullName>Trade Show</fullName>
+                <default>false</default>
+                <label>Trade Show</label>
+            </value>
+            <value>
+                <fullName>Advertising</fullName>
+                <default>false</default>
+                <label>Advertising</label>
+            </value>
+            <value>
+                <fullName>Social Media</fullName>
+                <default>false</default>
+                <label>Social Media</label>
+            </value>
+            <value>
+                <fullName>Email Campaign</fullName>
+                <default>false</default>
+                <label>Email Campaign</label>
+            </value>
+            <value>
+                <fullName>Partner</fullName>
+                <default>false</default>
+                <label>Partner</label>
+            </value>
+            <value>
+                <fullName>Direct Mail</fullName>
+                <default>false</default>
+                <label>Direct Mail</label>
+            </value>
+            <value>
+                <fullName>Other</fullName>
+                <default>false</default>
+                <label>Other</label>
+            </value>
+        </valueSetDefinition>
+        <valueSettings>
+            <controllingFieldValue>Partner</controllingFieldValue>
+            <controllingFieldValue>Google AdWords</controllingFieldValue>
+            <valueName>Partner</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Website</controllingFieldValue>
+            <valueName>Web</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Website</controllingFieldValue>
+            <controllingFieldValue>Advertisement</controllingFieldValue>
+            <controllingFieldValue>Webinar</controllingFieldValue>
+            <valueName>Advertising</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Google AdWords</controllingFieldValue>
+            <controllingFieldValue>Advertisement</controllingFieldValue>
+            <valueName>Social Media</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Purchased List</controllingFieldValue>
+            <controllingFieldValue>Trade Show</controllingFieldValue>
+            <valueName>Trade Show</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>External Referral</controllingFieldValue>
+            <controllingFieldValue>Employee Referral</controllingFieldValue>
+            <valueName>Referral</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>External Referral</controllingFieldValue>
+            <controllingFieldValue>Employee Referral</controllingFieldValue>
+            <valueName>Email Campaign</valueName>
+        </valueSettings>
+    </valueSet>
+</CustomField>

@@ -1,0 +1,25 @@
+<apex:page showHeader="false" standardStylesheets="false" sidebar="false" docType="html-5.0" controller="channelPartner_InventoryController" apiVersion="57.0">
+    <apex:slds />
+    <apex:includeLightning />
+
+    <script>
+        
+        $Lightning.use("c:channelPartnerInventoryApp", function() {
+            $Lightning.createComponent(
+                "c:channelPartner_Inventory",  
+                {},                             
+                "lightningContainer",           
+                function(cmp) {
+                    console.log('LWC component loaded successfully.');
+                }
+            );
+        });
+    </script>
+
+    <body>
+        
+        <div id="lightningContainer">
+         
+        </div>
+    </body>
+</apex:page>

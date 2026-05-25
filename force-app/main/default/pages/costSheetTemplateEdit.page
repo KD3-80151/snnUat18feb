@@ -1,0 +1,19 @@
+<apex:page standardController="Cost_Sheet_Template__c" docType="html-5.0" recordSetVar="costSheetTemplates">
+    <apex:includeLightning />
+
+    <div id="auraContainer"></div>
+    <script>
+        
+        $Lightning.use("c:costSheetEdit", function() {
+
+            var recordId = '{!costSheetTemplates[0].Id}'; 
+            $Lightning.createComponent("c:CostSheetEditTemplate", 
+                { "recordId" : recordId }, 
+                "auraContainer",
+                function(cmp) {
+                    console.log("Aura component loaded");
+                }
+            );
+        });
+    </script>
+</apex:page>

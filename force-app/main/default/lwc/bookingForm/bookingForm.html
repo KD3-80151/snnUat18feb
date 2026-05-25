@@ -1,0 +1,738 @@
+<template>
+    <lightning-card>
+        <template if:false={showSpinner}>
+        <div class="mainCSSContener slds-p-bottom_large">
+            <div class="slds-grid slds-wrap">
+                <div class="slds-col slds-size_9-of-12 slds-align-bottom headerCss">
+                    <span>Booking Form</span>
+                </div>
+                <div class="slds-col slds-size_3-of-12" style="padding-left: 3px;">
+                    <span><img src={imageUrl} alt="My Image" class="image" /></span>
+                </div>
+                <div class="slds-col slds-size_2-of-12 slds-align-bottom appDate">
+                    <span>Application Date:</span>
+                </div>
+                <div class="slds-col slds-size_10-of-12">
+                    <!-- <span><lightning-input type="date" class="input-no-border" style="width: 122px;">{dateval}</lightning-input></span> -->
+                    <span><input type="date" class="dateCss" name="todaydate" value={dateval} onchange={handleChange}></span>
+                </div>
+                <div class="slds-col slds-size_12-of-12 slds-p-top_large">
+                    <span class="unitDetails">UNIT DETAILS</span>
+                </div>
+                <div class="slds-col slds-size_5-of-12 slds-align-bottom unitLabels height0px">
+                    <span class="slds-float_left">Project Name</span><span class="slds-float_right colonPadding">:</span>
+                </div>
+                <div class="slds-col slds-size_7-of-12 height35px">
+                    <span><lightning-input type="text" class="input-no-border" value={projectName} readonly ></lightning-input></span>
+                </div>
+                <div class="slds-col slds-size_5-of-12 slds-align-bottom unitLabels height0px">
+                    <span class="slds-float_left">RERA No.</span><span class="slds-float_right colonPadding">:</span>
+                </div>
+                <div class="slds-col slds-size_7-of-12 height35px">
+                    <span><lightning-input type="text" class="input-no-border" value={RERA_No} readonly ></lightning-input></span>
+                </div>
+                <div class="slds-col slds-size_5-of-12 slds-align-bottom unitLabels height0px">
+                    <span class="slds-float_left">Unit Number and Type</span><span class="slds-float_right colonPadding">:</span>
+                </div>
+                <div class="slds-col slds-size_7-of-12 height35px">
+                    <span><lightning-input type="text" class="input-no-border" value={unitAndTypeValue} readonly></lightning-input></span>
+                </div>
+                <div class="slds-col slds-size_5-of-12 slds-align-bottom unitLabels height0px">
+                    <span class="slds-float_left">Super Built Area (in Sft)</span><span
+                        class="slds-float_right colonPadding">:</span>
+                </div>
+                <div class="slds-col slds-size_7-of-12 height35px">
+                    <span><lightning-input type="text" class="input-no-border" value={SuperBuiltUpArea} readonly></lightning-input></span>
+                </div>
+
+                <!-- Applicant Accordian-->
+                <div class="slds-col slds-size_12-of-12 applicantDetails">
+                    <template for:each={applicantList} for:item="acc" for:index="index">
+                        <div key={acc.Number} class="slds-section" data-id={acc.Number}>
+                            <h3 class="slds-section__title">
+                                <div aria-controls={acc.Number} class="slds-section__title-action slds-p-around_x-small" data-buttonid={acc.Number} style="background-color: #c18d0b; color:white;"
+                                    onclick={toggleSection}>
+                                    <lightning-icon icon-name="utility:down" alternative-text="button icon" size="x-small" class="slds-section__title-action-icon slds-button__icon_left white-utility-icon"></lightning-icon>
+                                    <span class="slds-truncate accordianText">Applicant {acc.Number} Details</span>
+                                    <template if:true={acc.deleteIcon}>
+                                            <lightning-icon icon-name="utility:delete" alternative-text="Delete icon" size="x-small" class="white-utility-icon" style="margin-left:75%; cursor: pointer;" data-index={index} onclick={deleteApplicant} ></lightning-icon>
+                                            </template>
+                            </div>
+                            </h3>
+                            <div class="slds-section__content ">
+                                <!-- <div class="slds-col slds-size_12-of-12 applicantDetails">
+                                    <span style="padding: 6px 15px 6px 15px; font-weight:600;" class="unitDetails">DETAILS</span>
+                                </div> -->
+                                <div class="slds-col slds-size_12-of-12" data-number={acc.Number}>
+                                    <div class="slds-grid slds-gutters" style="padding: 0%;">
+                                        <div class="slds-col slds-size_10-of-12" style="padding: 0 0 0 12px;">
+                                            <div class="slds-grid slds-grid_vertical ">
+                                                <div class="slds-col slds-grid slds-gutters">
+                                                    <div class="slds-col slds-size_2-of-6 slds-align-bottom unitLabels height0px">
+                                                        <span class="slds-float_left">First Name:</span><span style="color:rgb(190, 7, 7);">*</span><span class="slds-float_right">:</span>
+                                                        <!-- <span><lightning-combobox name="Salutation__c" placeholder="Salutation" value={applicantRec.Salutation__c} options={salutationOptions} onchange={handleChange} data-number={acc.Number} class="input-no-border"></lightning-combobox></span> -->
+                                                    </div>
+                                                    <div class="slds-col slds-size_4-of-6 height35px profileLeftLabels">
+                                                        <div class="slds-grid slds-gutters">
+                                                            <div class="slds-col slds-size_1-of-3">
+                                                                <span><lightning-combobox name="Salutation__c" placeholder="Salutation" value={applicantRec.Salutation__c} options={salutationOptions} onchange={handleChange} data-number={acc.Number} class="input-no-border"></lightning-combobox></span>
+                                                            </div>
+                                                            <div class="slds-col slds-size_2-of-3">
+                                                                <span><lightning-input name="First_Name__c" type="text" class="input-no-border" value={applicantRec.Name} onchange={handleChange} data-number={acc.Number}></lightning-input></span>
+                                                            </div>
+
+
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="slds-col slds-grid slds-gutters">
+                                                    <div class="slds-col slds-size_2-of-6 slds-align-bottom unitLabels height0px">
+                                                         <span class="slds-float_left">Last Name:</span><span class="slds-float_right">:</span>
+                                                        <!-- <span><lightning-combobox name="Salutation__c" placeholder="Salutation" value={applicantRec.Salutation__c} options={salutationOptions} onchange={handleChange} data-number={acc.Number} class="input-no-border"></lightning-combobox></span> -->
+                                                    </div>
+                                                    <div class="slds-col slds-size_4-of-6 height35px profileLeftLabels">
+                                                        <div class="slds-grid slds-gutters">
+                                                            
+                                                            <div class="slds-col slds-size_2-of-3">
+                                                                <span><lightning-input name="Last_Name__c" type="text" class="input-no-border" value={applicantRec.LName} onchange={handleChange} data-number={acc.Number}></lightning-input></span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="slds-col slds-grid slds-gutters">
+                                                    <div class="slds-col slds-size_1-of-3 slds-align-bottom unitLabels height0px firmText">
+                                                        <span class="">In case of firm/Company, </span><span>Name of Authorised Signatory:</span>
+                                                    </div>
+                                                    <div style="padding-top: 26px;" class="slds-col slds-size_2-of-3 height35px profileLeftLabels">
+                                                        <span><lightning-input name="Name_of_Authorised_Signatory__c" type="text" class="input-no-border" value={applicantRec.Name_of_Authorised_Signatory__c} onchange={handleChange} data-number={acc.Number}></lightning-input></span>
+                                                    </div>
+                                                </div>
+                                                <div class="slds-col slds-grid slds-gutters paddingTop28">
+                                                    <div class="slds-col slds-size_1-of-3 slds-align-bottom unitLabels height0px">
+                                                        <span class="slds-float_left">W/o, S/o, D/o</span><span class="slds-float_right">:</span>
+                                                    </div>
+                                                    <div class="slds-col slds-size_2-of-3 height35px profileLeftLabels">
+                                                        <span><lightning-input type="text" name="W_o_S_o_D_o__c" class="input-no-border" value={applicantRec.W_o_S_o_D_o__c} onchange={handleChange} data-number={acc.Number}></lightning-input></span>
+                                                    </div>
+                                                </div>
+                                                <div class="slds-col slds-grid slds-gutters paddingTop3">
+                                                    <div class="slds-col slds-size_1-of-3 slds-align-bottom unitLabels height0px">
+                                                        <span class="slds-float_left">Date of Birth</span><span class="slds-float_right">:</span>
+                                                    </div>
+                                                    <div class="slds-col slds-size_2-of-3 height35px profileLeftLabels">
+                                                        <span><lightning-input type="date" name="Date_Of_Birth__c" class="input-no-border" value={applicantRec.Date_Of_Birth__c} style="width: 180px;" onchange={handleChange} data-number={acc.Number}></lightning-input></span>
+                                                    </div>
+                                                </div>
+                                                <div class="slds-col slds-grid slds-gutters paddingTop3">
+                                                    <div class="slds-col slds-size_1-of-3 slds-align-bottom unitLabels height0px">
+                                                        <span class="slds-float_left">Spouse Name</span><span class="slds-float_right">:</span>
+                                                    </div>
+                                                    <div class="slds-col slds-size_2-of-3 height35px profileLeftLabels">
+                                                        <span><lightning-input name="Spouse_Name__c" type="text" class="input-no-border" value={applicantRec.Spouse_Name__c} onchange={handleChange} data-number={acc.Number}></lightning-input></span>
+                                                    </div>
+                                                </div>
+                        
+                                                <div class="slds-col">
+                                                    <div class="slds-grid slds-gutters paddingTop3 ">
+                                                        <div class="slds-col slds-size_1-of-2 ">
+                                                            <div class="slds-grid slds-gutters  ">
+                                                                <div class="slds-col slds-size_2-of-3 unitLabels slds-align-bottom paddingTop32px"
+                                                                    style="padding-top: 32px;">
+                                                                    <span>Spouse Date of Birth</span><span class="slds-float_right">:</span>
+                                                                </div>
+                                                                <div class="slds-col slds-size_1-of-3" style="width: 155px;">
+                                                                    <span><lightning-input name="Spouse_Date_of_Birth__c" type="date" class="input-no-border" value={applicantRec.Spouse_Date_of_Birth__c} onchange={handleChange} data-number={acc.Number}></lightning-input></span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="slds-col slds-size_1-of-2">
+                                                            <div class="slds-grid slds-gutters anniversaryCss">
+                                                                <div class="slds-col slds-size_2-of-3 unitLabels slds-align-bottom paddingTop32px" style="padding-top: 32px;">
+                                                                    <span class="slds-float_right ">Anniversary Date : </span>
+                                                                </div>
+                                                                <div class="slds-col slds-size_1-of-3 annDate" >
+                                                                    <span><lightning-input name="Anniversary_Date__c" type="date" class="input-no-border" value={applicantRec.Anniversary_Date__c} onchange={handleChange} data-number={acc.Number}></lightning-input></span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                        
+                                            </div>
+                                        </div>
+                                        <div class="slds-col slds-size_2-of-12" style="padding-left: 0%;">
+                                            <div class="uploadPicCss">
+                                                <img src={acc.imageUrl} alt="Uploaded Image" class="profilePic" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                </div>
+                                <div class="slds-col slds-size_12-of-12">
+                                    <div class="slds-grid slds-gutters">
+                                        <div class="slds-col slds-size_10-of-12"></div>
+                                        <div class="slds-col slds-size_2-of-12 kbMessage">File size should be between 20Kb to 200Kb</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="slds-col slds-size_12-of-12" style="padding-left: 12px;padding-top: 16px;">
+                                    <div class="slds-grid slds-gutters">
+                                        <div class="slds-col slds-size_3-of-12 unitLabels">
+                                            <span>Resident Status</span>
+                                        </div>
+                                        <div class="slds-col slds-size_6-of-12 options-container">
+                                            <div class="horizontal-radio-group">
+                                                <template for:each={residentStatusOptions} for:item="option">
+                                                    <div key={option.value} class="radio-item">
+                                                        <input type="radio" data-number={acc.Number} data-radioname ="Resident_Status__c" data-index={index}
+                                                            name={acc.residentStatus} value={option.value} id={option.value} onclick={handleChange}/>
+                                                        <label for={option.value}>{option.label}</label>
+                                                    </div>
+                                                </template>
+                                            </div>
+
+                                            <!-- <template for:each={residentStatusOptions} for:item="item">
+                                                <fieldset key={item.value} style="display: block; float: left;">
+                                                    <div class="slds-form-element__control">
+                                                        <span class="slds-radio">
+                                                            <input name={acc.Resident_Status__c} id={item.value} type="radio" value={item.value} onchange={handleChange} data-number={acc.Number} data-name="Resident_Status__c"/>
+                                                            <label class="slds-radio__label" for={item.value}>
+                                                                <span class="slds-radio_faux"></span>
+                                                                <span class="slds-form-element__label optionsNameCss" style="padding-right: 70px;">{item.label}</span>
+                                                            </label>
+                                                        </span>
+                                                    </div>
+                                                </fieldset>
+                                            </template> -->
+                                        </div>
+                                        <div class="slds-col slds-size_3-of-12 slds-align_absolute-center" style="padding-left: 45px;">
+                                            <lightning-button label="Upload Profile" variant="brand" onclick={handleUploadClick} data-number={acc.Number}></lightning-button>
+                                            <input type="file" accept="image/*" class="file-input" onchange={handleFileChange} style="display:none;" id="fileInput" data-number={acc.Number} name="profilePicData"/>
+                                        </div>
+                                    </div>
+                                </div>
+                
+                                <div class="slds-grid slds-gutters slds-size_12-of-12 twoCol" style="padding: 0 0 0 13px;margin-top: -14px;">
+                                    <div class="slds-col slds-size_6-of-12">
+                                        <div class="slds-grid slds-gutters ">
+                                            <div class=" twoColLabelWidth slds-col slds-size_4-of-12 unitLabels slds-align-bottom">
+                                                <span>Passport No</span><span class="slds-float_right">:</span>
+                                            </div>
+                                            <div class="slds-col slds-size_8-of-12">
+                                                <lightning-input style="width: 213px;" name="Passport_Number__c" type="text" class="input-no-border" value={applicantRec.Passport_Number__c} onchange={handleChange} data-number={acc.Number}></lightning-input>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="slds-col slds-size_6-of-12">
+                                        <div class="slds-grid slds-gutters twoColGutter">
+                                            <div class="twoColLabelWidth2 slds-col slds-size_6-of-12 unitLabels slds-align-bottom">
+                                                <span class="slds-float_right">Country of Residence:</span>
+                                            </div>
+                                            <div class="slds-col slds-size_6-of-12">
+                                                <lightning-input type="text" name="Country_of_Residence__c" class="input-no-border twoColInputWidth" value={applicantRec.Country_of_Residence__c} onchange={handleChange} data-number={acc.Number}></lightning-input>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slds-grid slds-gutters" style="margin-top: -10px;">
+                                    <div class="slds-col slds-size_3-of-12 slds-align-bottom unitLabels height0px" style="padding-left: 45px;">
+                                        <span class="panPadding">PAN</span><span class="">:</span>
+                                    </div>
+                                    <div class="slds-col slds-size_9-of-12 height35px">
+                                        <span><lightning-input type="text" name="PAN__c" class="input-no-border" style="margin-left: 34px;" value={applicantRec.PAN__c} onchange={handleChange} data-number={acc.Number}></lightning-input></span>
+                                    </div>
+                                </div>
+                                
+                
+                                <div class="slds-col slds-size_12-of-12 slds-align-bottom unitLabels height0px paddingBottom3px" style="padding-left: 32px;margin-right: -14px;padding-top: 40px; padding-bottom:0;">
+                                    <span class="">Permanent Address (For agreement purpose)</span>
+                                </div>
+                                <div class="slds-col slds-size_12-of-12 slds-align-bottom unitLabels height0px paddingBottom3px" style="padding-left: 32px;margin-right: -14px;padding-bottom: 40px;">
+                                    <div class="slds-grid slds-gutters">
+                                        <div class="slds-col slds-size_1-of-12 slds-align-bottom addressCss">
+                                            <span>Street</span>
+                                        </div>
+                                        <div class="slds-col slds-size_7-of-12">
+                                            <lightning-input type="text" name="Permanent_Address__Street__s" class="input-no-border" value={applicantRec.Permanent_Address__Street__s} onchange={handleChange} data-number={acc.Number}></lightning-input>
+                                        </div>
+                                        <div class="slds-col slds-size_1-of-12 slds-align-bottom addressCss" style="padding: 0%;">
+                                            <span>City</span>
+                                        </div>
+                                        <div class="slds-col slds-size_3-of-12">
+                                            <lightning-input type="text" name="Permanent_Address__City__s" class="input-no-border" value={applicantRec.Permanent_Address__City__s} onchange={handleChange} data-number={acc.Number}></lightning-input>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slds-col slds-size_12-of-12 slds-align-bottom unitLabels height0px paddingBottom3px" style="padding-left: 32px;margin-right: -14px;padding-bottom: 40px;">
+                                    <div class="slds-grid slds-gutters">
+                                        <div class="slds-col slds-size_1-of-12 slds-align-bottom addressCss">
+                                            <span>Country</span>
+                                        </div>
+                                        <div class="slds-col slds-size_3-of-12">
+                                            <lightning-combobox name="Permanent_Address__CountryCode__s"  value={applicantRec.Permanent_Address__CountryCode__s} options={permanentCountryOptions} onchange={handleChange} data-number={acc.Number} class="input-no-border"></lightning-combobox>
+                                            <!-- <lightning-input type="text" class="input-no-border" value={applicantRec.Spouse_Name__c}></lightning-input> -->
+                                        </div>
+                                        <div class="slds-col slds-size_1-of-12 slds-align-bottom addressCss">
+                                            <span>State</span>
+                                        </div>
+                                        <div class="slds-col slds-size_3-of-12">
+                                            <lightning-combobox name="Permanent_Address__StateCode__s"  value={applicantRec.Permanent_Address__StateCode__s} options={permanentStateOptions} onchange={handleChange} data-number={acc.Number} class="input-no-border"></lightning-combobox>
+                                            <!-- <lightning-input type="text" class="input-no-border" value={applicantRec.Spouse_Name__c}></lightning-input> -->
+                                        </div>
+                                        
+                                        <div class="slds-col slds-size_1-of-12 slds-align-bottom addressCss" style="padding: 0%;">
+                                            <span>Pin Code</span>
+                                        </div>
+                                        <div class="slds-col slds-size_3-of-12">
+                                            <lightning-input type="text" name="Permanent_Address__PostalCode__s" class="input-no-border" value={applicantRec.Permanent_Address__PostalCode__s} onchange={handleChange} data-number={acc.Number}></lightning-input>
+                                        </div>
+                                    </div>
+                                </div>
+                
+                                <!-- Address for Communication Details-->
+                                <div class="slds-col slds-size_12-of-12 slds-align-bottom unitLabels height0px paddingBottom3px" style="padding-left: 32px;margin-right: -14px;padding-top: 40px; padding-bottom:0;">
+                                    <span class="">Address for Communication</span>
+                                </div>
+                                <div class="slds-col slds-size_12-of-12 slds-align-bottom unitLabels height0px paddingBottom3px" style="padding-left: 32px;margin-right: -14px;padding-bottom: 40px;">
+                                    <div class="slds-grid slds-gutters">
+                                        <div class="slds-col slds-size_1-of-12 slds-align-bottom addressCss">
+                                            <span>Street</span>
+                                        </div>
+                                        <div class="slds-col slds-size_7-of-12">
+                                            <lightning-input type="text" name="Address_for_Communication__Street__s" class="input-no-border" value={applicantRec.Address_for_Communication__Street__s} onchange={handleChange} data-number={acc.Number}></lightning-input>
+                                        </div>
+                                        <div class="slds-col slds-size_1-of-12 slds-align-bottom addressCss" style="padding: 0%;">
+                                            <span>City</span>
+                                        </div>
+                                        <div class="slds-col slds-size_3-of-12">
+                                            <lightning-input type="text" name="Address_for_Communication__City__s" class="input-no-border" value={applicantRec.Address_for_Communication__City__s} onchange={handleChange} data-number={acc.Number}></lightning-input>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slds-col slds-size_12-of-12 slds-align-bottom unitLabels height0px paddingBottom3px" style="padding-left: 32px;margin-right: -14px;padding-bottom: 40px;">
+                                    <div class="slds-grid slds-gutters">
+                                        <div class="slds-col slds-size_1-of-12 slds-align-bottom addressCss">
+                                            <span>Country</span>
+                                        </div>
+                                        <div class="slds-col slds-size_3-of-12">
+                                            <lightning-combobox name="Address_for_Communication__CountryCode__s"  value={applicantRec.Address_for_Communication__CountryCode__s} options={addressForCommCountryOptions} onchange={handleChange} data-number={acc.Number} class="input-no-border"></lightning-combobox>
+                                            <!-- <lightning-input type="text" class="input-no-border" value={applicantRec.Spouse_Name__c}></lightning-input> -->
+                                        </div>
+                                        <div class="slds-col slds-size_1-of-12 slds-align-bottom addressCss">
+                                            <span>State</span>
+                                        </div>
+                                        <div class="slds-col slds-size_3-of-12">
+                                            <lightning-combobox name="Address_for_Communication__StateCode__s"  value={applicantRec.Address_for_Communication__StateCode__s} options={addressForCommStateOptions} onchange={handleChange} data-number={acc.Number} class="input-no-border"></lightning-combobox>
+                                            <!-- <lightning-input type="text" class="input-no-border" value={applicantRec.Spouse_Name__c}></lightning-input> -->
+                                        </div>
+                                        
+                                        <div class="slds-col slds-size_1-of-12 slds-align-bottom addressCss" style="padding: 0%;">
+                                            <span>Pin Code</span>
+                                        </div>
+                                        <div class="slds-col slds-size_3-of-12">
+                                            <lightning-input type="text" name="Address_for_Communication__PostalCode__s" class="input-no-border" value={applicantRec.Address_for_Communication__PostalCode__s} onchange={handleChange} data-number={acc.Number}></lightning-input>
+                                        </div>
+                                    </div>
+                                </div>
+                
+                                <div class="slds-grid slds-gutters slds-size_12-of-12 twoCol">
+                                    <div class="slds-col slds-size_6-of-12">
+                                        <div class="slds-grid slds-gutters ">
+                                            <div class=" twoColLabelWidth slds-col slds-size_4-of-12 unitLabels slds-align-bottom" style="padding-left: 26px;">
+                                                <span>Primary Contact No.</span><span class="slds-float_right" style="padding-right: 6px;">:</span>
+                                            </div>
+                                            <div class="slds-col slds-size_8-of-12">
+                                                <lightning-input style="width: 213px;" type="text" name="Phone" class="input-no-border" value={applicantRec.Phone} onchange={handleChange} data-number={acc.Number}></lightning-input>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="slds-col slds-size_6-of-12">
+                                        <div class="slds-grid slds-gutters twoColGutter">
+                                            <div class="twoColLabelWidth2 slds-col slds-size_6-of-12 unitLabels slds-align-bottom">
+                                                <span class="slds-float_right">Alternate Contact No:</span>
+                                            </div>
+                                            <div class="slds-col slds-size_6-of-12">
+                                                <lightning-input type="text" name="Alternate_Contact_Number__c" class="input-no-border twoColInputWidth" value={applicantRec.Alternate_Contact_Number__c} onchange={handleChange} data-number={acc.Number}></lightning-input>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                
+                                <div class="slds-grid slds-gutters slds-col">
+                                    <div class="slds-col slds-size_3-of-12 slds-align-bottom unitLabels height0px paddingBottom3px" style="padding-left: 44px;margin-right: -14px;">
+                                        <span class="">Email</span>
+                                    </div>
+                                    <div class="slds-col slds-size_1-of-12 slds-align-bottom unitLabels height0px" >
+                                        <span class="">:</span>
+                                    </div>
+                                    <div class="slds-col slds-size_8-of-12 height35px">
+                                        <span><lightning-input type="text" name="Email__c" class="input-no-border oneColInput" value={applicantRec.Email__c} onchange={handleChange} data-number={acc.Number}></lightning-input></span>
+                                    </div>
+                                </div>
+                                <div class="slds-grid slds-gutters">
+                                    <div class="slds-col slds-size_3-of-12 slds-align-bottom unitLabels height0px paddingBottom3px" style="padding-left: 44px;margin-right: -14px;">
+                                        <span class="">Official Email</span>
+                                    </div>
+                                    <div class="slds-col slds-size_1-of-12 slds-align-bottom unitLabels height0px" >
+                                        <span class="">:</span>
+                                    </div>
+                                    <div class="slds-col slds-size_8-of-12 height35px">
+                                        <span><lightning-input type="text" name="Official_Email__c" class="input-no-border oneColInput" value={applicantRec.Official_Email__c} onchange={handleChange} data-number={acc.Number}></lightning-input></span>
+                                    </div>
+                                </div>
+                                
+                                
+                
+                                <!-- Professional details-->
+                                <div class="slds-col slds-size_12-of-12 applicantDetails">
+                                    <span style="padding: 6px 30px 6px 30px; font-weight:600;" class="unitDetails">PROFESSIONAL DETAILS</span>
+                                </div>
+                                <div class="slds-col slds-size_12-of-12" style="padding: 15px 0 12px 12px; margin-bottom: -18px;">
+                                    <div class="slds-grid slds-gutters">
+                                        <div class="slds-col slds-size_3-of-12 unitLabels">
+                                            <span>Industry</span>
+                                        </div>
+                                        <div class="slds-col slds-size_9-of-12 options-container">
+                                            <div class="horizontal-radio-group">
+                                                <template for:each={industryOptions} for:item="option">
+                                                    <div key={option.value} class="radio-item">
+                                                        <input type="radio" data-number={acc.Number} data-radioname = "Industry__c" data-index={acc.Number}
+                                                            name={acc.industry} value={option.value} id={option.value} onclick={handleChange}/>
+                                                        <label for={option.value}>{option.label}</label>
+                                                    </div>
+                                                </template>
+                                            </div>
+
+                                            <!-- <template for:each={industryOptions} for:item="item">
+                                                <fieldset key={item.value} style="display: block; float: left;">
+                                                    <div class="slds-form-element__control">
+                                                        <span class="slds-radio">
+                                                            <input name={acc.industry} id={item.value} type="radio" value={item.value} onchange={handleChange} data-number={acc.Number} data-name="Industry__c"/>
+                                                            <label class="slds-radio__label" for={item.value}>
+                                                                <span class="slds-radio_faux"></span>
+                                                                <span class="slds-form-element__label optionsNameCss">{item.label}</span>
+                                                            </label>
+                                                        </span>
+                                                    </div>
+                                                </fieldset>
+                                            </template> -->
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slds-grid slds-gutters">
+                                    <div class="slds-col slds-size_3-of-12 slds-align-bottom unitLabels height0px paddingBottom3px" style="padding-left: 44px;margin-right: -14px;">
+                                        <span class="">If Others,Please specify</span>
+                                    </div>
+                                    <div class="slds-col slds-size_1-of-12 slds-align-bottom unitLabels height0px" >
+                                        <span class="">:</span>
+                                    </div>
+                                    <div class="slds-col slds-size_8-of-12 height35px">
+                                        <span><lightning-input name="If_Others_Industry__c" type="text" class="input-no-border oneColInput" value={applicantRec.If_Others_Industry__c} onchange={handleChange} data-number={acc.Number}></lightning-input></span>
+                                    </div>
+                                </div>
+                                
+                                <div class="slds-grid slds-gutters">
+                                    <div class="slds-col slds-size_3-of-12 slds-align-bottom unitLabels height0px paddingBottom3px"
+                                    style="padding-left: 44px;margin-right: -14px;">
+                                        <span class="">Company / Firm Name</span>
+                                    </div>
+                                    <div class="slds-col slds-size_1-of-12 slds-align-bottom unitLabels height0px" >
+                                        <span class="">:</span>
+                                    </div>
+                                    <div class="slds-col slds-size_8-of-12 height35px">
+                                        <span><lightning-input type="text" name="Company_Firm_Name__c" class="input-no-border oneColInput" value={applicantRec.Company_Firm_Name__c} onchange={handleChange} data-number={acc.Number}></lightning-input></span>
+                                    </div>
+                                </div>
+                                
+                                <div class="slds-grid slds-gutters">
+                                    <div class="slds-col slds-size_3-of-12 slds-align-bottom unitLabels height0px paddingBottom3px" style="padding-left: 44px;margin-right: -14px;">
+                                        <span class="">Location</span>
+                                    </div>
+                                    <div class="slds-col slds-size_1-of-12 slds-align-bottom unitLabels height0px" >
+                                        <span class="">:</span>
+                                    </div>
+                                    <div class="slds-col slds-size_8-of-12 height35px">
+                                        <span><lightning-input type="text" name="Location__c" class="input-no-border oneColInput" value={applicantRec.Location__c} onchange={handleChange} data-number={acc.Number}></lightning-input></span>
+                                    </div>
+                                </div>
+                                
+                                <div class="slds-col slds-size_12-of-12" style="padding-left: 12px;padding-top: 36px;">
+                                    <div class="slds-grid slds-gutters">
+                                        <div class="slds-col slds-size_3-of-12 unitLabels">
+                                            <span>Designation</span>
+                                        </div>
+                                        <div class="slds-col slds-size_9-of-12 options-container">
+                                            <div class="horizontal-radio-group">
+                                                <template for:each={designationOptions} for:item="option">
+                                                    <div key={option.value} class="radio-item">
+                                                        <input type="radio" data-number={acc.Number} data-radioname = "Designation__c" data-index={index}
+                                                            name={acc.designation} value={option.value} id={option.value} onclick={handleChange}/>
+                                                        <label for={option.value}>{option.label}</label>
+                                                    </div>
+                                                </template>
+                                            </div>
+
+                                            <!-- <template for:each={designationOptions} for:item="item">
+                                                <fieldset key={item.value} style="display: block; float: left;">
+                                                    <div class="slds-form-element__control">
+                                                        <span class="slds-radio">
+                                                            <input name={acc.designation} id={item.value} type="radio" value={item.value} onchange={handleChange} data-number={acc.Number} data-name="Designation__c"/>
+                                                            <label class="slds-radio__label" for={item.value}>
+                                                                <span class="slds-radio_faux"></span>
+                                                                <span class="slds-form-element__label optionsNameCss">{item.label}</span>
+                                                            </label>
+                                                        </span>
+                                                    </div>
+                                                </fieldset>
+                                            </template> -->
+                                        </div>
+                                    </div>
+                                </div>
+                
+                                <div class="slds-col slds-size_12-of-12 slds-p-top_large">
+                                    <span class="unitDetails">OTHER DETAILS</span>
+                                </div>
+                                <div class="slds-col slds-size_12-of-12" style="padding-left: 12px;padding-top: 25px;">
+                                    <div class="slds-grid slds-gutters">
+                                        <div class="slds-col slds-size_3-of-12 unitLabels">
+                                            <span>Annual Household Income (In Rupees)</span>
+                                        </div>
+                                        <div class="slds-col slds-size_9-of-12 options-container">
+                                            <div class="horizontal-radio-group">
+                                                <template for:each={annualIncomeOptions} for:item="option">
+                                                    <div key={option.value} class="radio-item">
+                                                        <input type="radio" data-number={acc.Number} data-radioname = "Annual_Household_Income__c" data-index={index}
+                                                            name={acc.annualHousehold} value={option.value} id={option.value} onclick={handleChange}/>
+                                                        <label for={option.value}>{option.label}</label>
+                                                    </div>
+                                                </template>
+                                            </div>
+
+                                            <!-- <template for:each={annualIncomeOptions} for:item="item">
+                                                <fieldset key={item.value} style="display: block; float: left;">
+                                                    <div class="slds-form-element__control">
+                                                        <span class="slds-radio">
+                                                            <input name="Annual_Household_Income__c" id={item.value} type="radio" value={item.value} onchange={handleChange} data-number={acc.Number} data-name="Annual_Household_Income__c"/>
+                                                            <label class="slds-radio__label" for={item.value}>
+                                                                <span class="slds-radio_faux"></span>
+                                                                <span class="slds-form-element__label optionsNameCss">{item.label}</span>
+                                                            </label>
+                                                        </span>
+                                                    </div>
+                                                </fieldset>
+                                            </template> -->
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slds-col slds-size_12-of-12" style="padding-left: 12px;padding-top: 15px;">
+                                    <div class="slds-grid slds-gutters">
+                                        <div class="slds-col slds-size_3-of-12 unitLabels">
+                                            <span>Purpose of Purchase</span>
+                                        </div>
+                                        <div class="slds-col slds-size_9-of-12 options-container">
+                                            <div class="horizontal-radio-group">
+                                                <template for:each={purposeOfPurchaseOptions} for:item="option">
+                                                    <div key={option.value} class="radio-item">
+                                                        <input type="radio" data-number={acc.Number} data-radioname = "Purpose_of_Purchase__c" data-index={index}
+                                                            name={acc.purposeOfPurchase} value={option.value} id={option.value} onclick={handleChange}/>
+                                                        <label for={option.value}>{option.label}</label>
+                                                    </div>
+                                                </template>
+                                            </div>
+
+                                            <!-- <template for:each={purposeOfPurchaseOptions} for:item="item">
+                                                <fieldset key={item.value} style="display: block; float: left;">
+                                                    <div class="slds-form-element__control">
+                                                        <span class="slds-radio">
+                                                            <input name="Purpose_of_Purchase__c" id={item.value} type="radio" value={item.value} onchange={handleChange} data-number={acc.Number} data-name="Purpose_of_Purchase__c"/>
+                                                            <label class="slds-radio__label" for={item.value}>
+                                                                <span class="slds-radio_faux"></span>
+                                                                <span class="slds-form-element__label optionsNameCss">{item.label}</span>
+                                                            </label>
+                                                        </span>
+                                                    </div>
+                                                </fieldset>
+                                            </template> -->
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slds-col slds-size_12-of-12" style="padding-left: 12px;padding-top: 15px;">
+                                    <div class="slds-grid slds-gutters">
+                                        <div class="slds-col slds-size_3-of-12 unitLabels">
+                                            <span>Source of Funding</span>
+                                        </div>
+                                        <div class="slds-col slds-size_9-of-12 options-container">
+                                            <div class="horizontal-radio-group">
+                                                <template for:each={sourceOfFundingOptions} for:item="option">
+                                                    <div key={option.value} class="radio-item">
+                                                        <input type="radio" data-number={acc.Number} data-radioname = "Source_of_Funding__c" data-index={index}
+                                                            name={acc.sourceOfFunding} value={option.value} id={option.value} onclick={handleChange}/>
+                                                        <label for={option.value}>{option.label}</label>
+                                                    </div>
+                                                </template>
+                                            </div>
+
+                                            <!-- <template for:each={sourceOfFundingOptions} for:item="item">
+                                                <fieldset key={item.value} style="display: block; float: left;">
+                                                    <div class="slds-form-element__control">
+                                                        <span class="slds-radio">
+                                                            <input name="Source_of_Funding__c" id={item.value} type="radio" value={item.value} onchange={handleChange} data-number={acc.Number} data-name="Source_of_Funding__c"/>
+                                                            <label class="slds-radio__label" for={item.value}>
+                                                                <span class="slds-radio_faux"></span>
+                                                                <span class="slds-form-element__label optionsNameCss">{item.label}</span>
+                                                            </label>
+                                                        </span>
+                                                    </div>
+                                                </fieldset>
+                                            </template> -->
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slds-col slds-size_12-of-12" style="padding: 15px 0 15px 12px;">
+                                    <div class="slds-grid slds-gutters">
+                                        <div class="slds-col slds-size_3-of-12 unitLabels">
+                                            <span>Source of Information</span>
+                                        </div>
+                                        <div class="slds-col slds-size_9-of-12 options-container">
+                                            <div class="horizontal-radio-group">
+                                                <template for:each={sourceOfInfoOptions} for:item="option">
+                                                    <div key={option.value} class="radio-item">
+                                                        <input type="radio" data-number={acc.Number} data-radioname = "Source_of_Information__c" data-index={index}
+                                                            name={acc.sourceOfInfo} value={option.value} id={option.value} onclick={handleChange}/>
+                                                        <label for={option.value}>{option.label}</label>
+                                                    </div>
+                                                </template>
+                                            </div>
+
+                                            <!-- <template for:each={sourceOfInfoOptions} for:item="item">
+                                                <fieldset key={item.value} style="display: block; float: left;">
+                                                    <div class="slds-form-element__control">
+                                                        <span class="slds-radio">
+                                                            <input name="Source_of_Information__c" id={item.value} type="radio" value={item.value} onchange={handleChange} data-number={acc.Number} data-name="Source_of_Information__c"/>
+                                                            <label class="slds-radio__label" for={item.value}>
+                                                                <span class="slds-radio_faux"></span>
+                                                                <span class="slds-form-element__label optionsNameCss">{item.label}</span>
+                                                            </label>
+                                                        </span>
+                                                    </div>
+                                                </fieldset>
+                                            </template> -->
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slds-col slds-size_12-of-12" style="padding: 15px 0 15px 12px; margin-bottom: -18px;" data-index={index}>
+                                    <div class="slds-grid slds-gutters" data-index={index}>
+                                        <div class="slds-col slds-size_3-of-12 unitLabels">
+                                            <span>Work Function / Role</span>
+                                        </div>
+                                        <div class="slds-col slds-size_9-of-12 options-container" data-index={index}>
+                                            <div class="horizontal-radio-group">
+                                                <template for:each={workFunctionOptions} for:item="option">
+                                                    <div key={option.value} class="radio-item">
+                                                        <input type="radio" data-number={acc.Number} data-radioname = "Work_Function_Role__c" name={acc.workFunction}
+                                                            value={option.value} id={option.value} onclick={handleChange} />
+                                                        <label for={option.value}>{option.label}</label>
+                                                    </div>
+                                                </template>
+                                            </div>
+
+                                            <!-- <template for:each={workFunctionOptions} for:item="item">
+                                                <fieldset key={item.value} style="display: block; float: left;">
+                                                    <div class="slds-form-element__control">
+                                                        <span class="slds-radio">
+                                                            <input name="Work_Function_Role__c" id={item.value} type="radio" value={item.value} onchange={handleChange} data-name="Work_Function_Role__c"/>
+                                                            <label class="slds-radio__label" for={item.value}>
+                                                                <span class="slds-radio_faux"></span>
+                                                                <span class="slds-form-element__label optionsNameCss">{item.label}</span>
+                                                            </label>
+                                                        </span>
+                                                    </div>
+                                                </fieldset>
+                                            </template> -->
+                                        </div>
+                                    </div>
+                                </div>
+                
+                                <div class="slds-grid slds-gutters">
+                                    <div class="slds-col slds-size_3-of-12 slds-align-bottom unitLabels height0px paddingBottom3px" style="padding-left: 44px;margin-right: -14px;">
+                                        <span class="">If Others,Please specify</span>
+                                    </div>
+                                    <div class="slds-col slds-size_1-of-12 slds-align-bottom unitLabels height0px" >
+                                        <span class="">:</span>
+                                    </div>
+                                    <div class="slds-col slds-size_8-of-12 height35px">
+                                        <span><lightning-input type="text" name="If_Others_Work_Funtion_Role__c" class="input-no-border oneColInput" value={applicantRec.If_Others_Work_Funtion_Role__c} onchange={handleChange} data-number={acc.Number}></lightning-input></span>
+                                    </div>
+                                </div>
+                                
+                
+                                <div class="slds-col slds-size_12-of-12 slds-align-bottom unitLabels height0px paddingBottom3px" style="padding-left: 32px;margin-right: -14px;padding-top: 40px; padding-bottom:0;">
+                                    <span class="">If Referred by Friends / Relatives / Self</span>
+                                </div>
+                
+                                <div class="slds-grid slds-gutters slds-size_12-of-12 twoCol" style="height: 36px;">
+                                    <div class="slds-col slds-size_6-of-12">
+                                        <div class="slds-grid slds-gutters ">
+                                            <div class=" twoColLabelWidth slds-col slds-size_3-of-6 unitLabels slds-align-bottom" style="padding-left: 26px;">
+                                                <span>Name</span><span class="slds-float_right">:</span>
+                                            </div>
+                                            <div class="slds-col slds-size_3-of-6">
+                                                <lightning-input style="width: 213px;" name="Referral_Name__c" type="text" class="input-no-border" value={applicantRec.Referral_Name__c} onchange={handleChange} data-number={acc.Number}></lightning-input>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="slds-col slds-size_6-of-12 widthCss2Col">
+                                        <div class="slds-grid slds-gutters ">
+                                            <div class="  slds-col slds-size_3-of-6 unitLabels slds-align-bottom">
+                                                <span class="slds-float_right">Project Name :</span>
+                                            </div>
+                                            <div class="slds-col slds-size_3-of-6">
+                                                <lightning-input style="width: 213px;" type="text" name="Referral_Project_Name__c" class="input-no-border" value={applicantRec.Referral_Project_Name__c} onchange={handleChange} data-number={acc.Number}></lightning-input>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slds-grid slds-gutters slds-size_12-of-12 twoCol" style="height: 36px; padding-bottom:70px;">
+                                    <div class="slds-col slds-size_6-of-12">
+                                        <div class="slds-grid slds-gutters ">
+                                            <div class=" twoColLabelWidth slds-col slds-size_3-of-6 unitLabels slds-align-bottom" style="padding-left: 26px;">
+                                                <span>Unit No.</span><span class="slds-float_right">:</span>
+                                            </div>
+                                            <div class="slds-col slds-size_3-of-6">
+                                                <lightning-input style="width: 213px;" type="text" name="Referral_Unit_Number__c" class="input-no-border" value={applicantRec.Referral_Unit_Number__c} onchange={handleChange} data-number={acc.Number}></lightning-input>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="slds-col slds-size_6-of-12 widthCss2Col">
+                                        <div class="slds-grid slds-gutters ">
+                                            <div class="  slds-col slds-size_3-of-6 unitLabels slds-align-bottom">
+                                                <span class="slds-float_right">Phone No :</span>
+                                            </div>
+                                            <div class="slds-col slds-size_3-of-6">
+                                                <lightning-input style="width: 213px;" name="Referral_Phone_Number__c" type="text" class="input-no-border" value={applicantRec.Referral_Phone_Number__c} onchange={handleChange} data-number={acc.Number}></lightning-input>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+            
+            <div class="slds-align_absolute-center" style="padding-top:  25px;">
+                <div class="customButtonCss" onclick={handleCancel}>Cancel</div>
+                <lightning-button variant="brand" label="Submit" onclick={handleSubmit} class="slds-m-left_x-small newButtonCss"></lightning-button>
+                <lightning-button variant="brand" label="Add Another Applicant" onclick={addAnotherApplicant} class="slds-m-left_x-small newButtonCss"></lightning-button>
+            </div>
+        </div>
+    </template>
+    <template if:true={showSpinner}>
+        <div class="slds-p-around_large" style="height: 450px;">
+            <c-custom-spinner spinner-text="Creating Applicant Records...." second-text={nextText}></c-custom-spinner>
+        </div>
+    </template>
+    </lightning-card>
+
+</template>

@@ -1,0 +1,68 @@
+<template>
+    <lightning-card title="Account Tagging Options" class="custom-card">
+        <div class="slds-p-around_medium">
+
+            <!-- RADIO BUTTON -->
+            <div class="slds-m-bottom_medium">
+                <lightning-radio-group
+                    name="accountOptions"
+                    label="Select an Option"
+                    options={accountOptions}
+                    value={optionSelected}
+                    onchange={handleOptionChange}
+                    type="radio"
+                    class="custom-radio-group">
+                </lightning-radio-group>
+            </div>
+
+            <!-- CREATE NEW ACCOUNT -->
+            <template if:true={isCreateNew}>
+                <div class="slds-box slds-theme_default slds-m-top_medium">
+                    <lightning-record-edit-form
+                        object-api-name="Account"
+                        onsuccess={handleAccountCreated}
+                        class="custom-form">
+
+                        <lightning-messages></lightning-messages>
+
+                        <lightning-input-field field-name="Name"></lightning-input-field>
+                        <lightning-input-field field-name="Phone"></lightning-input-field>
+                        <lightning-input-field field-name="Email__c"></lightning-input-field>
+                        <lightning-input-field field-name="Industry"></lightning-input-field>
+                        <lightning-input-field field-name="Website"></lightning-input-field>
+
+                        <div class="slds-m-top_medium slds-align_absolute-center">
+                            <lightning-button
+                                variant="brand"
+                                type="submit"
+                                label="Create Account"
+                                class="custom-button">
+                            </lightning-button>
+                        </div>
+                    </lightning-record-edit-form>
+                </div>
+            </template>
+
+            <!-- FETCH EXISTING ACCOUNT -->
+            <template if:true={isFetchExisting}>
+                <div class="slds-box slds-theme_default slds-m-top_medium">
+                    <lightning-record-picker
+                        label="Select Existing Account"
+                        placeholder="Search Account"
+                        object-api-name="Account"
+                        onchange={handleAccountChange}>
+                    </lightning-record-picker>
+
+                    <div class="slds-m-top_medium slds-align_absolute-center">
+                        <lightning-button
+                            label="Save"
+                            onclick={handleSave}
+                            variant="brand"
+                            class="custom-button">
+                        </lightning-button>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </lightning-card>
+</template>

@@ -1,0 +1,122 @@
+<aura:component controller = "LeadDetailsCSVUploadController" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickActionWithoutHeader" access="global" >
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:html tag="style">
+        .slds-modal__container{
+            max-width: 90rem !important;
+            width:90% !important;
+        }
+        .custom-margin {	
+            margin-bottom: 20px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .slds-scrollable::-webkit-scrollbar-track {
+            border-radius: 10px;
+            padding: 2px 0;
+            border: 1px solid #EBEAEA;
+            background-color: white;
+        }
+        .slds-scrollable::-webkit-scrollbar {
+            width: 20px;
+        }
+        
+        .slds-scrollable::-webkit-scrollbar-thumb {
+            border-radius: 10px;
+            box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+            background-color: #EBEAEA;
+        }
+    </aura:html>
+    
+    <aura:html tag="style">
+        .cuf-content {
+        padding: 0 0rem !important;
+        }
+        .slds-p-around--medium {
+        padding: 0rem !important;
+        }       
+        .slds-modal__content{
+        overflow-y:hidden !important;
+        height:unset !important;
+        max-height:unset !important;
+        }
+    </aura:html>
+    
+    
+    <aura:attribute name="TableContent" type="String" description=" Show the Result class"/>
+    <aura:attribute name="TargetFileName" type="String" description="Name of the file"/> 
+    <aura:attribute name="tableheaders" type="Object[]"/>
+    <aura:attribute name="fileContentData" type="String"/>
+    <aura:attribute name="formLabel" type="String"/>
+    <aura:attribute name="NumOfRecords" type="Integer"/>
+    <aura:attribute name="showMain" type="Boolean" default="true"/>
+    <aura:attribute name="showUpload" type="Boolean" default="true"/>
+    <aura:attribute name="loading" type="Boolean" default="false"/>
+    <aura:attribute name="showError" type="Boolean" default="false"/>
+    <aura:attribute name="recordId" type="String"/>
+    <aura:attribute name="fileName" type="String" default="No File Selected."/>
+    <aura:attribute name="newfileName" type="String" default="No File Selected."/>
+    <aura:attribute name="buttonLabel" type="string" default="Upload File" access="global" description="The label of the button."/>
+    <aura:attribute name="disabled" type="Boolean" default="false" access="global"/>
+
+    <div style="background-color: white;">
+    <aura:if isTrue="{!v.showUpload}">
+        <div class="slds-border_bottom" style="text-align:center;font-size:25px;font-weight:600;font-family: SF Pro Display; background-color:#9D6200; color:#EBEAEA;">Upload Lead Details</div>
+        
+        <div class="slds-form-element" aura:id="form-container">
+            <!-- Outer form label -->
+            
+            <aura:if isTrue="{!v.showError}">
+                <div class="exampleHolder">
+                    <lightning:spinner alternativeText="Loading" size="small" />
+                </div>
+            </aura:if>
+            <span class="slds-form-element__label" id="file-selector-primary-label">{!v.formLabel}</span>
+            <div class="slds-form-element__control">
+                <div class="slds-align_absolute-center slds-file-selector slds-file-selector_files slds-is-relative">
+                    <!-- Loading indicator -->
+                    <aura:if isTrue="{!v.loading}">
+                        <lightning:spinner alternativeText="Loading" size="small" variant="brand"/>
+                    </aura:if>             
+                    <div class="slds-grid slds-gutters">
+                        <div class="slds-col slds-size_2-of-4.5">
+                            <span>
+                                <lightning:input aura:id="fuploader" onchange="{!c.onchange}" type="file" name="file" label="Upload File" multiple="false"/>
+                                <div class="slds-text-body_small slds-text-color_error">{!v.newfileName}</div>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+    <aura:if isTrue="{!v.showMain}">
+        
+        <aura:set attribute="else">
+            <div class="slds-m-around_x-small" style="z-index: 1; padding-bottom: 10px;">
+                <div style="margin: 3%;"> 
+                    <ui:outputRichText class="uiOutputRichText slds-m-around--large" value="{!v.TargetFileName}"/>
+                    <ui:outputRichText class="uiOutputRichText slds-m--around-large slds-truncate slds-has-flexi-truncate" value="{!v.TableContent}"/>
+                </div>
+            </div>
+            <div class="slds-align--absolute-center">
+                <lightning:button label="Save" aura:id="saveButton" variant="brand" onclick="{!c.processFileContent}"/>
+
+                <lightning:button label="Cancel" variant="brand" onclick="{!c.cancel}"/>
+            </div>
+        </aura:set>
+    </aura:if>
+    <br/><br/>
+    
+
+    <aura:set attribute="else">
+        <!-- Message indicating function not accessible -->
+        <div class="slds-align--absolute-center" style="margin-top:5%;font-size:large;">
+            <p>You do not have the necessary permissions to access this feature.</p>
+        </div>
+    </aura:set>
+    </aura:if>
+    </div>
+
+    
+</aura:component>

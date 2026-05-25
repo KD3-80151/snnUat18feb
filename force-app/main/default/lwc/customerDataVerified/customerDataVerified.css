@@ -1,0 +1,9 @@
+.cstm_btn{
+    color: white;
+    width: 80px;
+    height: 30px;
+    border-radius: 5px;
+    border: 1px solid #906a09;
+    background-color: #906a09;
+    margin: 10px;
+}

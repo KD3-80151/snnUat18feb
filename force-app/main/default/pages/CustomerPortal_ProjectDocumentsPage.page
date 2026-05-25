@@ -1,0 +1,115 @@
+<apex:page showHeader="false" standardStylesheets="false" sidebar="false" docType="html-5.0" controller="CustomerPortalController">
+    <html>
+        <div ng-controller="projectdoc_ctrl">
+            <head>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous"/>
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+                <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" rel="stylesheet" crossorigin="anonymous"/>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+                <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+                
+            </head>
+            
+        
+            <style>
+                .title-color {
+                    color: #1F1E1E !important;
+                }
+                .accordion-item {
+                    border: none !important; /* Remove border */
+                    border-radius: 10px !important;
+                    margin-bottom: 10px !important; /* Add gap between accordion items */
+                }
+                .accordion-button {
+                    background-color: #A3A3A3 !important;
+                    color: white !important;
+                    border-radius: 10px !important; /* Apply border radius */
+                    font-weight: 500 !important;
+                }
+                .accordion-button:not(.collapsed) {
+                    background-color: #A3A3A3 !important;
+                    color: white !important;
+                    border-radius: 10px !important;
+                    font-weight: bold !important;
+                }
+                .accordion-button::after {
+                    filter: invert(1) !important; /* Change the color of the arrow to white */
+                }
+                .accordion-body {
+                    background-color: #EBEAEA !important;
+                    border-radius: 10px !important;
+                    margin-top: 10px !important; /* Add gap between accordion header and body */
+                    padding: 20px !important; /* Add padding inside the accordion body */
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important; /* Add box-shadow */
+                }
+                .btn-view {
+                    background-color: #9D6200 !important;
+                    border: none;
+                    color: white !important;
+                    border-radius: 8px !important;
+                }
+            </style>
+            <body>
+                <div class="container-fluid">
+                    <h2 class="title-color mb-4">Project Documents</h2>
+                    <p>Access and manage your project documents with SNN Estates below. Stay updated on project plans, specifications, and progress reports. Our platform ensures easy navigation and secure document handling. For any questions or additional assistance, please don't hesitate to contact our support team.</p>
+                    <div class="accordion" id="projectAccordian">
+                        <div class="accordion-item" ng-repeat="project in projects">
+                            <h2 class="accordion-header" id="project-{{ $index }}">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseproject-{{ $index }}" aria-expanded="false" aria-controls="collapseproject-{{ $index }}" ng-click="getApplicantDocuments(project.Id)">
+                                    {{project.Name}}
+                                </button>
+                            </h2>
+                            <div id="collapseproject-{{ $index }}" class="accordion-collapse collapse" aria-labelledby="headingproject-{{ $index }}" data-bs-parent="#projectAccordian">
+                                <div class="accordion-body">
+                                    <div ng-if = "docs.length > 0" class="accordion nested-accordion" id="docAccordian-{{ $index }}">
+                                        <div class="accordion-item" ng-repeat="doc in docs">
+                                            <h2 class="accordion-header" id="doc-{{ $parent.$index }}-{{ $index }}">
+                                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDoc-{{ $parent.$index }}-{{ $index }}" aria-expanded="false" aria-controls="collapseDoc-{{ $parent.$index }}-{{ $index }}">
+                                                    {{doc.Name}}
+                                                </button>
+                                            </h2>  
+                                            <div id="collapseDoc-{{ $parent.$index }}-{{ $index }}" class="accordion-collapse collapse" aria-labelledby="headingDoc-{{ $parent.$index }}-{{ $index }}" data-bs-parent="#docAccordian-{{ $parent.$index }}">
+                                                <div class="accordion-body" style="background-color:#fafafa !important;">
+                                                    <div class="d-flex justify-content-between mb-3" ng-repeat="subDoc in doc.Sub_Documents__r">
+                                                        <p>{{subDoc.Name}}</p>
+                                                        <button class="btn btn-danger btn-sm" ng-click="openPreview(subDoc.File_URL__c)"><i class="fa fa-eye"></i></button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div ng-if="docs.length == 0" class="no-payment-card">
+                            <div class="card-body">
+                                <h5 class="card-title">Project Documents Not Found</h5>
+                                
+                            </div>
+                        </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Modal for viewing documents -->
+                    <div class="modal fade" id="filePreviewModalProjectDocs" tabindex="-1" role="dialog" aria-labelledby="filePreviewModalProjectDocsLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title text-center w-100" id="filePreviewModalProjectDocsLabel">File Preview</h5>
+                                    <button type="button" class="close" data-dismiss="modal" ng-click="closeModal()" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <iframe id="filePreviewFrameProjectDocs" style="width: 100%; height: 500px;" frameborder="0"></iframe>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal" ng-click="closeModal()">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </body>
+        </div>
+    </html>
+</apex:page>

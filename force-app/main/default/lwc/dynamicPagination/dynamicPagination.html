@@ -1,0 +1,22 @@
+<template>
+    <div class="slds-align_absolute-center slds-m-top_large">
+        <p class='slds-m-right_small'>Showing {pageParam} of {totalRecords} rows</p>
+        <lightning-button label="&#9668;&#9668;" class='slds-m-right_small slds-p-left_small slds-border_left'
+            disabled={disablePrev} onclick={handleFirst} style="font-family: sans-serif;"></lightning-button>
+        <lightning-button label="&#9668;" class='slds-m-right_small' disabled={disablePrev} onclick={handlePrev}
+            style="font-family: sans-serif;"></lightning-button>
+        <template if:true={pageOptionsLoaded}>
+            <lightning-combobox name="progress" label="Page" class='slds-m-right_small PageSelectors' value={currentPage}
+                options={pageOptions} dropdown-alignment='bottom-right' onchange={handlePageChange} variant='label-hidden'>
+            </lightning-combobox>
+        </template>
+        <lightning-button label="&#9654;" class='slds-m-right_small' disabled={disableNext} onclick={handleNext}
+            style="font-family: sans-serif;"></lightning-button>
+        <lightning-button label="&#9654;&#9654;" class='slds-p-right_small slds-m-right_small slds-border_right'
+            disabled={disableNext} onclick={handleLast} style="font-family: sans-serif;"></lightning-button>
+        <lightning-combobox name="progress" label="Record to Display"
+            class='slds-m-right_small PageSelectors slds-float_right' value={pageLimit} dropdown-alignment='bottom-right'
+            placeholder="Limit" options={pageLimitOptions} onchange={handleLimitChange} variant='label-hidden'>
+        </lightning-combobox>
+    </div>
+</template>

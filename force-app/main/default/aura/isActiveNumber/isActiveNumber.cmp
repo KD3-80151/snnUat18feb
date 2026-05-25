@@ -1,0 +1,46 @@
+<aura:component controller ="DialerCmpCntrl"  implements="flexipage:availableForAllPageTypes,lightning:utilityItem" access="global" >
+    <!-- controller ="DialerCmpCntrl" -->
+    <aura:attribute name="checked" type="Boolean" default="false"/>
+    <aura:attribute name="spinner" type="Boolean" default="false"/>
+    <aura:attribute name="breakReason" type="string" default=""/>
+    <aura:attribute name="isActive" type="boolean" default="true"/>
+    <aura:attribute name="disabletoggle" type="boolean" default="false"/>
+    <aura:attribute name="username" type="String" default=""/>
+    <aura:attribute name="password" type="String" default=""/>
+    <aura:attribute name="loggedIn" type="Boolean" default="false"/>
+    <aura:attribute name="disableLogin" type="boolean" />
+    
+    <aura:attribute name="currentUser" type="Object"/>
+    
+    <!-- Force recordData to get the current logged-in user's info -->
+    <force:recordData recordId="{!$SObjectType.CurrentUser.Id}" fields="Name,Profile.Name" targetFields="{!v.currentUser}" mode="VIEW"
+    />
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <div class="slds-p-around_x-small">
+        <div class="slds-p-bottom_x-small">
+        <lightning:select label="Break Reason" value="{!v.breakReason}">
+            <option value="">--None--</option>
+            <option value="Tea break" >Tea break</option>
+            <option value="Lunch break" >Lunch break</option>
+            <option value="Meeting" >Meeting</option>
+            <option value="Manual call" >Manual call</option>
+            
+        </lightning:select>
+        </div>
+        <lightning:input name="toggle"
+                         type="toggle"
+                         checked="{!v.checked}"
+                         onchange="{!c.handleIsActive}"
+                         messageToggleActive="Online"     
+                         messageToggleInactive="Offline" disabled ="{!v.disabletoggle}"> 
+        </lightning:input>
+        
+        <div style="padding-top: 20px;" class="slds-align_absolute-center">
+            <lightning:button label="Logout" variant="base" onclick="{!c.handleLogout}" disabled="{!NOT(v.disableLogin)}"/>
+        </div>
+    </div>
+    <aura:if isTrue="{!v.spinner}">
+        <lightning:spinner class="spins" size="small" variant="brand" alternativeText="Loading" />
+    </aura:if>
+</aura:component>

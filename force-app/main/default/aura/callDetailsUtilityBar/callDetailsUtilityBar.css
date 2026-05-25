@@ -1,0 +1,4 @@
+.THIS .custom-shadow {
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Custom shadow values */
+    border-radius: 8px; /* Optional: Add rounded corners */
+}

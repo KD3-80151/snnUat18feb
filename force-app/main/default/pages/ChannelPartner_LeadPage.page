@@ -1,0 +1,1020 @@
+<apex:page showHeader="false" standardStylesheets="false" sidebar="false" docType="html-5.0" controller="ChannelPartner_Controller">
+    <html>
+        <div ng-controller="cppleadPage_ctrl">
+            <head>
+                <apex:includeLightning />
+                <style>
+
+        .card {
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            width: 100%;
+            background: #F4F4F4 !important; /* Background color */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Shadow effect */
+        }
+
+        .mobile-cards1{
+            display: none !important;
+        }
+
+        .card-body p {
+            margin: 8px 0;
+            font-size: 14px; /* Adjust font size for mobile view */
+        }
+
+        .table-responsive1 {
+            padding-top: 20px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+
+                    @media (max-width: 768px){
+
+                        .table-responsive1 {
+                            display: none !important;
+                            opacity: 1 !important;
+                            visibility: visible !important;
+                        }
+                        .table-res {
+                            display: none !important;
+                        }
+                        .mobile-cards1{
+                            display: block !important;
+                        }
+                    }
+
+                    .table-res {
+                        display: block;
+                    }
+
+
+
+                    .dashboard-header {
+                        font-weight: 600;
+                        color: #0B1E35 !important;
+                        margin-bottom: 20px;
+                    }
+            
+                    .section-subtitle {
+                        font-size: 16px;
+                        color: #666666;
+                        margin-bottom: 40px;
+                        text-align: justify;
+                    }
+            
+                    /* .card-custom {
+                        border-radius: 10px;
+                        padding: 20px;
+                        text-align: center;
+                        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                    }
+            
+                    .card-custom .card-title {
+                        font-size: 24px;
+                        font-weight: 600;
+                        color: #0B1E35;
+                        margin-bottom: 10px;
+                    }
+            
+                    .card-custom .card-text {
+                        font-size: 40px;
+                        font-weight: bold;
+                        color: #9D6200;
+                    } */
+            
+                    .table th, .table td {
+                        vertical-align: middle;
+                        font-size: 14px;
+                        border-color: gainsboro;
+                    }
+            
+                    .table-header-custom {
+                        background-color: #6886AA;
+                        color: white;
+                    }
+
+                    .table-responsive {
+                        margin-top: 20px;
+                    }
+                    
+            
+                    .lead-stage {
+                        text-align: center;
+                        width: 100px;
+                        font-size: 12px;
+                        font-weight: 600;
+                        padding: 5px 10px;
+                        border-radius: 20px;
+                        display: inline-block;
+                    }
+            
+                    .stage-New {
+                        background-color: #2D6ECF;
+                        color: white;
+                    }
+            
+                    .stage-SV_Planned {
+                        background-color: #07ffde;
+                        color: white;
+                    }
+            
+                    /* .stage-Accepted {
+                        background-color: #28a745;
+                        color: white;
+                    } */
+            
+                    /* .stage-SV_Prospect {
+                        background-color: #0B1E35;
+                        color: white;
+                    } */
+            
+                    .stage-Dropped {
+                        background-color: #ff0000;
+                        color: white;
+                    }
+            
+                    .stage-Contacted {
+                        background-color: #7700ff;
+                        color: white;
+                    }
+                    .stage-Assigned {
+                        background-color: #ffc400;
+                        color: white;
+                    }
+                    .stage-Re-Enquiry {
+                        background-color: #ff7b00;
+                        color: white;
+                    }
+                    .stage-Qualified {
+                        background-color: #28a745;
+                        color: white;
+                    }
+                    .stage-Converted {
+                        background-color: #f700ff;
+                        color: white;
+                    }
+            
+                    .add-lead-btn {
+                        width: 100%;
+                        height: 100%;
+                        background-color: #9D6200;
+                        color: white;
+                        font-size: 12px;
+                        font-weight: 600;
+                        border-radius: 10px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        flex-direction: column; /* Align items in a column */
+                        gap: 10px; /* Add a gap between icon and text */
+                        cursor: pointer; /* Make the button clickable */
+                    }
+
+                    .custom-row{
+                        display: flex;
+                        justify-content: space-between;
+                    }
+            
+                    .custom-btn {
+                        background-color: #9D6200!important;
+                        color: white!important;
+                        padding: 10px 20px;
+                        border-radius: 5px;
+                        font-size: 16px;
+                        font-weight: 600;
+                    }
+            
+                    /* .lead-summary {
+                        border-radius: 10px;
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                        padding: 20px;
+                        background-color: #EBEAEA;
+                        min-height: 170px;
+                        width: 120%;
+                    } */
+
+                    .lead-summary {
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: space-between;
+                        height: 100%; /* Ensures the card takes full height */
+                        padding: 20px;
+                        border-radius: 10px;
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                        background-color: #EBEAEA; /* Optional background color */
+                        min-height: 170px;
+                        width: 110%;
+                    }
+
+                    .lead-summaryhead{
+                        height: 100%;
+                        border-radius: 10px;
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                        min-height: 170px;
+                        width: 110%;
+                    }
+            
+                    /* .lead-summary .summary-number {
+                        font-size: 14px;
+                    } */
+
+                    .summary-number {
+                        font-size: 14px;
+                        color: #6c757d;
+                        text-align: left;
+                    }
+
+                    .footer {
+                        margin-top: auto; /* Pushes the button to the bottom */
+                        text-align: left; /* Centers the button */
+                    }
+            
+                    .pagination {
+                        justify-content: center;
+                    }
+                    
+                    .pagination .page-item.active .page-link {
+                        background-color: #9D6200;
+                        color: #fff;
+                        border-color: #9D6200;
+                    }
+                    
+                    .pagination .page-item .page-link {
+                        color: #000;
+                        border: none; /* Remove border */
+                    }
+                    
+                    .pagination .page-item .page-link:hover {
+                        color: #924441;
+                    }
+                    
+                    .pagination .page-item:first-child .page-link,
+                    .pagination .page-item:last-child .page-link {
+                        font-weight: bold;
+                    }
+                    
+                    /* .btn-orng {
+                        background-color: #9D6200!important;
+                        color: #fff!important;
+                        font-weight: 500!important;
+                    } */
+
+                    .btn-orng {
+                        background-color: #9D6200;
+                        color: #fff;
+                        border: none;
+                        padding: 10px 20px;
+                        border-radius: 5px;
+                        cursor: pointer;
+                        font-weight: 500;
+                        text-align: center;
+                    }
+
+                    .btn-orng:hover {
+                        background-color: #d93c3a;
+                    }
+                    
+                    /* .card-titel-css {
+                        font-size: 1.75rem;
+                        font-weight: bold;
+                        color: #0B1E35;
+                    } */
+
+                    .card-titel-css {
+                        font-size: 1.75rem;
+                        font-weight: bold;
+                        color: #0B1E35;
+                        margin-bottom: 10px;
+                        word-wrap: break-word;
+                        overflow-wrap: break-word;
+                        text-align: left;
+                    }
+                    /* Custom Styles for Search and Filter */
+                    .search-container {
+                        display: flex;
+                        justify-content: flex-end; /* Align search to the right */
+                        align-items: center;
+                        gap: 30px; /* Space between elements */
+                    }
+
+                    @media (min-width: 1081px) {
+                        .search-container {
+                            justify-content: space-between; 
+                        }
+                    }
+                  
+            
+                    .search-input {
+                        max-width: 100% !important; /* Fixed width for the search box */
+                        margin-left: auto; /* Align search box to the right */
+                        /* max-height : 12px; */
+                        border-radius: 5px;
+                    }
+
+                    .loader1 {
+                        width: 48px;
+                        height: 48px;
+                        border: 5px solid #000;
+                        border-bottom-color: transparent;
+                        border-radius: 50%;
+                        display: inline-block;
+                        box-sizing: border-box;
+                        animation: rotation 1s linear infinite;
+                    }
+
+                    .card {
+                        }
+
+                    @keyframes rotation {
+                        0% {
+                            transform: rotate(0deg);
+                        }
+                        100% {
+                            transform: rotate(360deg);
+                        }
+                    }
+
+                    @media (max-width : 430px) and (max-height : 932px){
+                        .d-flex.flex-column {
+                            width: 100% !important ;
+                        }
+
+                        .pagination {
+                            margin-top: 0 !important;
+                        }
+
+                        .card {
+                            border: 1px solid #afa6a6; /* Card border */
+                            border-radius: 5px; /* Rounded corners */
+                            padding: 15px; /* Padding inside the card */
+                            margin-bottom: 15px; /* Space between cards */
+                            background-color: #a8a0a0; /* Background color */
+                            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Shadow effect */
+                        }
+
+                        
+
+                        .input-container {
+                            flex-direction: row; /* Row direction for mobile */
+                            flex-wrap: wrap;
+                            gap: 10px; 
+                        } 
+
+
+                    .select-form{
+                        border-radius : 5px !important;
+                        border :2px solid #d3cfcf !important;
+                        padding :2px;
+                        width : 30% !important;
+                    }
+
+                    .form-control1{
+                        width : 50% !important;
+                        /* margin-left: 0% !important; */
+                        padding : 6px  !important;
+                        border-radius : 5px !important;
+                        border :2px solid #d3cfcf !important;
+                        /* position: absolute; */
+                    }
+
+
+                    }
+
+                    @media (max-width: 820px) {
+
+                        .row {
+                            display: flex; /* Ensure the row is a flex container */
+                            flex-wrap: wrap; /* Allow items to wrap onto the next line */
+                            /*justify-content: space-around; /* Distribute space evenly between cards */
+                            grid-row-gap: 15px;
+                           
+                        }
+
+                        .col-md-3 {
+                            width: calc(46%); /* Adjust width to account for half of the gap */
+                            flex: 0 0 calc(46%); /* Ensure the flexbox layout treats it as 50% wide */
+                            max-width: calc(40%); /* Makes sure the maximum width doesn't exceed 50% */
+                            box-sizing: border-box;
+
+                        }
+
+                        .input-container {
+                            flex-direction: row; /* Row direction for mobile */
+                            flex-wrap: wrap;
+                            gap: 10px; 
+                        }
+
+                        /* Ensure buttons are displayed in two columns */
+                        .button-container {
+                            display: flex; /* Use flexbox for layout */
+                            flex-wrap: wrap; /* Allow buttons to wrap */
+                            gap: 10px; /* Space between buttons */
+                        }
+
+                        .btn.custom-btn {
+                            width: calc(50% - 5px); /* Maintain button width */
+                            margin-bottom: 10px; /* Add space below for buttons */
+                        }
+
+                    .card {
+                        border: 1px solid #9c9696; /* Card border */
+                        border-radius: 5px; /* Rounded corners */
+                        padding: 15px; /* Padding inside the card */
+                        margin-bottom: 15px; /* Space between cards */
+                        background: #881e1e; /* Background color */
+                        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Shadow effect */
+                    }
+
+                    /* .card-header {
+                        font-weight: bold;
+                        margin-bottom: 10px;
+                    } */
+
+                    .pagination {
+                        flex-wrap: wrap; /* Allow items to wrap to the next line */
+                        justify-content: center; /* Center the pagination */
+                    }
+
+                    .page-item {
+                        margin: 0 5px; /* Add space between page items */
+                    }
+
+                    .page-link {
+                        padding: 2px 7px !important; /* Adjust padding for smaller screens */
+                        font-size: 14px; /* Slightly smaller font size */
+                    }
+
+                    .d-flex {
+                        flex-direction: column; /* Stack elements vertically */
+                        align-items: center; /* Center items */
+                    }
+
+                     .lead-summary {
+                        border-radius: 10px;
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                        padding: 20px;
+                        
+                        background-color: #EBEAEA;
+                        
+                    }
+                    .lead-summaryhead{
+                        border-radius: 10px;
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                        padding: 20px;
+                        width: 110%;
+                        background-color: #9D6200;
+                        min-height: 170px;
+                    }
+
+                    .select-form{
+                        border-radius : 5px !important;
+                        border :2px solid #d3cfcf !important;
+                        padding :2px;
+                    }
+
+                    .form-control1{
+                        width : 70% !important;
+                        margin-left: 20% !important;
+                        padding : 6px  !important;
+                        border-radius : 5px !important;
+                        border :2px solid #d3cfcf !important;
+                        margin-top: -5px;
+                    }
+
+                   
+
+                    }
+
+                   /* For tablets (768px to 1024px) */
+                    @media (min-width: 768px) and (max-width: 1024px) {
+                        .row {
+                            display: flex; /* Ensure the row is a flex container */
+                            flex-wrap: wrap; /* Allow items to wrap onto the next line */
+                            gap: 5px; /* Set the gap between columns (adjust as needed) */
+                        }
+
+                        .card1 {
+                            flex: 0 0 calc(24% - 20px) !important; /* Allow three cards per row with margin */
+                            margin-bittom: 15px !important; /* Add vertical margin between rows */
+                            
+                        }
+                       
+                    }
+
+
+                    @media (min-width: 1081px) {
+                        
+                        .lead-summaryhead{
+                        border-radius: 10px;
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                        padding: 20px;
+                        width: 100% !important;
+                        background-color: #9D6200;
+                        min-height: 170px;
+                    }
+
+                    .lead-summary {
+                        border-radius: 10px;
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                        padding: 20px;
+                        background-color: #EBEAEA;
+                        min-height: 170px;
+                        width: 100%;
+                    }
+                        
+
+                    .form-control1{
+                        width : 300% !important;
+                        margin-left: -200% !important;
+                        padding : 6px  !important;
+                        border-radius : 5px !important;
+                        border :2px solid #d3cfcf !important;
+                    }
+
+                        
+                    }
+
+                    .search-container {
+                        display: flex;
+                        flex-direction: row; /* Align elements in a row */
+                        flex-wrap: wrap; /* Allow wrapping on smaller screens */
+                        gap: 30px; /* Space between elements */
+                    }
+
+                .input-container {
+                    display: flex; /* Align the select and input horizontally */
+                    gap: 10px; /* Space between elements */
+                    flex-grow: 1; /* Allow the input container to grow */
+                }
+
+
+                /* Create a flex container for buttons */
+                .button-container {
+                    display: flex; /* Use flexbox for layout */
+                    gap: 10px; /* Space between buttons */
+                }
+
+                .btn.custom-btn {
+                    width: auto; /* Allow buttons to take their content width */
+                    margin-bottom: 0; /* Remove margin below for row alignment */
+                }
+
+                .back-link {
+                    font-size: 24px; 
+                    text-decoration: none;
+                    display: flex;
+                    align-items: center;
+                    color: black; /* Gray color for the text */
+                    font-weight: 500;
+                    margin-right: 8px;
+                }
+
+                .container-fluid{
+                    display: block;
+                }
+
+                .custom-width {
+                    width: 20% !important; 
+                }
+                </style>
+                <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+            </head>
+
+            <body>
+                <div id="mainLeadContent" class="container-fluid" ng-show="mainPage">
+                    <!-- Header -->
+                    <div class="modal" id="aurapopup1">
+                        <div class="modal-dialog" style="min-width:45%; min-height:45%">
+                            <div class="modal-content" style="max-width: 856px;padding:2%">
+                                <div class="modal-header">
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="loader1" ng-show="showSpinner"></div>
+                                    <div id="lightningapp1" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                                        
+                    <div class="modal" id="aurapopup2">
+                        <div class="modal-dialog" style="min-width:45%; min-height:45%">
+                            <div class="modal-content" style="max-width: 856px;padding:2%">
+                                <div class="modal-header">
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="loader1" ng-show="showSpinner"></div>
+                                    <div id="lightningapp2" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h2 class="dashboard-header">Leads</h2>
+                    <p class="section-subtitle">
+                        Manage and add new leads effortlessly with our comprehensive tracking system. Access detailed information about each lead, including contact details, lead source, and current stage. Stay organized and ensure timely follow-ups to maximize your conversion rates with the support of SNN Estates 
+                    </p>
+            
+                    <!-- Add Lead and Summary Cards -->
+                    <div class="row mb-4 custom-row">
+                        <div class="col-md-3 card1">
+                            <div class="lead-summaryhead">
+                            <div class="add-lead-btn" id="addNewLeadBtn">
+                                <i class="fas fa-plus" style="font-size:25px;"></i>
+                                Add New Lead
+                            </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 card1">
+                            <div class="lead-summary">
+                                <div class="card-titel-css">{{totalNoOfLeads}}</div>
+                                <div class="summary-number">Leads accepted by SNN</div>
+                                <div class="footer">
+                                    <button class="btn btn-orng mt-2" ng-click="viewMoreLeads()">View More</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 card1">
+                            <div class="lead-summary">
+                                <div class="card-titel-css">{{totalNoOfVisits}}</div>
+                                <div class="summary-number">No of Site Visits</div>
+                                <div class="footer">
+                                    <button class="btn btn-orng mt-2" ng-click="viewMoreVisits()">View More</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 card1">
+                            <div class="lead-summary">
+                                <div class="card-titel-css">{{totalNoOfOpps}}</div>
+                                <div class="summary-number">No of Bookings</div>
+                                <div class="footer">
+                                    <button class="btn btn-orng mt-2" ng-click="showNoBookingLeads()">View More</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            
+                    <!-- Search and Bulk Upload -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="search-container">
+                                <div class="input-container">
+                                    <!-- <div> -->
+                                        <select class="form-select custom-width" aria-label="Lead Filter" ng-model="selectedStatus" ng-change="filterByStatus(selectedStatus)">
+                                            <option ng-repeat="value in statusValue" ng-selected="true">{{value}}</option>
+                                        </select>
+                                        <div class="search-input">
+                                            <input type="text" class="form-control1"  placeholder="Search..." aria-label="Search Leads" ng-model="searchKey" ng-change="filterByName()"/>
+                                        </div>
+                                    <!-- </div> -->
+                                    <!-- <div>
+                                        <button class="btn custom-btn" ng-click="downloadTemplate()">Download Template</button>
+                                        <button class="btn custom-btn" ng-click="uploadLeads()">Bulk Lead Upload</button>
+                                    </div> -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div ng-if = "paginatedLeads.length > 0" class="table-responsive1">
+                        <table class="table">
+                            <thead class="table-header-custom">
+                                <tr>
+                                    <th scope="col">Sr.</th>
+                                    <th scope="col">Lead Created Date</th>
+                                    <!-- <th scope="col">Lead No.</th> -->
+                                    <th scope="col">Lead Name</th>
+                                    <th scope="col">Project</th>
+                                    <!-- <th scope="col">Channel Partner</th> -->
+                                    <th scope="col">Lead Mobile No.</th>
+                                    <!-- <th scope="col">Lead Source</th> -->
+                                    <th scope="col">Lead Stage</th>
+                                </tr>
+                            </thead>
+                            <tbody style="border:none">
+                                <tr ng-repeat = "lead in paginatedLeads">
+                                    <td>{{$index + 1 + (currentPage - 1) * itemsPerPage}}</td>
+                                    <td>{{lead.CreatedDate}}</td>
+                                    <!-- <td>{{lead.LastName}}</td> -->
+                                    <td>{{lead.LastName}}</td>
+                                    <td>{{lead.Project__r.Name}}</td>
+                                    <!-- <td>{{lead.Channel_Partner__r.Name}}</td> -->
+                                    <td>{{lead.Phone}}</td>
+                                    <!-- <td>{{lead.LeadSource}}</td> -->
+                                    <td><span class="lead-stage {{statusClassMapping[lead.Status]}}">{{lead.Status}}</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div ng-if="paginatedLeads.length == 0" class="no-payment-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Leads Not Found</h5>
+                            <p class="card-text">No Leads are available. Please contact support for further assistance.</p>
+                        </div>
+                    </div>
+
+                    <div ng-if = "paginatedLeads.length > 0" class="row mobile-cards1">
+                        <div class="col-12" ng-repeat="lead in paginatedLeads">
+                            <div class="card">
+                                <div class="card-body">
+                                    <p>Lead No: <strong>{{lead.LastName}}</strong></p>
+                                    <p>Lead Created Date: <strong>{{lead.CreatedDate}}</strong></p>
+                                    <p>Lead Name: <strong>{{lead.LastName}}</strong></p> 
+                                    <p>Channel Partner: <strong>{{lead.Channel_Partner__r.Name}}</strong></p>
+                                    <p>Lead Mobile No: <strong>{{lead.Phone}}</strong></p>
+                                    <p>Lead Source: <strong>{{lead.LeadSource}}</strong></p>
+                                    <p>Lead Stage: <strong> <span class="lead-stage {{statusClassMapping[lead.Status]}}">{{lead.Status}}</span></strong></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                        
+                    
+            
+                    <!-- Pagination -->
+                    <div ng-if = "paginatedLeads.length > 0" class="d-flex justify-content-between align-items-center mt-4">
+                        <div>
+                            <span>Showing {{getDisplayedRange()}} of {{totalItems}} entries</span>
+                        </div>
+                        <nav>
+                            <ul class="pagination">
+                                <li class="page-item" ng-class="{disabled: currentPage == 1}">
+                                    <a class="page-link" href="" ng-click="prevPages()">
+                                        <i class="bi bi-arrow-left"></i> Prev
+                                    </a>
+                                </li>
+            
+                                <!-- Dynamically displayed page numbers -->
+                                <li class="page-item" ng-repeat="page in getPageRange()" ng-class="{active: currentPage == page}">
+                                    <a class="page-link" href="" ng-click="goToPage(page)">
+                                        {{page}}
+                                    </a>
+                                </li>
+            
+                                <li class="page-item" ng-class="{disabled: currentPage == totalPages}">
+                                    <a class="page-link" href="" ng-click="nextPages()">
+                                        Next <i class="bi bi-arrow-right"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                    
+                   <!-- Include the Bulk Lead Upload Modal -->
+                    <apex:include pageName="ChannelPartner_BulkLeadUplodpopupPage" />
+            
+                   <!-- Include the Add New Lead Modal -->
+                    <apex:include pageName="ChannelPartner_AddNewLeadPage" />
+                </div>
+                <div class="container-fluid" ng-show="convertedLeads">
+                    <span class="mb-4 back-link"><i class="bi bi-arrow-left" ng-click="showMainPage()"> Back</i></span>
+                    <!-- Leads Table -->
+                    <div ng-if = "paginatedAllLeads.length > 0" class="table-responsive1">
+                        <table class="table mb-0">
+                            <thead class="table-header-custom">
+                                <tr>
+                                    <th scope="col">Sr.</th>
+                                    <th scope="col">Lead Created Date</th>
+                                    <th scope="col">Lead No.</th>
+                                    <th scope="col">Lead Name</th>
+                                    <th scope="col">Channel Partner</th>
+                                    <th scope="col">Lead Mobile No.</th>
+                                    <th scope="col">Lead Source</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat = "lead in paginatedAllLeads">
+                                    <td>{{$index + 1 + (currentPage - 1) * itemsPerPage}}</td>
+                                    <td>{{lead.CreatedDate}}</td>
+                                    <td>{{lead.LastName}}</td>
+                                    <td>{{lead.LastName}}</td>
+                                    <td>{{lead.Channel_Partner__r.Name}}/{{lead.Company}}</td>
+                                    <td>{{lead.Phone}}</td>
+                                    <td>{{lead.LeadSource}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div ng-if="paginatedAllLeads.length == 0" class="no-payment-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Accepted Leads Not Found</h5>
+                            <p class="card-text">No Accepted Leads are available. Please contact support for further assistance.</p>
+                        </div>
+                    </div>
+
+                    <div ng-if = "paginatedAllLeads.length > 0" class="row mobile-cards1">
+                        <div class="col-12" ng-repeat="lead in paginatedAllLeads">
+                            <div class="card">
+                                <div class="card-body">
+                                    <p>Lead No: <strong>{{lead.LastName}}</strong></p>
+                                    <p>Lead Created Date: <strong>{{lead.CreatedDate}}</strong></p>
+                                    <p>Lead Name: <strong>{{lead.LastName}}</strong></p> 
+                                    <p>Channel Partner: <strong>{{lead.Channel_Partner__r.Name}}</strong></p>
+                                    <p>Lead Mobile No: <strong>{{lead.Phone}}</strong></p>
+                                    <p>Lead Source: <strong>{{lead.LeadSource}}</strong></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div ng-if = "paginatedAllLeads.length > 0" class="d-flex justify-content-between align-items-center mt-4">
+                        <div>
+                            <span>Showing {{getDisplayedRange()}} of {{totalLeadItems}} entries</span>
+                        </div>
+                        <nav>
+                            <ul class="pagination">
+                                <li class="page-item" ng-class="{disabled: currMoreLeadPage == 1}">
+                                    <a class="page-link" href="" ng-click="prevPages()">
+                                        <i class="bi bi-arrow-left"></i> Prev
+                                    </a>
+                                </li>
+                                <!-- Dynamically displayed page numbers -->
+                                <li class="page-item" ng-repeat="leadPage in getPageRange()" ng-class="{active: currMoreLeadPage == leadPage}">
+                                    <a class="page-link" href="" ng-click="goToPage(leadPage)">
+                                        {{leadPage}}
+                                    </a>
+                                </li>
+                                <li class="page-item" ng-class="{disabled: currMoreLeadPage == totalLeadPages}">
+                                    <a class="page-link" href="" ng-click="nextPages()">
+                                        Next <i class="bi bi-arrow-right"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+                <div class="container-fluid" ng-show="viewOpps">
+                    <span class="mb-4 back-link"><i class="bi bi-arrow-left" ng-click="showMainPage()"> Back</i></span>
+                    <!-- Opportunity Table -->
+                    <div ng-if = "AllOpportunities.length > 0" class="table-responsive1">
+                        <table class="table mb-0">
+                            <thead class="table-header-custom">
+                                <tr>
+                                    <th scope="col">Sr.</th>
+                                    <th scope="col">Channel Partner Name</th>
+                                    <th scope="col">Project Name</th>
+                                    <th scope="col">Booking Id</th>
+                                    <th scope="col">Booked By</th>
+                                    <th scope="col">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat = "opp in AllOpportunities">
+                                    <td>{{$index + 1 + (currentPage - 1) * itemsPerPage}}</td>
+                                    <td>{{opp.Channel_Partner__r.Name}}</td>
+                                    <td>{{opp.Project__r.Name}}</td>
+                                    <td>BKC123</td>
+                                    <td>{{opp.Name}}</td>
+                                    <td>{{opp.StageName}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div ng-if="AllOpportunities.length == 0" class="no-payment-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Bookings Not Found</h5>
+                            <p class="card-text">No  Bookings are available. Please contact support for further assistance.</p>
+                        </div>
+                    </div>
+
+                    <div ng-if = "AllOpportunities.length > 0" class="row mobile-cards1">
+                        <div class="col-12" ng-repeat="opp in AllOpportunities">
+                            <div class="card">
+                                <div class="card-body">
+                                    <p>Channel Partner Name: <strong>{{opp.Channel_Partner__r.Name}}</strong></p>
+                                    <p>Project Name: <strong>{{opp.Project__r.Name}}</strong></p>
+                                    <p>Booking Id: <strong>BKC123</strong></p> 
+                                    <p>Booked by: <strong>{{opp.Name}}</strong></p>
+                                    <p>Status: <strong>{{opp.StageName}}</strong></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div ng-if = "AllOpportunities.length > 0" class="d-flex justify-content-between align-items-center mt-4">
+                        <div>
+                            <span>Showing {{getDisplayedRange()}} of {{totalOppItems}} entries</span>
+                        </div>
+                        <nav>
+                            <ul class="pagination">
+                                <li class="page-item" ng-class="{disabled: currOppPage == 1}">
+                                    <a class="page-link" href="" ng-click="prevPages()">
+                                        <i class="bi bi-arrow-left"></i> Prev
+                                    </a>
+                                </li>
+                                <!-- Dynamically displayed page numbers -->
+                                <li class="page-item" ng-repeat="oppPage in getPageRange()" ng-class="{active: currOppPage == oppPage}">
+                                    <a class="page-link" href="" ng-click="goToPage(oppPage)">
+                                        {{oppPage}}
+                                    </a>
+                                </li>
+                                <li class="page-item" ng-class="{disabled: currOppPage == totalOppPages}">
+                                    <a class="page-link" href="" ng-click="nextPages()">
+                                        Next <i class="bi bi-arrow-right"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+                <div class="container-fluid" ng-show="viewVisits">
+                    <span class="mb-4 back-link"><i class="bi bi-arrow-left" ng-click="showMainPage()"> Back</i></span>
+                    <div ng-if = "paginatedVisits.length > 0" class="d-flex justify-content-end mb-3">
+                        <input type="text" class="form-control search-bar" placeholder="Search by Visit ID.." ng-model="searchVisit" ng-change="filterByVisitId()"/>
+                    </div>
+            
+                    <div ng-if = "paginatedVisits.length > 0" class="table-responsive1">
+                        <table class="table">
+                            <thead class="table-header-custom">
+                                <tr>
+                                    <th scope="col">Sr.</th>
+                                    <th scope="col">Vist ID</th>
+                                    <th scope="col">Channel Partner</th>
+                                    <th scope="col">Project Name</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Outcome</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat = "visit in paginatedVisits">
+                                    <td>{{$index + 1 + (currentPage - 1) * itemsPerPage}}</td>
+                                    <td>{{visit.Name}}</td>
+                                    <td>{{visit.Channel_Partner__r.Name}}</td>
+                                    <td>{{visit.Project_Name__c}}</td>
+                                    <td>Show Flat Meeting</td>
+                                    <td><span class="outcome-label interested">Interested</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div ng-if="paginatedVisits.length == 0" class="no-payment-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Site Visits Not Found</h5>
+                            <p class="card-text">No  Site Visits are available. Please contact support for further assistance.</p>
+                        </div>
+                    </div>
+
+
+
+                    <div ng-if = "paginatedVisits.length > 0" class="row mobile-cards1">
+                        <div class="col-12" ng-repeat="visit in paginatedVisits">
+                            <div class="card">
+                                <div class="card-body">
+                                    <p>Vist ID: <strong>{{visit.Name}}</strong></p>
+                                    <p>Channel Partner: <strong>{{visit.Channel_Partner__r.Name}}</strong></p>
+                                    <p>Project Name: <strong>{{visit.Project_Name__c}}</strong></p>
+                                    <p>Status: <strong>Show Flat Meeting</strong></p>
+                                    <p>Outcome: <strong>Interested</strong></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div ng-if = "paginatedVisits.length > 0"  class="d-flex justify-content-between align-items-center mt-4">
+                        <div>
+                            <span>Showing {{getDisplayedRange()}} of {{totalVisitItems}} entries</span>
+                        </div>
+                        <nav>
+                            <ul class="pagination">
+                                <li class="page-item" ng-class="{disabled: currMoreVisitsPage == 1}">
+                                    <a class="page-link" href="" ng-click="prevPages()">
+                                        <i class="bi bi-arrow-left"></i> Prev
+                                    </a>
+                                </li>
+                                <!-- Dynamically displayed page numbers -->
+                                <li class="page-item" ng-repeat="visitPage in getPageRange()" ng-class="{active: currMoreVisitsPage == visitPage}">
+                                    <a class="page-link" href="" ng-click="goToPage(visitPage)">
+                                        {{visitPage}}
+                                    </a>
+                                </li>
+                                <li class="page-item" ng-class="{disabled: currMoreVisitsPage == totalVisitPages}">
+                                    <a class="page-link" href="" ng-click="nextPages()">
+                                        Next <i class="bi bi-arrow-right"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+               <!-- <div id="leadeAcceptbyContent" style="display:none;">
+                    <a href="#" class="mb-4 back-link" onclick="showMainPage()"><i class="bi bi-arrow-left"></i> Leads/Leads accepted by SNN</a>
+                    <apex:include pageName="ChannelPartner_LeadAccepTablePage"/>
+                </div>
+                <div id="leaderNoOfVisitContent" style="display:none;">
+                    <a href="#" class="mb-4 back-link" onclick="showMainPage()"><i class="bi bi-arrow-left"></i> Leads / No of Site Visits</a>
+                    <apex:include pageName="ChannelPartner_LeadNoVisitTablePage"/>
+                </div>
+                <div id="leaderNoOfBookingContent" style="display:none;">
+                    <a href="#" class="mb-4 back-link" onclick="showMainPage()"><i class="bi bi-arrow-left"></i> Leads / No of Bookings</a>
+                    <apex:include pageName="ChannelPartner_LeadNoBookingTablePage"/>
+                </div> -->
+                </body>
+        </div>
+    </html>
+</apex:page>

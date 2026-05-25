@@ -1,0 +1,41 @@
+<template>
+  <lightning-card title="Lead Task Dashboard" class="task-dashboard">
+    <div class="dashboard-container">
+
+      <div>
+        <div class="dashboard-item priority-tasks">
+          <p class="count">{priorityTasks}</p>
+        </div>
+        <p class="label"> High Priority Tasks</p>
+      </div>
+
+      <div>
+        <div class="dashboard-item open-tasks">
+          <p class="count">{openTasks}</p>
+        </div>
+        <div class="label slds-m-around_medium slds-m-left_xx-small">
+          <p>Open Tasks</p>
+        </div>
+      </div>
+
+      <div>
+        <div class="dashboard-item completed-tasks">
+          <p class="count">{completedTasks}</p>
+        </div>
+        <div class="label slds-m-around_medium">
+          <p>Completed Tasks</p>
+        </div>
+      </div>
+
+      <div>
+        <div class="dashboard-item total-tasks">
+          <p class="count">{totalTasks}</p>
+        </div>
+        <div class="label slds-m-around_medium">
+          <p>Total Tasks</p>
+        </div>
+      </div>
+    </div>
+
+  </lightning-card>
+</template>

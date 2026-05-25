@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Industry__c</fullName>
+    <label>Industry</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Financial Services</fullName>
+                <default>false</default>
+                <label>Financial Services</label>
+            </value>
+            <value>
+                <fullName>Media/Entertainment</fullName>
+                <default>false</default>
+                <label>Media/Entertainment</label>
+            </value>
+            <value>
+                <fullName>Telecom</fullName>
+                <default>false</default>
+                <label>Telecom</label>
+            </value>
+            <value>
+                <fullName>Hospitality</fullName>
+                <default>false</default>
+                <label>Hospitality</label>
+            </value>
+            <value>
+                <fullName>Medicine/Pharma</fullName>
+                <default>false</default>
+                <label>Medicine/Pharma</label>
+            </value>
+            <value>
+                <fullName>Travel/Transport</fullName>
+                <default>false</default>
+                <label>Travel/Transport</label>
+            </value>
+            <value>
+                <fullName>IT</fullName>
+                <default>false</default>
+                <label>IT</label>
+            </value>
+            <value>
+                <fullName>Manufacturing</fullName>
+                <default>false</default>
+                <label>Manufacturing</label>
+            </value>
+            <value>
+                <fullName>ITES/BPO/KPO</fullName>
+                <default>false</default>
+                <label>ITES/BPO/KPO</label>
+            </value>
+            <value>
+                <fullName>Retail Services</fullName>
+                <default>false</default>
+                <label>Retail Services</label>
+            </value>
+            <value>
+                <fullName>Others</fullName>
+                <default>false</default>
+                <label>Others</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

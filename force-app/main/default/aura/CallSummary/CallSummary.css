@@ -1,0 +1,29 @@
+.THIS .scrollable-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+}
+
+.THIS .table {
+    width: 300px;
+    table-layout: fixed;
+}
+
+.THIS .table td:first-child {
+    width: 200px; 
+    vertical-align: top; 
+}
+
+.THIS .table td:last-child {
+    width: 150px; 
+}
+
+.THIS .card {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 7px;
+    background-color: #ffffff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Action_Type__c</fullName>
+    <label>Action Type</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Outbound</fullName>
+                <default>false</default>
+                <label>Outbound</label>
+            </value>
+            <value>
+                <fullName>Inbound</fullName>
+                <default>false</default>
+                <label>Inbound</label>
+            </value>
+            <value>
+                <fullName>Hold</fullName>
+                <default>false</default>
+                <label>Hold</label>
+            </value>
+            <value>
+                <fullName>Unhold</fullName>
+                <default>false</default>
+                <label>Unhold</label>
+            </value>
+            <value>
+                <fullName>Call Transfer</fullName>
+                <default>false</default>
+                <label>Call Transfer</label>
+            </value>
+            <value>
+                <fullName>Avilable Agent</fullName>
+                <default>false</default>
+                <label>Avilable Agent</label>
+            </value>
+            <value>
+                <fullName>Login</fullName>
+                <default>false</default>
+                <label>Login</label>
+            </value>
+            <value>
+                <fullName>Logout</fullName>
+                <default>false</default>
+                <label>Logout</label>
+            </value>
+            <value>
+                <fullName>Online</fullName>
+                <default>false</default>
+                <label>Online</label>
+            </value>
+            <value>
+                <fullName>Offline</fullName>
+                <default>false</default>
+                <label>Offline</label>
+            </value>
+            <value>
+                <fullName>Disposition</fullName>
+                <default>false</default>
+                <label>Disposition</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

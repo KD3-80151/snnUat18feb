@@ -1,0 +1,157 @@
+<apex:page showHeader="false" standardStylesheets="false" sidebar="false" docType="html-5.0">
+    
+    <style>
+        .profile-container {
+            position: relative;
+            display: inline-block;
+            width: 150px;
+            height: 150px;
+            margin-bottom: 10px; /* Adjusted for spacing */
+        }
+
+        .profile-img-css {
+            border-radius: 50%;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border: 3px solid #ffffff;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .upload-icon {
+            position: absolute;
+            bottom: -15px;
+            right: -10px;
+            background-color: #9D6200;
+            color: white;
+            border-radius: 50%;
+            padding: 5px;
+            cursor: pointer;
+            border: 2px solid #ffffff;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-icon i {
+            font-size: 40px;
+        }
+
+        .profile-info-css {
+            text-align: center;
+            margin-bottom: 20px; /* Adjusted for spacing */
+        }
+
+        .profile-info-css h4 {
+            margin-top: 10px; /* Adjusted for spacing */
+            font-weight: 600;
+            color: #0B1E35;
+        }
+
+        .profile-info-css .btn {
+            width: 150px;
+            margin: 5px auto; /* Centered horizontally and added space between buttons */
+            display: block;
+        }
+
+        .edit-profile-header {
+            font-weight: 600;
+            color: #9D6200;
+            margin-bottom: 20px;
+        }
+
+        .edit-profile-form label {
+            font-weight: 600;
+            color: #0B1E35;
+        }
+    	.btn-custom {
+            background-color: #9D6200!important;
+            color: white!important;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .btn-edit {
+            border: 1px solid #0B1E35!important;
+            color: #0B1E35!important;
+            background-color: white!important;
+        }
+    	.back-link {
+            font-size: 24px; 
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            color: black; /* Set font color to black */
+            font-weight: 500; /* Set font weight to 500 */
+        }
+        .back-link i {
+            margin-right: 8px;
+        }
+    </style>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-4 text-center">
+                <div class="profile-container">
+                    <!-- Replace this URL with your Salesforce static resource URL -->
+                    <img src="{!URLFOR($Resource.personProfile)}" alt="Profile Image" class="profile-img-css" id="profileImg"/>
+                    <div class="upload-icon" onclick="document.getElementById('uploadInput').click();">
+                        <i class="bi bi-plus"></i>
+                    </div>
+                </div>
+                <input type="file" id="uploadInput" style="display: none;" onchange="previewImage(event)"/>
+                <div class="profile-info-css">
+                    <h4>John Doe</h4>
+                    <button type="submit" class="btn btn-custom">Save Profile</button>
+                    <button type="button" class="btn btn-edit">Remove Profile</button>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <h3 class="edit-profile-header">Personal Information</h3>
+                <form class="edit-profile-form">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="firstName">First Name</label>
+                            <input type="text" class="form-control" id="firstName" value="John"/>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="lastName">Last Name</label>
+                            <input type="text" class="form-control" id="lastName" value="Doe"/>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="email">Email ID</label>
+                            <input type="email" class="form-control" id="email" value="john@gmail.com"/>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" class="form-control" id="phone" value="9876543210"/>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="role">Role</label>
+                            <input type="text" class="form-control" id="role" value="Senior Sales Manager"/>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function previewImage(event) {
+            var reader = new FileReader();
+            reader.onload = function(){
+                var output = document.getElementById('profileImg');
+                output.src = reader.result;
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
+    </script>
+</apex:page>

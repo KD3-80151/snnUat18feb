@@ -1,0 +1,55 @@
+/* Target the card title and increase its font size */
+.slds-card__header .slds-text-heading_medium {
+    font-size: 2rem; /* Adjust the size as needed */
+    font-weight: bold; /* Optional: Make the font bold */
+    color: #387fbd; /* Optional: Change the color */
+}
+
+
+.dashboard-container {
+    display: flex;
+    justify-content: space-around;
+    margin: 1rem;
+}
+
+.dashboard-item {
+    width: 115px;
+    height: 115px;
+    border-radius: 80%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.total-tasks {
+    background-color: #FFBF00; /* Blue */
+}
+
+.open-tasks {
+    background-color: #2D6ECF; /* Yellow */
+}
+
+.priority-tasks {
+    background-color: #D2222D; /* Orange */
+}
+
+.completed-tasks {
+    background-color: #238823; /* Green */
+}
+
+.count {
+    font-weight: bold;
+    font-size: 3rem;
+}
+
+.label {
+    font-weight: bold;
+    font-size: 1rem;
+    color: black;
+    margin-top: 0.5rem;
+    align-items: center;
+    justify-content: center;
+}

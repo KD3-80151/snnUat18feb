@@ -1,0 +1,9 @@
+.toast-container {
+    position: fixed;
+    top: 20px; /* Position it near the top of the screen */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10000; /* High z-index to ensure it’s above other content */
+    width: auto;
+    max-width: 90%;
+}

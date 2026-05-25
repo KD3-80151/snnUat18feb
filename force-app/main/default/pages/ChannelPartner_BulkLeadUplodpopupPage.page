@@ -1,0 +1,113 @@
+<apex:page showHeader="false" standardStylesheets="false" sidebar="false" docType="html-5.0" cache="false">
+
+    <style>
+        .modal-dialog-centered {
+            display: flex;
+            align-items: center;
+            min-height: calc(100% - 1rem);
+            max-width: 866px;
+            max-height: 388px;
+        }
+
+        .modal-content {
+            border-radius: 10px;
+            /* width: 100%; */
+            height: 100%;
+            padding: 20px; /* Add padding inside the modal */
+        }
+
+        .modal-header, .modal-footer {
+            border-bottom: none;
+            border-top: none;
+            padding-bottom: 0;
+            text-align: center;
+            justify-content: center;
+        }
+
+        .modal-title-css {
+            font-weight: 600;
+            font-size: 28px;
+            text-align: center;
+            width: 100%;
+            color: var(--Secondary, #0B1E35);
+        }
+
+        .modal-body {
+            padding-top: 0;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .bulk-lead {
+            text-align: left!important;
+            padding-left: 20px; /* Padding for left alignment */
+        }
+
+        .form-label {
+            font-weight: bold;
+            display: block;
+        }
+
+        .bulk-lead-form-control {
+            display: inline-block!important;
+            text-align: left!important;
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .btn-upload {
+            background-color: #9D6200!important;
+            color: white!important;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            display: block;
+            width: 100%;
+            max-width: 200px;
+            margin: 0 auto;
+        }
+    </style>
+
+    <div class="modal fade" id="bulkUploadModal" tabindex="-1" aria-labelledby="bulkUploadModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title-css" id="bulkUploadModalLabel">Bulk Lead Upload</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div>Easily manage your leads by uploading them in bulk to the SNN Estates Pvt. Ltd. portal. Simply upload your file, and our system will process the leads for you, saving you time and effort. Streamline your workflow and focus on closing deals faster.</div>
+                    <div class="mb-3 mt-4 bulk-lead">
+                        <label for="uploadFile" class="form-label">Bulk Lead Upload</label>
+                        <input class="form-control bulk-lead-form-control" type="file" id="uploadFile"/>
+                    </div>
+                    <button type="button" class="btn btn-upload" onclick="handleBulkLeadUpload()">Bulk Lead Upload</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include the Success Modal Page with parameters -->
+    <apex:include pageName="ChannelPartner_BulkLeadSuccessflagPage">
+        <apex:param name="title" value="Bulk Lead Upload Successful!" />
+        <apex:param name="content" value="Your leads have been successfully uploaded to the SNN Estates Pvt. Ltd. portal. All entries are now available for review and management. Start engaging with your leads and drive your sales forward." />
+    </apex:include>
+
+    <script>
+        function handleBulkLeadUpload() {
+            // Close the bulkUploadModal
+            var bulkUploadModalElement = document.getElementById('bulkUploadModal');
+            var bulkUploadModal = bootstrap.Modal.getInstance(bulkUploadModalElement);
+            bulkUploadModal.hide();
+
+            // Ensure the modal closes before opening the next
+            setTimeout(function () {
+                var successModalElement = document.getElementById('bulkLeadUploadSuccessModal');
+                var successModal = new bootstrap.Modal(successModalElement);
+                successModal.show();
+            }, 300); // Slight delay to ensure the modal closes smoothly before the next one opens
+        }
+    </script>
+</apex:page>

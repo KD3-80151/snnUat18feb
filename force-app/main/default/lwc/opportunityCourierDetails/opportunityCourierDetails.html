@@ -1,0 +1,32 @@
+<template>
+    <div id="header" style="background-color:#6E5A14;color:white;text-align:center;height:55px;font-size:x-large;display:flex;align-items:center;justify-content:center;margin-bottom:16px">
+        <h1 style="text-align:center">COURIER DETAILS</h1>
+    </div>
+
+    <div class="class">
+       <template if:false={isEditOptionVisible}>
+         <lightning-combobox
+        name="Courier Mode"
+        label="Courier Mode"
+        placeholder="Choose Status"
+        value={value}
+        onchange={handleModeChange}
+        options={modeOptions}
+        style='padding-right:30px;padding-left:30px;margin-bottom:16px;font-size:large'
+    ></lightning-combobox>
+    </template>
+   
+     <template if:true={OnlineMode}>
+         <lightning-input type="date" style='padding-right:30px;padding-left:30px;margin-bottom:16px;font-size:large'  name="courierDate" label="Courier Date" value={courierDateValue} onchange={handleChange} disabled={isEditOptionVisible}></lightning-input>
+        <lightning-input type="text" style='padding-right:30px;padding-left:30px;margin-bottom:16px;font-size:large'  name ='courierCompany' label="Company" value={courierCompanyValue} onchange={handleChange} disabled={isEditOptionVisible}></lightning-input>
+        <lightning-input type="text" style='padding-right:30px;padding-left:30px;margin-bottom:16px;font-size:large' name="docketNumber" label="Docket Number" value={courierDocketNumber} onchange={handleChange} disabled={isEditOptionVisible}></lightning-input>
+       
+         </template>
+    </div>
+    
+        <div class="slds-p-around_medium lgc-bg slds-align_absolute-center">
+            <lightning-button variant="brand-outline" label="Cancel" onclick={handleClick} disabled={isEditOptionVisible} class="slds-m-left_x-small"></lightning-button>
+            <lightning-button variant="brand" label="Submit" onclick={handleSave} disabled={isEditOptionVisible} class="slds-m-left_x-small"></lightning-button>
+        </div>
+    
+</template>

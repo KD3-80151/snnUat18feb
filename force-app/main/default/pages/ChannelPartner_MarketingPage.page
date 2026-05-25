@@ -1,0 +1,218 @@
+<apex:page showHeader="false" standardStylesheets="false" sidebar="false" docType="html-5.0" controller="ChannelPartner_Controller">
+    <html>
+        <div ng-controller="cppmarketing_ctrl">
+            <head>
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <style>
+                    .dashboard-header {
+                        font-weight: 600;
+                        color: #0B1E35 !important;
+                    }
+            
+                    .section-subtitle {
+                        font-size: 16px;
+                        color: #666666;
+                        margin-bottom: 40px;
+                    }
+            
+                    .card-custom {
+                        position: relative;
+                        border-radius: 10px;
+                        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                        transition: transform 0.2s;
+                        overflow: hidden;
+                        max-height: 320px;
+                        text-align: center;
+                    }
+            
+                    /*.card-custom:hover {
+                        transform: scale(1.05);
+                    }*/
+            
+                    .card-custom img {
+                        border-radius: 10px 10px 0 0;
+                        height: 200px;
+                        object-fit: cover;
+                        width: 100%;
+                    }
+            
+                    .card-body-custom {
+                        padding: 20px;
+                    }
+            
+                    .card-title-custom {
+                        font-size: 18px;
+                        font-weight: 600;
+                        color: #0B1E35;
+                        margin-bottom: 15px;
+                    }
+            
+                    .card-text-custom {
+                        font-size: 14px;
+                        color: #666666;
+                    }
+            
+                    .card-footer-custom {
+                        background-color: #f8f9fa;
+                        padding: 10px 20px;
+                        border-top: 1px solid #e9ecef;
+                    }
+            
+                    .btn-icon {
+                        border: none;
+                        cursor: pointer;
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        width: 40px;
+                        height: 40px;
+                        border-radius: 5px;
+                        background-color: #9D6200;
+                        color: #fff;
+                        text-decoration: none;
+                    }
+            
+                    .icon-overlay {
+                        position: absolute;
+                        top: 10px;
+                        left: 10px;
+                        background-color: rgba(0, 0, 0, 0.7);
+                        padding: 5px 10px;
+                        border-radius: 50%;
+                    }
+            
+                    .icon-overlay i {
+                        color: white;
+                        font-size: 24px;
+                    }
+            
+                    .pdf-overlay {
+                        position: absolute;
+                        top: 30%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        padding: 5px 10px;
+                        border-radius: 50%;
+                    }
+            
+                    .pdf-overlay img {
+                        width: 50px;
+                        height: 50px;
+                    }
+            
+                    .action-icon:hover {
+                        color: #dc3545;
+                    }
+                    .youtube{
+                        min-height: 200px;
+                        max-width: 250px;
+                    }
+
+                    
+                    /* Media query for tablets */
+                    @media (min-width: 768px) and (max-width: 1024px) {
+                        .row1 {
+                            width: calc(47% - 10px) !important; /* Three cards per row with reduced gap */
+                            margin-right: 10px !important; /* Reduce gap between cards */
+                        }
+                        
+                        .card-custom {
+                            max-height: 320px !important; /* Adjust height for better fit */
+                            margin-bottom: 15px !important; /* Reduce gap between rows */
+                        }
+                    }
+
+                    
+
+                </style>
+            </head>
+
+            <body>
+                <div class="container-fluid">
+                    <h2 class="dashboard-header">Marketing</h2>
+                    <p class="section-subtitle">
+                        Leverage our comprehensive marketing resources to boost your sales efforts. Access exclusive promotional materials, campaign strategies, and market insights tailored to help you succeed. Empower your business with the tools and support from SNN Estates Stay ahead of the competition with our expert marketing guidance.
+                    </p>
+                    <div class="row">
+                        <!-- <div class="col-md-4 mb-4">
+                            <div class="card card-custom">
+                                <img src="{!URLFOR($Resource.SNNProduImeage_v1)}" alt="Marketing Documentary"/>
+                                <div class="pdf-overlay">
+                                    <img src="{!URLFOR($Resource.PDFicon)}" alt="PDF Icon"/>
+                                </div>
+                                <div class="card-body card-body-custom">
+                                    <h5 class="card-title card-title-custom">Marketing Documentary</h5>
+                                </div>
+                                <div class="card-footer card-footer-custom">
+                                    <a href="#" class="btn-icon"><i class="fas fa-eye"></i></a>
+                                    <a href="#" class="btn-icon"><i class="fas fa-download"></i></a>
+                                    <a href="#" class="btn-icon"><i class="fas fa-share-alt"></i></a>
+                                </div>
+                            </div>
+                        </div> -->
+                        <div class="col-md-4 mb-4 col-sm-5 col-lg-4 row1" ng-repeat = "marketingRecord in allMarketingRecords">
+                            <div class="card card-custom">
+                                <div ng-if="marketingRecord.Asset_Type__c == 'Youtube'">
+                                    <iframe class="youtube"
+                                        ng-src="{{getTrustedUrl(marketingRecord.Marketing_URL__c)}}" 
+                                        title="YouTube video player" frameborder="0" 
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                        allowfullscreen="true">
+                                    </iframe>
+                                </div>
+                                <div class="pdf" ng-if="marketingRecord.Asset_Type__c == 'Files'">
+                                    <img src="{!URLFOR($Resource.SNNProduImeage_v1)}" alt="Eco-Friendly Home" ng-click="openPreview(marketingRecord.Sub_Documents__r[0].File_URL__c)"/>
+                                    <div class="pdf-overlay">
+                                        <img src="{!URLFOR($Resource.PDFicon)}" alt="PDF Icon"/>
+                                    </div>
+                                </div>
+                                <div class="card-body card-body-custom">
+                                    <h5 class="card-title card-title-custom">{{marketingRecord.Name__c}}</h5>
+                                </div>
+                                <!-- <div class="card-footer card-footer-custom">
+                                    <a href="#" class="btn-icon"><i class="fas fa-eye"></i></a>
+                                    <a href="#" class="btn-icon"><i class="fas fa-download"></i></a>
+                                    <a href="#" class="btn-icon"><i class="fas fa-share-alt"></i></a>
+                                </div> -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal fade" id="filePreviewModal" tabindex="-1" role="dialog" aria-labelledby="filePreviewModalLabel" aria-hidden="true">
+                        <div class="modal-dialog custom-modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title text-center w-100" id="filePreviewModalLabel">File Preview</h5>
+                                    <button type="button" class="close" data-dismiss="modal" ng-click="closeModal()" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <iframe id="filePreviewFrame" style="width: 100%; height: 500px;" frameborder="0"></iframe>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal" ng-click="closeModal()">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                     <!-- Include the Share Modal -->
+                <apex:include pageName="ChannelPartner_SocialmediaSharePage" />
+                     <!-- Download Success Modal -->
+                    <div class="modal fade" id="downloadSuccessModal" tabindex="-1" aria-labelledby="downloadSuccessModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-body text-center">
+                                    <h5 class="modal-title mb-3" id="downloadSuccessModalLabel">Download successful!</h5>
+                                    <img src="{!URLFOR($Resource.downloadSuccessImage)}" alt="Success" class="mb-3" style="width: 100px;"/>
+                                    <p>Your file has been downloaded successfully. You can now access and review the document on your device. If you have any questions, please contact our support team.</p>
+                                    <button type="button" class="btn btn-danger mt-3" data-bs-dismiss="modal">Continue</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </body> 
+        </div>
+    </html>  
+   
+</apex:page>

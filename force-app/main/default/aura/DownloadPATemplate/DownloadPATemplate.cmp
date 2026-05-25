@@ -1,0 +1,21 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global">
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:attribute name="pApplist" type="Lead[]"/>
+
+    <div class="slds-border_bottom" style="text-align:center;font-size:25px;font-weight:600;font-family: SF Pro Display; background-color:#9D6200; color:#EBEAEA;">Download Template</div>
+
+    <div style="width:100%;padding: 25px; display: flex; justify-content: center; background-color: white;">
+        <lightning:button iconName="utility:download"
+                        iconPosition="left"
+                        label="Download Format"
+                        onclick="{!c.downloadFormat}"
+                        class="slds-button slds-button_brand"/>        
+    </div>
+    <!-- <div class="slds-grid slds-gutters">
+        <div class="slds-col"><br/><br/></div>
+        <div class="slds-col slds-size_2-of-2"  style="background-color: white;">
+            <br/>
+            
+        </div>
+    </div> -->
+</aura:component>

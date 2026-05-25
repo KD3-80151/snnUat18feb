@@ -1,0 +1,164 @@
+<template>
+    <div class="mainDiv">
+        <div class="slds-grid slds-gutters mainHeader">
+            <div class="slds-col slds-size_5-of-12 docList">
+                <span class="header">Document List</span>
+                <span><lightning-button variant="brand-outline" label="Refresh" class="headerButtons" onclick={refreshComp}></lightning-button></span>
+                <!-- <span><lightning-button variant="destructive" label="Delete" class="headerButtons"></lightning-button></span> -->
+                <span><lightning-button variant="brand" label="Create Folder" class="createFolder" onclick={showModalBoxFolder}></lightning-button></span>
+                <template if:true={showDocumentDiv}>
+                    <div class="slds-p-top_large">
+                        <template for:each={documentList} for:item="doc">
+                            <div key={doc.Id} class="slds-section" data-id={doc.Id}>
+                                <div class="slds-grid slds-gutters">
+                                    <div aria-controls={doc.Id} class="slds-section__title-action slds-col slds-size_9-of-12" data-buttonid={doc.Id} onclick={toggleSection}>
+                                        <lightning-icon icon-name="utility:down" alternative-text="button icon" size="x-small" class="slds-section__title-action-icon slds-button__icon_left"></lightning-icon>
+                                        <lightning-icon icon-name="utility:contract_doc" alternative-text="button icon" size="x-small" class="slds-p-right_x-small"></lightning-icon>
+                                        <span title={doc.Name}>{doc.Name}</span>
+                                    </div>
+                                    <div class="slds-col slds-size_3-of-12">
+                                        <lightning-button variant="brand" label="Upload" icon-name="utility:upload" data-recid={doc.Id} data-id={doc.Document_Id__c} class="slds-float_right uploadFolder" onclick={showModalBox}></lightning-button>
+                                    </div>
+                                </div>
+                                <div class="slds-section__content">
+                                    <template for:each={doc.Sub_Documents__r} for:item="file">
+                                        <div key={file.Id} class="flex-container">
+                                            <input type="radio" data-id={file.File_URL__c} name="uniqueDocumentGroup" id={file.File_URL__c}
+                                                onchange={handleContentDocument}/>
+                                            <label data-id={file.File_URL__c} id={file.File_URL__c} onclick={handleContentDocument} >{file.Name}</label><!--class="documentLink"-->
+                                        </div>
+                                    </template>                                
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
+                <template if:false={showDocumentDiv}>
+                    <div class="slds-p-top_x-large">
+                        <b class="slds-border_bottom">No Folders Available</b>
+                    </div>
+                </template>
+            </div>
+           
+            <template if:true={showFilePreview}>
+                <div class="slds-col slds-size_7-of-12">
+                    <iframe src={selectedContentDocLink} width="100%" height="600px"></iframe>
+
+                </div>
+            </template>
+            <template if:false={showFilePreview}>
+                <div class="slds-col slds-size_7-of-12 filePreview">
+                    <span><lightning-icon icon-name="utility:file" alternative-text="No Document" class="slds-align_absolute-center"></lightning-icon></span>
+                    <h1 class="documentText">No Document Selected to View.</h1>
+                </div>
+            </template>
+        </div>
+    </div>    
+
+    <!-- Upload file to google drive pop up -->
+    <template if:true={isShowModal}>
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true"
+            aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close"
+                        onclick={hideModalBox}>
+                        <lightning-icon icon-name="utility:close" alternative-text="close" variant="inverse"
+                            size="small"></lightning-icon>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Upload File</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    <div class="upload-container">
+                        <img src={img} alt="My Image" style="margin-left:31%;" />
+                        <div class="drag-drop-container" ondrop={handleDrop} ondragover={handleDragOver}
+                            ondragleave={handleDragLeave}>
+                            <p style="font-family: SF Pro Display;font-size: 14px;font-weight: 500;line-height: 21px;text-align: left;width: 147px;height: 21px;gap: 0px;opacity: 0px;color: #1A1A1A;">
+                                Drag and drop a file here</p>
+                            <p style="font-family: SF Pro Display;font-size: 12px;font-weight: 400;line-height: 16px;text-align: left;width: 11px;height: 16px;gap: 0px;opacity: 0px;color: #1A1A1A;margin-left:50%;margin-bottom:5px;">
+                                or</p>
+                        </div>
+    
+                        <div class="custom-file-input">
+                            <input type="file" accept=".pdf" onchange={handleFileChange} class="file-input" />
+                            <label class="custom-label">Browse File</label>
+                        </div>
+                        <template if:true={selectedFile}>
+                            <p style="margin-left:18%;">{selectedFile.name}</p>
+                        </template>
+                    </div>
+                </div>
+                <footer class="slds-modal__footer">
+                    <template if:true={showButton}>
+                        <lightning-button variant="brand-outline" label="Cancel" onclick={hideModalBox}
+                            class="slds-m-left_x-small"></lightning-button>
+                        <lightning-button variant="brand" label="Upload File" onclick={handleUpload}
+                            class="slds-m-left_x-small"></lightning-button>
+                    </template>
+                    <template if:true={showSpinner}>
+                        <div class="slds-spinner_container" style="margin: auto; margin-top: 20px;">
+                            <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                        </div>
+                    </template>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+
+    <template if:true={isLoading}>
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true"
+            aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close"
+                        onclick={hideModalBox}>
+                        <lightning-icon icon-name="utility:close" alternative-text="close" variant="inverse"
+                            size="small"></lightning-icon>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <h2 id="modal-heading-04" class="slds-text-heading_medium slds-hyphenate">File Uploading</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-5" style="min-height:300px;">
+                    <div class="custom-spinner" id="file-upload-spinner" style="display: flex;">
+                    <div class="spinner-circle"></div>
+                    
+                </div>
+
+                </div>
+               
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+
+
+    </template>
+
+    <!-- Create Folder Pop Up-->
+    <template if:true={isShowModalFolder}>
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+        <div class="slds-modal__container">
+            <header class="slds-modal__header">
+                <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={hideModalBoxFolder}>
+                    <lightning-icon icon-name="utility:close" alternative-text="close" variant="inverse" size="small" ></lightning-icon>
+                    <span class="slds-assistive-text">Close</span>
+                </button>
+                <h2 id="modal-heading-02" class="slds-text-heading_medium slds-hyphenate">Create Folder</h2>
+            </header>
+        
+            <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-2">
+                <lightning-input type="text" label="Enter New Folder Name" required name="documentName" value={documentName} onchange={handleChangeFolder} class="slds-p-around_medium"></lightning-input>
+            </div>
+
+            <footer class="slds-modal__footer">
+                <button class="slds-button slds-button_neutral" onclick={hideModalBoxFolder}>Cancel</button>
+                <button class="slds-button slds-button_brand" onclick={handleFolderCreation}>Create Folder</button>
+            </footer>
+        
+        </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+</template>

@@ -1,0 +1,128 @@
+.slds-text-color_error {
+    text-align: center; 
+    font-size: 26px;    
+    font-weight: bold;  
+    padding: 10px;      
+    margin-top: 20px;   
+}
+/* Styling for the parking details table */
+.slds-table {
+    width: 100%;
+    border-collapse: collapse;  
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+.slds-table th,
+.slds-table td {
+    padding: 1rem;
+    text-align: center;
+    font-size: 14px;
+    border: 1px solid #d8dde6; 
+}
+
+/* Hover effect for rows */
+.slds-table tr:hover {
+    background-color: #f4f6f9;
+}
+
+/* Styling for combobox and input fields */
+.slds-combobox,
+.slds-input {
+    width: 100%;
+    margin-top: 0.5rem; 
+}
+
+/* Styling for buttons inside table rows */
+.slds-button-icon {
+    margin: 0.25rem;
+    cursor: pointer;
+}
+
+.slds-button {
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    font-size: 16px;
+}
+
+/* Styling for button groups */
+.slds-grid.slds-grid_align-spread {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+}
+
+/* Responsive behavior for the scrollable area */
+.slds-scrollable_y {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+/* Styling for the card */
+.slds-card {
+    background: linear-gradient(135deg, #f4f6f9, #ffffff);
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+/* Styling for card header */
+.slds-card__header {
+    font-weight: bold;
+    font-size: 1.5rem;
+    padding: 10px;
+}
+
+/* Error message styling */
+.slds-text-color_error {
+    font-size: 1.1rem;
+    color: #a63232;
+    font-weight: bold;
+}
+
+/* Close Button styling */
+.slds-button.slds-button_neutral {
+    background-color: #2a76d7;
+    border-radius: 4px;
+    color: white;
+    padding: 0.5rem 1rem;
+}
+
+/* Save Button styling */
+.slds-button.slds-button_brand {
+    background-color: #28a745;
+    border-radius: 4px;
+    color: white;
+    padding: 0.5rem 1rem;
+}
+
+/* Additional styling for quantity input field */
+.slds-input {
+    width: 70%;
+    margin-top: 0.5rem;
+}
+
+/* Text alignment for the "Close" and "Save" buttons */
+.slds-text-align_right {
+    text-align: right;
+}
+
+/* Styling for the Add/Delete icon buttons */
+.slds-button-icon {
+    width: 30px;
+    height: 30px;
+}
+
+/* Button group for the Close and Save buttons */
+.slds-col.slds-text-align_right {
+    margin-right: 1rem;
+}
+.slds-col {
+    margin-left: 1rem;
+}
+
+/* Add some spacing around elements inside the grid */
+.slds-p-around_medium {
+    padding: 1rem;
+}

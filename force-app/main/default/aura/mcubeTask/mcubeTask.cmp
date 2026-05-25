@@ -1,0 +1,42 @@
+<aura:component controller="mCubeController" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global" >
+    
+    <aura:attribute type="String" name="recordId" default=""/>
+    <aura:attribute type="String" name="callType" default=""/>
+    <aura:attribute type="String" name="callRecordId" default=""/>
+    <aura:attribute type="Boolean" name="isConact" default="false"/>
+    <aura:attribute name="callDetail" type="object" /> 
+    <aura:attribute type="String" name="custNo" default=""/>
+    <aura:attribute name="callId" type="string" default="" /> 
+    <aura:attribute name="showDialer" type="boolean" default="true" />
+    <aura:attribute name="options" type="List" access="PRIVATE"/>
+    <aura:attribute name="selectedValue" type="String" access="PRIVATE"/>
+    <aura:attribute name="callDetails" type="object"  />
+    <aura:attribute name="fromUtility" type="boolean" default="false"/>  
+    <aura:attribute name="fromQuickAction" type="boolean" default="false"/>
+    <aura:attribute name="showMcubeTask" type="boolean" default ="true" />
+
+    <aura:attribute name="parentUtility" type="Aura.Component" />
+    <aura:attribute name="parentQuickAction" type="Aura.Component" />
+    <aura:method name="fetchCallDetails" action="{!c.fetchCallDetails}"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+
+    <aura:if isTrue="{!v.showMcubeTask}"> 
+     <div style="height: 400px; overflow-y: auto; padding: 1rem; border: 1px solid #d8dde6; border-radius: 0.25rem;">
+        <lightning:input type="text" label="Mobile No" value="{!v.custNo}" disabled="true"/>
+        <lightning:input type="text" label="Call Id" value="{!v.callId}" disabled="true"/>
+        <lightning:input type="text" label="Subject" value="{!v.callDetail.Subject__c}" />
+       <!-- <lightning:input type="text" label="Roll Number" value="{!v.callDetail.Roll_Number__c}" /> -->
+        <lightning:select label="Call Deposition" value="{!v.callDetail.Call_Disposition__c}">
+            <option value="">--None--</option>
+            <aura:iteration items="{!v.options}" var="value">
+                <option value="{!value}" >{!value}</option>
+            </aura:iteration>
+        </lightning:select>
+        <lightning:textarea label="Comment" value="{!v.callDetail.Comments__c}"/>
+        <lightning:button class="slds-m-top_small" variant="brand" label="Save" onclick="{!c.updateCallRecord}"/>
+         <br/><br/><br/><br/><br/><br/><br/><br/><br/>
+    </div>
+    
+    </aura:if>
+    <!--<lightning:button class="slds-m-top_small" variant="brand" label="Submit Disposition" onclick="{!c.doDisposition}"/> -->
+</aura:component>

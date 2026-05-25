@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Lead_Sub_Source__c</fullName>
+    <label>Lead Sub Source</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Times of India</fullName>
+                <default>false</default>
+                <label>Times of India</label>
+            </value>
+            <value>
+                <fullName>Tellapur location</fullName>
+                <default>false</default>
+                <label>Tellapur location</label>
+            </value>
+            <value>
+                <fullName>Nallagandla location</fullName>
+                <default>false</default>
+                <label>Nallagandla location</label>
+            </value>
+            <value>
+                <fullName>Credai expo</fullName>
+                <default>false</default>
+                <label>Credai expo</label>
+            </value>
+            <value>
+                <fullName>Times Expo</fullName>
+                <default>false</default>
+                <label>Times Expo</label>
+            </value>
+            <value>
+                <fullName>92.7 big FM</fullName>
+                <default>false</default>
+                <label>92.7 big FM</label>
+            </value>
+            <value>
+                <fullName>93.5 Red FM</fullName>
+                <default>false</default>
+                <label>93.5 Red FM</label>
+            </value>
+            <value>
+                <fullName>98.3 Radia mirchi</fullName>
+                <default>false</default>
+                <label>98.3 Radia mirchi</label>
+            </value>
+            <value>
+                <fullName>99acres</fullName>
+                <default>false</default>
+                <label>99acres</label>
+            </value>
+            <value>
+                <fullName>Housing.com</fullName>
+                <default>false</default>
+                <label>Housing.com</label>
+            </value>
+            <value>
+                <fullName>Magicbricks</fullName>
+                <default>false</default>
+                <label>Magicbricks</label>
+            </value>
+            <value>
+                <fullName>whats up messages</fullName>
+                <default>false</default>
+                <label>whats up messages</label>
+            </value>
+            <value>
+                <fullName>bulk SMS</fullName>
+                <default>false</default>
+                <label>bulk SMS</label>
+            </value>
+            <value>
+                <fullName>ATL &amp; BTL</fullName>
+                <default>false</default>
+                <label>ATL &amp; BTL</label>
+            </value>
+            <value>
+                <fullName>Bulk mails</fullName>
+                <default>false</default>
+                <label>Bulk mails</label>
+            </value>
+            <value>
+                <fullName>TCS</fullName>
+                <default>false</default>
+                <label>TCS</label>
+            </value>
+            <value>
+                <fullName>TV adds</fullName>
+                <default>false</default>
+                <label>TV adds</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

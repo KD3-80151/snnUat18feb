@@ -1,0 +1,399 @@
+<apex:page showHeader="false" standardStylesheets="false" lightningStylesheets="false" sidebar="false" controller="CustomerPortalController">
+    <head>
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta http-equiv="Pragma" content="no-cache" />
+        <meta http-equiv="Expires" content="0" />
+        <c:Libraries />
+        <script>
+            var tabValues = JSON.parse('{!tabValues}');
+            var userId = '{!$CurrentPage.parameters.id}';
+        </script>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"></link>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+        
+        <!-- 
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.7.0/lodash.min.js">
+        </script>
+        
+        <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.2.4/angular-sanitize.min.js'></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/textAngular/1.1.2/textAngular.min.js'></script> -->
+        <c:Controllers />
+        <style>
+            body {
+                overflow-x: hidden;
+                margin: 0;
+                padding: 0;
+            }
+            .modal-backdrop {
+                opacity:0.5 !important;
+            }
+            .sidebar {
+                height: 100vh;
+                max-width: 270px;
+                position: fixed;
+                top: 0;
+                left: 0;
+                background-color: #1F1E1E; /* Updated background color */
+                padding-top: 20px;
+                overflow-y: auto; /* Added overflow */
+                transition: transform 0.3s ease-in-out;
+                z-index: 1000; /* Ensure it is above other content */
+            }
+            .sidebar::-webkit-scrollbar {
+                width: 0px;  /* Remove scrollbar space */
+                background: transparent;  /* Optional: just make scrollbar invisible */
+            }
+            .sidebar {
+                scrollbar-width: none;  /* For Firefox */
+            }
+            .sidebar .nav-link {
+                color: #ffffff;
+                padding: 15px 20px;
+                transition: background-color 0.3s, border-left 0.3s;
+            }
+            .sidebar .nav-link:hover, .sidebar .nav-link.active {
+                background-color: white;
+                color: #1F1E1E;
+                border-left: 4px solid #9D6200;
+            }
+            .sidebar-header {
+                padding: 20px;
+                background: #1F1E1E; /* Match sidebar background color */
+            }
+            .sidebar-header img {
+                width: 50%; /* Updated image width */
+            }
+            .content {
+                margin-left: 270px;
+                padding: 0px;
+                transition: margin-left 0.3s ease-in-out;
+                min-height:53rem;
+            }
+            .sidebar-collapsed {
+                transform: translateX(-100%);
+            }
+            .content-collapsed {
+                margin-left: 0;
+            }
+            .fixed-header {
+                position: fixed;
+                top: 0;
+                left: 250px; /* Adjusted based on sidebar width */
+                right: 0;
+                height: 70px; /* Adjust the height as needed */
+                background-color: #fff;
+                z-index: 9999;
+                display: flex;
+                align-items: center;
+            }
+            .content-body {
+                margin-top: 20px; /* Adjust based on header height */
+                height: 100%; /* Fill the remaining space */
+                padding-right: 25px;
+            }
+            .hidden {
+                display: none;
+            }
+            @media (max-width: 768px) {
+                .sidebar {
+                    transform: translateX(-100%);
+                }
+                .sidebar-open {
+                    transform: translateX(0);
+                }
+                .fixed-header {
+                    left: 0;
+                }
+                .content {
+                    margin-left: 0;
+                }
+                .content-open {
+                    /* margin-left: 250px; */
+                }
+            }
+
+            /* .animated-icon {
+                display: inline-block;
+                width: 30px;
+                height: 22px;
+                position: relative;
+            } */
+
+            /* .line {
+                display: block;
+                width: 100%;
+                height: 4px;
+                background-color: #9D6200;  
+                position: absolute;
+                left: 0;
+                transition: all 0.3s ease-in-out;
+            } */
+
+            .line1 {
+                top: 0;
+            }
+
+            .line2 {
+                top: 9px;
+            }
+
+            .line3 {
+                top: 18px;
+            }
+
+            .animated-icon.open .line1 {
+                transform: rotate(45deg);
+                top: 9px;
+            }
+
+            .animated-icon.open .line2 {
+                opacity: 0;
+            }
+
+            .animated-icon.open .line3 {
+                transform: rotate(-45deg);
+                top: 9px;
+            }
+
+            /* Additional Styles for Buttons */
+            .modal-body {
+                text-align: center;
+            }
+
+            .modal-buttons {
+                display: flex;
+                justify-content: center;
+                gap: 10px;
+                margin-top: 20px;
+            }
+
+            .btn-close-modal {
+                background-color: #1F1E1E!important;
+                color: white!important;
+                font-weight: 500!important;
+            }
+
+            .btn-logout {
+                
+                background-color: #9D6200!important;
+                color: white!important;
+                font-weight: 500!important;
+            }
+
+            /* Hamburger Icon Styles */
+            .navbar-toggler .animated-icon {
+                display: inline-block;
+                width: 30px;
+                height: 22px;
+                position: relative;
+            }
+
+            .navbar-toggler .line {
+                display: block;
+                width: 100%;
+                height: 4px;
+                background-color: #9D6200;
+                position: absolute;
+                left: 0;
+                transition: all 0.3s ease-in-out;
+            }
+
+            .navbar-toggler .line1 {
+                top: 0;
+            }
+
+            .navbar-toggler .line2 {
+                top: 9px;
+            }
+
+            .navbar-toggler .line3 {
+                top: 18px;
+            }
+
+            .navbar-toggler.open .line1 {
+                transform: rotate(45deg);
+                top: 9px;
+            }
+
+            .navbar-toggler.open .line2 {
+                opacity: 0;
+            }
+
+            .navbar-toggler.open .line3 {
+                transform: rotate(-45deg);
+                top: 9px;
+            }
+            .d-flex1 {
+                display: flex;
+                flex-direction: row;
+            }
+        </style>
+    </head>
+    <body ng-app="cp_app" ng-controller="cp_dashboard_ctrl" ng-init="init()" style="background-color: #ffffff; !important;">
+        <div id="app">
+            
+            <!-- Navbar for mobile toggle -->
+            <nav class="navbar navbar-light bg-light d-lg-none d-flex1 justify-content-between align-items-center">
+                <button class="navbar-toggler me-3" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Toggle sidebar" ng-click="toggleSidebar()">
+                    <span class="animated-icon">
+                        <span class="line line1"></span>
+                        <span class="line line2"></span>
+                        <span class="line line3"></span>
+                    </span>
+                </button>
+                <div class="d-flex1 align-items-center ms-auto">
+                    <i class="fa fa-bell" style="font-size: 1rem; cursor: pointer;"></i> <!-- Bell icon -->
+                    <a ng-click="loadprofilePage('profileDetails')">
+                        <img ng-if="profilePicId != ''" class="rounded-circle" style="height:40px; width:40px;" 
+                            ng-src="{{profileUrl + profilePicId}}" width="40" height="40" alt="avatar"/> <!-- Set profile size to 40px -->
+                        <img ng-if="profilePicId == ''" class="rounded-circle" style="height:40px; width:40px;" 
+                            src="{!URLFOR($Resource.personProfile)}" width="40" height="40" alt="avatar"/> <!-- Set profile size to 40px -->
+                    </a>
+                </div>
+                <!-- <div class="w-100"></div> -->
+                <!-- <div class="sales-member-card">
+                    <div style="max-width: fit-content;">
+                        <p class="sales-member-head">{{con.Owner.Name}}</p>
+                        <p class="sales-member-info">Sales Member</p>
+                    </div> -->
+                    <!-- <div style="max-width: fit-content;">
+                        <p class="sales-member-head">+91 {{con.Owner.Phone}}</p>
+                        <p class="sales-member-info">Phone</p>
+                    </div>
+                    <div style="max-width: fit-content;">
+                        <p class="sales-member-head">{{con.Owner.Email}}</p>
+                        <p class="sales-member-info">Email</p>
+                    </div> -->
+                <!-- </div> -->
+            </nav> 
+
+
+            <!-- Sidebar -->
+            <div class="sidebar" id="sidebar" ng-class="{'sidebar-open': isSidebarOpen}">
+                <div class="sidebar-header text-center">
+                    <img src="{!URLFOR($Resource.SNNLogoPng)}" alt="SNN Logo" />
+                </div>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#/CustomerPortal_BookingPage" ng-click="setActive('bookings')" ng-class="{'active': activeTab === 'bookings'}"><i class="fa fa-home me-2"></i>My Bookings</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#/CustomerPortal_InvoicePage" ng-click="setActive('invoices')" ng-class="{'active': activeTab === 'invoices'}"><i class="fa fa-file-invoice-dollar me-2"></i>Receipts</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#/CustomerPortal_CustomerDocumentsPage" ng-click="setActive('customerDocuments')" ng-class="{'active': activeTab === 'customerDocuments'}"><i class="fa fa-user-circle me-2"></i>Customer Documents</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#/CustomerPortal_ProjectDocumentsPage" ng-click="setActive('projectDocuments')" ng-class="{'active': activeTab === 'projectDocuments'}"><i class="fa fa-folder-open me-2"></i>Project Documents</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#/CustomerPortal_ProjectUpdatesPage" ng-click="setActive('projectUpdates')" ng-class="{'active': activeTab === 'projectUpdates'}"><i class="fa fa-tasks me-2"></i>Project Updates</a>
+                    </li>
+                    <!-- <li class="nav-item">
+                        <a class="nav-link" href="#/CustomerPortal_SiteVisitsPage" ng-click="setActive('siteVisits')" ng-class="{'active': activeTab === 'siteVisits'}"><i class="fa fa-map-marker-alt me-2"></i>My Visits</a>
+                    </li> -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="#/CustomerPortal_ReferralsPage" ng-click="setActive('referrals')" ng-class="{'active': activeTab === 'referrals'}"><i class="fa fa-users me-2"></i>Referrals</a>
+                    </li>
+                    <!-- <li class="nav-item">
+                        <a class="nav-link" href="#/CustomerPortal_TDSFaqPage" ng-click="setActive('tdsFaqs')" ng-class="{'active': activeTab === 'tdsFaqs'}"><i class="fa fa-question-circle me-2"></i>TDS</a>
+                    </li> -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="#/CustomerPortal_ListingsPage" ng-click="setActive('listings')" ng-class="{'active': activeTab === 'listings'}"><i class="bi bi-text-left me-2"></i>Listings</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#/CustomerPortal_ServiceRequestsPage" ng-click="setActive('serviceRequests')" ng-class="{'active': activeTab === 'serviceRequests'}"><i class="fa fa-wrench me-2"></i>Service Requests</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#/CustomerPortal_FAQsPage" ng-click="setActive('faqs')" ng-class="{'active': activeTab === 'faqs'}"><i class="fa fa-question me-2"></i>FAQ's</a>
+                    </li>
+                    <!-- <li class="nav-item">
+                        <a class="nav-link" href="#/CustomerPortal_BlogsPage" ng-click="setActive('blogs')" ng-class="{'active': activeTab === 'blogs'}"><i class="fa fa-blog me-2"></i>Blogs</a>
+                    </li> -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="#/CustomerPortal_AboutUsPage" ng-click="setActive('aboutUs')" ng-class="{'active': activeTab === 'aboutUs'}"><i class="fa fa-info-circle me-2"></i>Contact Us</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#/CustomerPortal_TermsConditonPage" ng-click="setActive('termsConditions')" ng-class="{'active': activeTab === 'termsConditions'}"><i class="fa fa-file-contract me-2"></i>Terms &amp; Conditions</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" ng-click="openLogoutModal()"><i class="fa fa-sign-out-alt me-2"></i>Logout</a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Content -->
+            <div class="content" ng-class="{'content-open': isSidebarOpen}" ng-click="closeSideBar()">
+                <apex:include pageName="CustomerPortal_HeaderPage"/>
+                <div class="content-body" id="content-body">
+                    <div ng-show="activeTab === 'listings'">
+                        <apex:include pageName="CustomerPortal_ListingsPage"/>
+                    </div>
+                    <div ng-show="activeTab === 'bookings'">
+                        
+                        <apex:include pageName="CustomerPortal_BookingPage"/>  
+                    </div>
+                    <div ng-show="activeTab === 'siteVisits'">
+                    
+                        <apex:include pageName="CustomerPortal_SiteVisitsPage"/>
+                    </div>
+                    <div ng-show="activeTab === 'projectUpdates'">
+                    
+                    <apex:include pageName="CustomerPortal_ProjectUpdatesPage"/> 
+                    </div>
+                    <div ng-show="activeTab === 'invoices'">
+                        <apex:include pageName="CustomerPortal_InvoicePage"/>
+                    </div>
+                    <!-- <div ng-show="activeTab === 'tdsFaqs'">
+                        <apex:include pageName="CustomerPortal_TDSFaqPage"/>
+                    </div> -->
+                    <div ng-show="activeTab === 'projectDocuments'">
+                        <apex:include pageName="CustomerPortal_ProjectDocumentsPage"/>
+                    </div>
+                    <div ng-show="activeTab === 'customerDocuments'">
+                        <apex:include pageName="CustomerPortal_CustomerDocumentsPage"/>
+                    </div>
+                    <div ng-show="activeTab === 'serviceRequests'">
+                        <apex:include pageName="CustomerPortal_ServiceRequestsPage"/>
+                    </div>
+                    <div ng-show="activeTab === 'referrals'">
+                        <apex:include pageName="CustomerPortal_ReferralsPage"/>
+                    </div>
+                    <div ng-show="activeTab === 'faqs'">
+                        <apex:include pageName="CustomerPortal_FAQsPage"/>
+                    </div>
+                    <div ng-show="activeTab === 'blogs'">
+                        <apex:include pageName="CustomerPortal_BlogsPage"/>
+                    </div>
+                    <div ng-show="activeTab === 'aboutUs'">
+                        <apex:include pageName="CustomerPortal_AboutUsPage"/>
+                    </div>
+                    <div ng-show="activeTab === 'termsConditions'">
+                        <apex:include pageName="CustomerPortal_TermsConditonPage"/>
+                    </div>
+                    <div ng-show="activeTab === 'profileDetails'">
+                        <apex:include pageName="CustomerPortal_ProfileDetailsPage"/>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logout Modal -->
+            <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content" id="logoutModalContent">
+                        <div class="modal-body">
+                            <h5 class="modal-title" id="logoutModalLabel">Logout?</h5>
+                            <p>You are about to log out of your SNN Estates account. Thank you for using our portal, and we look forward to your return.</p>
+                            <img src="{!URLFOR($Resource.logoutImage)}" alt="Logout Image" class="img-fluid mb-4" style="max-width: 100px;" />
+                            <!-- Inline Buttons -->
+                            <div class="modal-buttons">
+                                <button type="button" class="btn btn-close-modal" data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-logout" ng-click="Custlogout()">Log out</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</apex:page>

@@ -1,0 +1,334 @@
+<template>
+    <div class="mainDiv">
+        <div class="mainDiv_header">
+            Receipt Details
+        </div>
+        <div class="body">
+            <div class="slds-grid slds-gutters ">
+                <div class="slds-col slds-size_1-of-3">
+                    <span class="client">
+                        <lightning-record-picker label="Client" placeholder="Search Client..." onchange={selectAccount} value={receiptDetails.Account__c} required
+                            object-api-name="Account"></lightning-record-picker>
+                    </span>
+                </div>
+                <div class="slds-col slds-size_1-of-3">
+                    <span class="client">
+                        <lightning-record-picker label="Unit Number" placeholder="Search Unit..." onchange={selectUnit} value={receiptDetails.Unit__c} required disabled={disableUnit}
+                            object-api-name="Unit__c"></lightning-record-picker>
+                    </span>
+                    
+                </div>
+                <div class="slds-col slds-size_1-of-3">
+                    <span class="client">
+                        <lightning-input name="Receipt_Date__c" type="date" label="Receipt Date" value={receiptDetails.Receipt_Date__c} onchange={handleChange} ></lightning-input>
+                    </span>
+                </div>
+            </div>
+
+            <div class="slds-grid slds-gutters slds-p-vertical_small">
+                <div class="slds-col slds-size_1-of-1">
+                    <span class="client">
+                        <h1 class="modeOdPay"><span class="slds-required" title="required">*</span>Mode Of Payment</h1>
+                        <template for:each={modeOfPaymentOptions} for:item="item">
+                            <fieldset key={item.value} style="display: block; float: left;">
+                                <div class="slds-form-element__control">
+                                    <span class="slds-radio">
+                                        <input name="Mode_Of_Payment__c" id={item.value} type="radio" value={item.value}
+                                            onchange={handleChange} />
+                                        <label class="slds-radio__label" for={item.value}>
+                                            <span class="slds-radio_faux"></span>
+                                            <span class="slds-form-element__label radio">{item.label}</span>
+                                        </label>
+                                    </span>
+                                </div>
+                            </fieldset>
+                        </template>
+                    </span>
+                </div>
+            </div>
+
+            <template if:true={modeIsCheque}>
+                <div class="slds-grid slds-gutters ">
+                    <div class="slds-col slds-size_1-of-3">
+                        <span class="client">
+                            <lightning-input name="Amount__c" type="number" label="Amount" value={receiptDetails.Amount__c} onchange={handleChange} required></lightning-input>
+                        </span>
+                    </div>
+                    <div class="slds-col slds-size_1-of-3">
+                        <span class="client">
+                            <lightning-input name="Cheque_Number__c" type="text" label="Cheque Number" value={receiptDetails.Cheque_Number__c} onchange={handleChange} required></lightning-input>
+                        </span>
+                    </div>
+                    <div class="slds-col slds-size_1-of-3">
+                        <span class="client">
+                            <lightning-input name="Cheque_Date__c" type="date" label="Cheque Date" value={receiptDetails.Cheque_Date__c} onchange={handleChange} required></lightning-input>
+                        </span>
+                    </div>
+                </div>
+            </template>
+            
+            <template if:true={modeIsEFT}>
+                <div class="slds-grid slds-gutters ">
+                    <div class="slds-col slds-size_1-of-3">
+                        <span class="client">
+                            <lightning-input name="Amount__c" type="number" label="Amount" value={receiptDetails.Amount__c} onchange={handleChange} required></lightning-input>
+                        </span>
+                    </div>
+                    <div class="slds-col slds-size_1-of-3">
+                        <span class="client">
+                            <lightning-input name="Fund_Transfer_Date__c" type="date" label="Fund Transfer Date" value={receiptDetails.Fund_Transfer_Date__c} onchange={handleChange} required></lightning-input>
+                        </span>
+                    </div>
+                    <div class="slds-col slds-size_1-of-3">
+                        <span class="client">
+                            <lightning-combobox name="Bank_Name__c" label="Bank Name" value={receiptDetails.Bank_Name__c} required
+                            options={bankNameOptions} onchange={handleChange}></lightning-combobox>
+                        </span>
+                    </div>
+                </div>
+                
+            </template>
+
+            <template if:true={modeIsDD}>
+                <div class="slds-grid slds-gutters ">
+                    <div class="slds-col slds-size_1-of-3">
+                        <span class="client">
+                            <lightning-input name="Amount__c" type="number" label="Amount" value={receiptDetails.Amount__c} onchange={handleChange} required></lightning-input>
+                        </span>
+                    </div>
+                    <div class="slds-col slds-size_1-of-3">
+                        <span class="client">
+                            <lightning-input name="DD_Number__c" type="text" label="DD Number" value={receiptDetails.DD_Number__c} onchange={handleChange} required></lightning-input>
+                        </span>
+                    </div>
+                    <div class="slds-col slds-size_1-of-3">
+                        <span class="client">
+                            <lightning-input name="DD_Date__c" type="date" label="DD Number" value={receiptDetails.DD_Date__c} onchange={handleChange} required></lightning-input>
+                        </span>
+                    </div>
+                </div>
+            </template>
+
+            <template if:true={modeIsUPI}>
+                <div class="slds-grid slds-gutters ">
+                    <div class="slds-col slds-size_1-of-3">
+                        <span class="client">
+                            <lightning-input name="Amount__c" type="number" label="Amount" value={receiptDetails.Amount__c} onchange={handleChange} required></lightning-input>
+                        </span>
+                    </div>
+                    <div class="slds-col slds-size_1-of-3">
+                        <span class="client">
+                            <lightning-input name="Reference_Number__c" type="text" label="Reference Number" value={receiptDetails.Reference_Number__c} onchange={handleChange} required></lightning-input>
+                        </span>
+                    </div>
+                    <div class="slds-col slds-size_1-of-3">
+                        <span class="client">
+                            <lightning-input name="Paid_Date__c" type="date" label="Paid Date" value={receiptDetails.Paid_Date__c} onchange={handleChange} required></lightning-input>
+                        </span>
+                    </div>
+                </div>
+                
+            </template>
+
+            <template if:true={modeIsTDS}>
+                <div class="slds-grid slds-gutters ">
+                    <div class="slds-col slds-size_1-of-3">
+                        <span class="client">
+                            <lightning-input name="TDS_Amount__c" type="number" label="TDS Amount" value={receiptDetails.TDS_Amount__c} onchange={handleChange}></lightning-input>
+                        </span>
+                    </div>
+                    <div class="slds-col slds-size_1-of-3">
+                        <span class="client">
+                            <lightning-input name="CIN__c" type="text" label="CIN" value={receiptDetails.CIN__c} onchange={handleChange} required></lightning-input>
+                        </span>
+                    </div>
+                    <div class="slds-col slds-size_1-of-3">
+                        <span class="client">
+                            <lightning-input name="Challan_Date__c" type="date" label="Challan Date" value={receiptDetails.Challan_Date__c} onchange={handleChange} required></lightning-input>
+                        </span>
+                    </div>
+                </div>
+                <div class="slds-grid slds-gutters ">
+                    <div class="slds-col slds-size_1-of-3">
+                        <span class="client">
+                            <lightning-input name="BSR_Code__c" type="text" label="BSR Code" value={receiptDetails.BSR_Code__c} onchange={handleChange} required></lightning-input>
+                        </span>
+                    </div>
+                    <div class="slds-col slds-size_1-of-3">
+                        <span class="client">
+                            <lightning-input name="Bank__c" type="text" label="Bank" value={receiptDetails.Bank__c} onchange={handleChange} required></lightning-input>
+                        </span>
+                    </div>
+                    <div class="slds-col slds-size_1-of-3">
+                        <span class="client">
+                            <lightning-input name="Branch__c" type="text" label="Branch" value={receiptDetails.Branch__c} onchange={handleChange} required></lightning-input>
+                        </span>
+                    </div>
+                </div>
+                <div class="slds-grid slds-gutters ">
+                    <div class="slds-col slds-size_1-of-3">
+                        <span class="client">
+                            <lightning-input name="PAN_TAN_Number__c" type="number" label="PAN/TAN Number" value={receiptDetails.PAN_TAN_Number__c} onchange={handleChange} required></lightning-input>
+                        </span>
+                    </div>
+                    <div class="slds-col slds-size_1-of-3">
+                        <span class="client">
+                            <lightning-input name="Reference_Number__c" type="text" label="Reference Number" value={receiptDetails.Reference_Number__c} onchange={handleChange}></lightning-input>
+                        </span>
+                    </div>
+                    <div class="slds-col slds-size_1-of-3">
+                        <span class="client">
+                            <lightning-input name="AY__c" type="text" label="AY" value={receiptDetails.AY__c} onchange={handleChange} required></lightning-input>
+                        </span>
+                    </div>
+                </div>
+            </template>
+
+            <template if:true={modeIsJV}>
+                <div class="slds-grid slds-gutters ">
+                    <div class="slds-col slds-size_1-of-3">
+                        <span class="client">
+                            <lightning-input name="Amount__c" type="number" label="Amount" value={receiptDetails.Amount__c} onchange={handleChange} required></lightning-input>
+                        </span>
+                    </div>
+                    <div class="slds-col slds-size_1-of-3">
+                        <span class="client">
+                            <lightning-input name="JV_Reference_Number__c" type="text" label="JV Reference Number" value={receiptDetails.JV_Reference_Number__c} onchange={handleChange} required></lightning-input>
+                        </span>
+                    </div>
+                    <div class="slds-col slds-size_1-of-3">
+                        <span class="client">
+                            <lightning-input name="JV_Date__c" type="date" label="JV Date" value={receiptDetails.JV_Date__c} onchange={handleChange} required></lightning-input>
+                        </span>
+                    </div>
+                </div>
+            </template>
+
+            <div class="slds-grid slds-gutters ">
+                <template if:true={modeIsCheque}>
+                    <div class="slds-col slds-size_1-of-3">
+                        <span class="client">
+                            <lightning-combobox name="Drawn_on_Bank__c" label="Drawn On Bank" value={receiptDetails.Drawn_on_Bank__c} required
+                            options={drawOnBankOptions} onchange={handleChange}></lightning-combobox>
+                        </span>
+                    </div>
+                </template>
+                <template if:true={modeIsEFT}>
+                    <div class="slds-col slds-size_1-of-3">
+                        <span class="client">
+                            <lightning-input name="Transaction_Reference_Number__c" type="text" label="Transaction Reference Number" value={receiptDetails.Transaction_Reference_Number__c} onchange={handleChange} required></lightning-input>
+                        </span>
+                    </div>
+                </template>
+                <template if:true={modeIsUPI}>
+                    <div class="slds-col slds-size_1-of-3">
+                        <span class="client">
+                            <lightning-combobox name="UPI_Provider__c" label="UPI_Provider" value={receiptDetails.UPI_Provider__c}
+                            options={upiProviderOptions} onchange={handleChange}></lightning-combobox>
+                        </span>
+                    </div>
+                </template>
+                <template if:false={modeIsJV}>
+                    <div class="slds-col slds-size_1-of-3">
+                        <span class="client">
+                            <lightning-combobox name="Tax_Type__c" label="Tax Type" value={receiptDetails.Tax_Type__c}
+                                options={taxTypeOptions} onchange={handleChange}></lightning-combobox>
+                        </span>
+                    </div>
+                    <div class="slds-col slds-size_1-of-3">
+                        <span class="client">
+                            <lightning-combobox name="Fin_Tax__c" label="Fin Tax" value={receiptDetails.Fin_Tax__c}
+                                options={finTaxOptions} onchange={handleChange}></lightning-combobox>
+                        </span>
+                    </div>
+                </template>
+            </div>
+
+
+            <div class="slds-grid slds-gutters ">
+                <div class="slds-col slds-size_1-of-3">
+                    <span class="client">
+                        <lightning-textarea name="Remarks__c" label="Remarks" value={receiptDetails.Remarks__c} onchange={handleChange} required={modeIsJV}></lightning-textarea>
+                    </span>
+                </div>
+                <div class="slds-col slds-size_1-of-3">
+                    <span class="client">
+                        <lightning-input name="Preview__c" type="checkbox" label="Preview" checked={receiptDetails.Preview__c} onchange={handleChange} class="checkboxCss"></lightning-input>
+                    </span>
+                </div>
+                <template if:false={modeIsJV}>
+                    <div class="slds-col slds-size_1-of-3">
+                        <span class="client">
+                            <lightning-input name="Maintenance_Receipt__c" type="checkbox" label="Maintenance Receipt" checked={receiptDetails.Maintenance_Receipt__c} onchange={handleChange} class="checkboxCss"></lightning-input>
+                        </span>
+                    </div>
+                </template>
+            </div>
+        </div>
+        <div class="bodyButtons slds-align_absolute-center">
+            <lightning-button variant="brand-outline" label="Clear" onclick={clearReceiptData} ></lightning-button>
+            <lightning-button variant="brand" label="Create Receipt" onclick={saveReceipt} class="slds-m-left_x-small"></lightning-button>
+        </div>
+
+        <div class="secondDiv">
+            <lightning-tabset>
+                <lightning-tab label="Details">
+                    <template if:true={showUnitDetails}>
+                        <div class="slds-p-around_medium">
+                            <table class="slds-table slds-table_bordered slds-table_striped">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">
+                                            <div class="slds-truncate headerTitle" title="Unit">Unit</div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate headerTitle" title="Total">Total</div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate headerTitle" title="Allocated">Allocated</div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate headerTitle" title="Balance">Balance</div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate headerTitle" title="Total Tax">Total Tax</div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate headerTitle" title="All Tax">Allocated Tax</div>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <div class="slds-truncate contentBody" title={unitDetails.Name}>{unitDetails.Name}</div>
+                                        </td>
+                                        <td>
+                                            <div class="slds-truncate contentBody" title={unitDetails.Total__c}>{unitDetails.Total__c}</div>
+                                        </td>
+                                        <td>
+                                            <div class="slds-truncate contentBody" title={unitDetails.Allocated__c}>{unitDetails.Allocated__c}</div>
+                                        </td>
+                                        <td>
+                                            <div class="slds-truncate contentBody" title={unitDetails.Balance__c}>{unitDetails.Balance__c}</div>
+                                        </td>
+                                        <td>
+                                            <div class="slds-truncate contentBody" title={unitDetails.Total_Tax__c}>{unitDetails.Total_Tax__c}</div>
+                                        </td>
+                                        <td>
+                                            <div class="slds-truncate contentBody" title={unitDetails.All_Tax__c}>{unitDetails.Allocated_Tax__c}</div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </template>
+                </lightning-tab>
+                <lightning-tab label="Search">
+                    <c-receipt-related-to-account acc-id={receiptDetails.Account__c} unit-id={receiptDetails.Unit__c}></c-receipt-related-to-account>
+                </lightning-tab>
+            </lightning-tabset>
+        </div>
+    </div>
+    
+</template>

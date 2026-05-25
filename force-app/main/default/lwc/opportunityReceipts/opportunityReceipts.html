@@ -1,0 +1,111 @@
+<template>
+    <lightning-card title="Tax Invoices - GST Summary" icon-name="custom:custom63">
+        <div class="header-actions">
+            <template if:true={showGrandTotal}>
+                <div class="summary-bar">
+                    <span class="summary-label">Total Tax :</span>
+                    <span class="summary-value">₹{grandTotalGST}</span>
+                </div>
+            </template>
+
+            <template if:true={showSelectedTotal}>
+                <div class="summary-bar">
+                    <span class="summary-label">Selected Tax :</span>
+                    <span class="summary-value">₹{selectedTotalGST}</span>
+                </div>
+            </template>
+
+            <div class="header-controls">
+                <lightning-input
+                    type="date"
+                    label="Start Date"
+                    value={startDate}
+                    onchange={handleStartDateChange}
+                    class="date-input"
+                ></lightning-input>
+
+                <lightning-input
+                    type="date"
+                    label="End Date"
+                    value={endDate}
+                    onchange={handleEndDateChange}
+                    class="date-input"
+                ></lightning-input>
+
+                <lightning-button
+                    variant="neutral"
+                    label="Search"
+                    class="slds-m-left_small"
+                    onclick={handleSearch}
+                ></lightning-button>
+
+                <lightning-button
+                    variant="brand"
+                    label="GST Paid Done"
+                    class="slds-m-left_small"
+                    onclick={handleGSTPaidDone}
+                    disabled={disableGSTPaidDone}
+                ></lightning-button>
+            </div>
+        </div>
+
+        <template if:true={loading}>
+            <lightning-spinner alternative-text="Loading..." size="medium"></lightning-spinner>
+        </template>
+
+        <template if:true={taxInvoices}>
+            <lightning-datatable
+                key-field="Id"
+                data={taxInvoices}
+                columns={columns}
+                onrowselection={handleRowSelection}
+            ></lightning-datatable>
+        </template>
+
+        <template if:true={showNoData}>
+            <div class="slds-p-around_medium slds-text-align_center slds-text-color_weak">
+                No Tax Invoices found for the selected date range.
+            </div>
+        </template>
+    </lightning-card>
+
+    <!-- ✅ Custom Modal for Optional Tax Paid Date -->
+    <template if:true={showGSTPaidModal}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <h2 class="slds-text-heading_medium">GST Paid Date (Optional)</h2>
+                </header>
+
+                <div class="slds-modal__content slds-p-around_medium">
+                    <lightning-input
+                        type="date"
+                        label="Tax Paid Date"
+                        value={taxPaidDate}
+                        onchange={handleTaxPaidDateChange}
+                    ></lightning-input>
+
+                    <div class="slds-text-body_small slds-m-top_x-small slds-text-color_weak">
+                        If blank, backend will update GST Paid without setting Tax Paid Date.
+                    </div>
+                </div>
+
+                <footer class="slds-modal__footer">
+                    <lightning-button
+                        variant="neutral"
+                        label="Cancel"
+                        onclick={closeGSTPaidModal}
+                    ></lightning-button>
+
+                    <lightning-button
+                        variant="brand"
+                        label="Confirm"
+                        class="slds-m-left_small"
+                        onclick={saveGSTPaid}
+                    ></lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+</template>
