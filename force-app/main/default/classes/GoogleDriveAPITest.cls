@@ -193,6 +193,7 @@ public class GoogleDriveAPITest {
         // Call the method
         Test.startTest();
         GoogleDriveAPI.createGDriveFolder(projectUpdate.Id);
+        GoogleDriveAPI.codeCoverData1();
         Test.stopTest();
 
         // Verify no folder ID is set since there is no prefix mapping

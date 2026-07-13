@@ -77,8 +77,8 @@ export default class EditPricingOnOpportunity extends LightningElement {
                 ...pe,
                 discountAmount: pe.Discount_Amount__c ? pe.Discount_Amount__c : 0,
                 amount: pe.Amount__c ? pe.Amount__c : 0,
-                taxAmount: pe.finalize_CostSheet__c ? pe.finalize_CostSheet__c : 0,
-                totalAmounts: (pe.Amount__c ? pe.Amount__c : 0) + (pe.finalize_CostSheet__c ? pe.finalize_CostSheet__c : 0) - (pe.Discount_Amount__c ? pe.Discount_Amount__c : 0)
+                taxAmount: pe.Final_Tax_Amount__c ? pe.Final_Tax_Amount__c : 0,
+                totalAmounts: (pe.Amount__c ? pe.Amount__c : 0) + (pe.Final_Tax_Amount__c ? pe.Final_Tax_Amount__c : 0) //- (pe.Discount_Amount__c ? pe.Discount_Amount__c : 0)
             }));
             // this.pricingElements = result[0].Pricing_Elements__r;
             this.originalPricingElements = JSON.parse(JSON.stringify(result[0].Pricing_Elements__r)); // Store a copy of the original pricing elements
@@ -107,7 +107,7 @@ export default class EditPricingOnOpportunity extends LightningElement {
 
     get totalTaxAmount() {
         debugger;
-    return this.pricingElements.reduce((sum, pe) => sum + (pe.Tax_Amount__c || 0), 0);
+    return this.pricingElements.reduce((sum, pe) => sum + (pe.taxAmount || 0), 0);
 }
 
     get totalAmount() {
@@ -143,7 +143,8 @@ export default class EditPricingOnOpportunity extends LightningElement {
             updatedPricingElement.Quantity__c = parseFloat(updatedPricingElement.Quantity__c) || 0;
             updatedPricingElement.Rate__c = parseFloat(updatedPricingElement.Rate__c) || 0;
             updatedPricingElement.amount = updatedPricingElement.Quantity__c * updatedPricingElement.Rate__c;
-    
+            updatedPricingElement.Amount__c = updatedPricingElement.amount;
+
             updatedPricingElement.taxAmount = parseFloat(updatedPricingElement.taxAmount) || 0;
             updatedPricingElement.discountAmount = parseFloat(updatedPricingElement.discountAmount) || 0;
     
@@ -168,18 +169,21 @@ export default class EditPricingOnOpportunity extends LightningElement {
     // Function to update the TotalAmount for all pricing elements
     updateTotalAmount() {
         debugger;
-        this.pricingElements = this.pricingElements.map(item => ({
-            ...item,
-            Quantity__c: parseFloat(item.Quantity__c) || 0,
-            Rate__c: parseFloat(item.Rate__c) || 0,
-            amount: (parseFloat(item.Quantity__c) || 0) * (parseFloat(item.Rate__c) || 0),
-            taxAmount: parseFloat(item.taxAmount) || 0,
-            discountAmount: parseFloat(item.discountAmount) || 0,
-            totalAmounts: 
-                ((parseFloat(item.Quantity__c) || 0) * (parseFloat(item.Rate__c) || 0)) + 
-                (parseFloat(item.taxAmount) || 0) - 
-                (parseFloat(item.discountAmount) || 0)
-        }));
+        this.pricingElements = this.pricingElements.map(item => {
+            const amount = (parseFloat(item.Quantity__c) || 0) * (parseFloat(item.Rate__c) || 0);
+            const taxAmount = parseFloat(item.taxAmount) || 0;
+            const discountAmount = parseFloat(item.discountAmount) || 0;
+            return {
+                ...item,
+                Quantity__c: parseFloat(item.Quantity__c) || 0,
+                Rate__c: parseFloat(item.Rate__c) || 0,
+                amount,
+                Amount__c: amount,
+                taxAmount,
+                discountAmount,
+                totalAmounts: amount + taxAmount - discountAmount
+            };
+        });
     }
     
 

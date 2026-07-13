@@ -136,7 +136,10 @@
                     <lightning-input type="text" label="Bank Name" value={bankName} class="custom-input" name="bankName" onchange={handleInputChange} required></lightning-input>
                 </div>
                 <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
-                    <lightning-input type="text" label="PAN NO" value={panNo} class="custom-input" name="panNo" onchange={handleInputChange} required></lightning-input>
+                    <lightning-input type="text" label="PAN NO" value={panNo} class="custom-input" name="panNo"
+                        pattern="[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}" maxlength="10"
+                        message-when-pattern-mismatch="Please enter a valid PAN Number in the format ABCDE1234F."
+                        onchange={handleInputChange} required></lightning-input>
                 </div>
             </template>
 
@@ -169,10 +172,49 @@
                 </div>
             </template>
         </div>
+        
+        <div class="slds-m-bottom_medium slds-p-left_large">
+            <lightning-input
+                type="checkbox"
+                label="Against Debit"
+                checked={isAgainstDebit}
+                onchange={handleAgainstDebitChange}>
+            </lightning-input>
+            <template if:true={againstDebitHelpText}>
+                <p class="against-debit-help">{againstDebitHelpText}</p>
+            </template>
+        </div>
+
+
 
         <!-- Submit Button -->
         <div class="slds-m-top_medium slds-text-align_center">
             <lightning-button disabled={isDisabled} variant="brand" label="Submit" onclick={handleSubmit}></lightning-button>
         </div>
     </lightning-card>
+    <template if:true={showDebitScheduleModal}>
+        <section role="dialog" tabindex="-1" aria-modal="true" aria-label="Select Debit Payment Schedule" class="slds-modal slds-fade-in-open debit-schedule-modal">
+            <div class="slds-modal__container debit-schedule-modal__container">
+                <header class="slds-modal__header">
+                    <h2 class="slds-text-heading_medium debit-schedule-modal__title">Select Debit Payment Schedule</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium debit-schedule-modal__content">
+                    <p class="debit-schedule-modal__subtitle">Choose one debit payment schedule for this receipt.</p>
+                    <lightning-radio-group
+                        name="debitPaymentSchedule"
+                        label="Debit Payment Schedules"
+                        options={debitPaymentScheduleOptions}
+                        value={selectedDebitPaymentScheduleId}
+                        onchange={handleDebitScheduleSelection}>
+                    </lightning-radio-group>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning-button label="Cancel" onclick={handleDebitModalCancel}></lightning-button>
+                    <lightning-button class="slds-m-left_small" variant="brand" label="Done" onclick={handleDebitModalConfirm}></lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open debit-schedule-backdrop"></div>
+    </template>
+
 </template>

@@ -1,5 +1,5 @@
 @isTest
-private class receiptTransferControllerTest {
+public class receiptTransferControllerTest {
     
     @testSetup
     static void setupTestData() {

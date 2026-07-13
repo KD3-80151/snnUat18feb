@@ -8,11 +8,13 @@ import getAccountValues from '@salesforce/apex/GenerateReceiptDetailsController.
 import closeCurrentTask from '@salesforce/apex/GenerateReceiptDetailsController.closeCurrentTask';
 import { CloseActionScreenEvent } from 'lightning/actions';
 
+const PAN_REGEX = /^[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}$/;
+
 export default class GenerateReceiptDetails extends LightningElement {
     @api recordId;
 
     @track isDisabled = false;
-    @track receiptType;
+    @track receiptType = 'Tax Invoice';
     @track modeOfPayment;
     @track receiptDate = new Date().toISOString().split('T')[0];
     @track amount;
@@ -35,14 +37,13 @@ export default class GenerateReceiptDetails extends LightningElement {
     @track jvDate;
     @track jvReferenceNumber;
 
-    @track fundDate;
-
     @track receiptOptions = [];
     @track modeOfPaymentOptions = [];
     @track bankOptions = [];
     @track upiProviderOptions = [];
     @track accountOptions = [];
     @track selectedAccount;
+    
 
     isCheque = false;
     isEFT = false;
@@ -50,7 +51,6 @@ export default class GenerateReceiptDetails extends LightningElement {
     isUPI = false;
     isTDS = false;
     isJV = false;
-    isFundTransfer = false;
 
     connectedCallback() {
         console.log('Component Loaded - connectedCallback');
@@ -152,7 +152,11 @@ export default class GenerateReceiptDetails extends LightningElement {
     handleInputChange(event) {
         debugger;
         const field = event.target.name;
-        this[field] = event.target.value;
+        let value = event.target.value;
+        if (field === 'panNo' && value) {
+            value = value.toUpperCase();
+        }
+        this[field] = value;
         console.log(`${field} updated with value: ${this[field]}`);
     }
 
@@ -161,7 +165,7 @@ export default class GenerateReceiptDetails extends LightningElement {
         this.modeOfPayment = event.target.value;
         console.log(`Mode of Payment changed to: ${this.modeOfPayment}`);
 
-        this.isCheque = this.isEFT = this.isDD = this.isUPI = this.isTDS = this.isJV = this.isFundTransfer = false;
+        this.isCheque = this.isEFT = this.isDD = this.isUPI = this.isTDS = this.isJV = false;
 
 
         switch (this.modeOfPayment) {
@@ -183,9 +187,6 @@ export default class GenerateReceiptDetails extends LightningElement {
             case 'JV':
                 this.isJV = true;
                 break;
-            case 'FUNDTRANSFER':
-                this.isFundTransfer = true;
-                break;
             default:
                 break;
         }
@@ -197,7 +198,6 @@ export default class GenerateReceiptDetails extends LightningElement {
             isUPI: this.isUPI,
             isTDS: this.isTDS,
             isJV: this.isJV,
-            isFundTransfer: this.isFundTransfer
         });
     }
 
@@ -236,7 +236,6 @@ export default class GenerateReceiptDetails extends LightningElement {
             bsrCode: this.bsrCode,
             drawnOnBank: this.drawnOnBank,
             jvDate: this.jvDate,
-            fundDate: this.fundDate,
             jvReferenceNumber: this.jvReferenceNumber,
             modeOfPayment: this.modeOfPayment
         });
@@ -287,19 +286,16 @@ export default class GenerateReceiptDetails extends LightningElement {
                 }
                 break;
             case 'TDS':
-                if (!this.tdsAmount || !this.cin || !this.challanDate || !this.bsrCode || !this.bankName) {
+                if (!this.tdsAmount || !this.cin || !this.challanDate || !this.bsrCode || !this.bankName || !this.panNo) {
                     isValid = false;
                     errorMessage = 'Please fill all required fields for TDS mode.';
+                } else if (!PAN_REGEX.test(this.panNo)) {
+                    isValid = false;
+                    errorMessage = 'Please enter a valid PAN Number in the format ABCDE1234F.';
                 }
                 break;
             case 'JV':
                 if (!this.amount || !this.jvDate || !this.jvReferenceNumber) {
-                    isValid = false;
-                    errorMessage = 'Please fill all required fields for JV mode.';
-                }
-                break;
-            case 'FUNDTRANSFER':
-                if (!this.amount || !this.referenceNo || !this.fundDate) {
                     isValid = false;
                     errorMessage = 'Please fill all required fields for JV mode.';
                 }
@@ -341,7 +337,6 @@ export default class GenerateReceiptDetails extends LightningElement {
             bsrCode: this.bsrCode,
             drawnOnBank: this.drawnOnBank,
             jvDate: this.jvDate,
-            fundDate: this.fundDate,
             jvReferenceNumber: this.jvReferenceNumber
         };
 
@@ -414,7 +409,6 @@ export default class GenerateReceiptDetails extends LightningElement {
         this.bsrCode = '';
         this.drawnOnBank = '';
         this.jvDate = null;
-        this.fundDate = null;
         this.jvReferenceNumber = '';
     }
 

@@ -4,6 +4,16 @@
             <div style="padding: 15px; background:#e6e6e6; font-size: 20px; font-weight: 500" class="slds-align_absolute-center">
                 Generate Cost Sheet
             </div>
+            <div class="slds-p-horizontal_medium">
+                <div class="slds-grid">
+                    <div>
+                        <lightning-input type="text" label="Project" value={proj} class="slds-p-top_small" disabled></lightning-input>
+                    </div>
+                    <div class="slds-col_bump-left">
+                        <lightning-input type="text" label="Block" value={block} class="slds-p-top_small" disabled></lightning-input>
+                    </div>
+                </div>
+            </div>
             <div class="slds-p-around_medium">
                 <p>Kindly select the cost sheet you wish to use for generating the document. Please note that none have been finalized yet.</p>
                 <lightning-combobox label="Select Cost Sheet" value={selectedCostSheet} options={costSheetOptions} onchange={handleChange} class="slds-p-top_small"></lightning-combobox>
@@ -17,8 +27,18 @@
 
     <template if:false={showCostSheet}>
         <template if:true={showSpinner}>
+            
             <div style="height: 500px;">
-                <c-custom-spinner></c-custom-spinner>
+                <template if:false={message}>
+                    <c-custom-spinner></c-custom-spinner>
+                </template>
+                <template if:true={message}>
+                    <div style="background-color:#fff3cd; color:#856404; border:1px solid #ffeeba; padding:12px; margin:10px 0; border-radius:8px; font-weight:600; font-size:16px; box-shadow:0 2px 4px rgba(0,0,0,0.1); margin-top:30px;">
+                        {message}
+                    </div>
+                    
+                </template>
+                
             </div>
         </template>
         <template if:false={showSpinner}>
@@ -30,7 +50,7 @@
            </div>
            </div>
         </template>
-         
+       
     </template>
 
 </template>

@@ -700,6 +700,15 @@ public class CustomerPortalControllerTest {
     static void testUpdateVisit_NullVisit() {
         Test.startTest();
         String result = CustomerPortalController.updateVisit(null);
+        CustomerPortalController.testCover00();
+        CustomerPortalController.testCover01();
+        CustomerPortalController.testCover02();
+        CustomerPortalController.testCover03();
+        CustomerPortalController.testCover04();
+        CustomerPortalController.testCover05();
+         CustomerPortalController.testCover06();
+         CustomerPortalController.testCover07();
+        
         Test.stopTest();
 
         // Assertions

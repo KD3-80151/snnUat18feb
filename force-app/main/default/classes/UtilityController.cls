@@ -42,4 +42,34 @@ public withOut sharing class UtilityController {
         SYstem.debug('Generated OTP ---> '+randStr);
         return randStr; 
     }
+
+        public static Map<String, String> getPicklistValueMap(String objName, String fieldName) {
+        Map<String, String> picklistValues = new Map<String, String>();
+        if (String.isBlank(objName) || String.isBlank(fieldName)) {
+            System.debug('Object or field name is blank');
+            return picklistValues;
+        }
+        try {
+            Schema.SObjectType sObjType = Schema.getGlobalDescribe().get(objName);
+            if (sObjType == null) {
+                System.debug('No SObject type found for name: ' + objName);
+                return picklistValues;
+            }
+            Schema.DescribeSObjectResult describeResult = sObjType.getDescribe();
+            Schema.SObjectField field = describeResult.fields.getMap().get(fieldName);
+            if (field == null) {
+                System.debug('No SObject field found for name: ' + fieldName);
+                return picklistValues;
+            }
+            for (Schema.PicklistEntry entry : field.getDescribe().getPicklistValues()) {
+                if (entry.isActive()) {
+                    picklistValues.put(entry.getLabel(), entry.getValue()); // or reverse if needed
+                }
+            }
+        } catch (Exception e) {
+            System.debug('Error: ' + e.getMessage());
+        }
+        System.debug('picklistValues: ' + picklistValues);
+        return picklistValues;
+    }
 }

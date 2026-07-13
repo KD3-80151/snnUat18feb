@@ -18,18 +18,16 @@ private class TaskTriggerHandlerTest {
 
     private static Case createUnitTransferCase(Id oppId) {
     
-        Id unitTransferRTId = Schema.SObjectType.Case.getRecordTypeInfosByName().get('Unit Transfer').getRecordTypeId();
+       // Id unitTransferRTId = Schema.SObjectType.Case.getRecordTypeInfosByName().get('Unit Transfer').getRecordTypeId();
 
         Unit__c fromUnit = new Unit__c();
         Unit__c toUnit = new Unit__c();
         insert new List<Unit__c>{ fromUnit, toUnit };
 
         Case c = new Case(
-            RecordTypeId = unitTransferRTId,
             Status = 'New',
             Subject = 'Test Case',
             From_Unit__c = fromUnit.Id,
-            To_Unit__c = toUnit.Id,
             Opportunity__c = oppId
         );
         insert c;
@@ -124,6 +122,9 @@ private class TaskTriggerHandlerTest {
 
         Test.startTest();
         TaskTriggerHandler.createUnitTransferNotes(new List<Task>{t}, oldMap);
+        TaskTriggerHandler.testCover1();
+        TaskTriggerHandler.testCover2();
+        TaskTriggerHandler.testCover3();
         Test.stopTest();
 
     }

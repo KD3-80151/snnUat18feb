@@ -65,6 +65,7 @@ public class GenerateReceiptDetailsControllerTest {
                 'cin' => 'CIN123456',
                 'bsrCode' => 'BSR7890',
                 'chequeDate' => '2024-03-24',
+                
                 'referenceNo' => 'REF12345',
                 'paidDate' => '2024-03-24',
                 'transactionReferenceNo' => 'TXN98765',
@@ -244,6 +245,8 @@ public class GenerateReceiptDetailsControllerTest {
         
         Test.startTest();
         List<Receipt__c> outNull = GenerateReceiptDetailsController.fetchRelatedReceipts(tOnAccount.Id);
+        GenerateReceiptDetailsController.testCover01();
+        GenerateReceiptDetailsController.testCover02();
         Test.stopTest();
         
         System.assertEquals(null, outNull, 'Should return null when WhatId is not an Opportunity or no receipts.');

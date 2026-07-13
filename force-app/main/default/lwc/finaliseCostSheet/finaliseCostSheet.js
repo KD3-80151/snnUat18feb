@@ -6,6 +6,8 @@ import createPaymentSchedule from '@salesforce/apex/FinaliseCostSheetController.
 import sendApproval from '@salesforce/apex/FinaliseCostSheetController.sendApproval';
 import { CloseActionScreenEvent } from 'lightning/modal';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import getCostSheetPreview from '@salesforce/apex/FinaliseCostSheetController.getCostSheetPreview';
+import generatePaymentSchedulePreview from '@salesforce/apex/FinaliseCostSheetController.generatePaymentSchedulePreview';
 
 export default class FinaliseCostSheet extends LightningElement {
 
@@ -34,8 +36,6 @@ export default class FinaliseCostSheet extends LightningElement {
     @track priceElementMasterActualDiscount = 0;
     @track priceElementMasterActualDiscountWithoutTax = 0;
     @track priceElementMasterTaxAmount = 0;
-    @track priceElementMasterQuantity = 0;
-    @track priceElementMasterRate = 0;
 
 
     connectedCallback() {
@@ -101,7 +101,7 @@ export default class FinaliseCostSheet extends LightningElement {
                         const item = this.costPricingAsstnList[i];
 
                         if (item) {
-                           
+
                             if (item.Amount__c != null) {
                                 let amount = item.Amount__c.toString(); // Convert to string to handle any type
                                 if (amount.includes('%')) {
@@ -115,15 +115,13 @@ export default class FinaliseCostSheet extends LightningElement {
                             item.Actual_Amount__c != null ? item.Actual_Amount__c.toString() : '0';
 
                              this.costPricingAsstnList = [...this.costPricingAsstnList];
-                       
+
 
 
                             this.priceElementMasterDiscount += item.Discount_Amount__c != null ? item.Discount_Amount__c : 0;
                             this.priceElementMasterActualDiscount += item.Actual_Amount__c != null ? item.Actual_Amount__c : 0;
                             this.priceElementMasterActualDiscountWithoutTax += item.Total_Amount_Excluding_Tax__c != null ? item.Total_Amount_Excluding_Tax__c : 0;
                             this.priceElementMasterTaxAmount += item.Final_Tax_Amount__c != null ? item.Final_Tax_Amount__c : 0;
-                            this.priceElementMasterQuantity += item.Quantity__c != null ? item.Quantity__c : 0;
-                            this.priceElementMasterRate += item.Rate__c != null ? item.Rate__c : 0;
                         }
                     }
                 }
@@ -136,13 +134,6 @@ export default class FinaliseCostSheet extends LightningElement {
 
             });
     }
-
-    //  handleRadioChange(event) {
-    //     debugger;
-    //     this.selectedCostSheetId = event.target.value;
-    //     console.log('Selected Cost Sheet Id:', this.selectedCostSheetId);
-    //     this.showButton = true;
-    // }
 
     @track selectedCostSheetTempId;
     handleRadioChange(event) {
@@ -167,108 +158,113 @@ export default class FinaliseCostSheet extends LightningElement {
 
     handleNext() {
         debugger;
-        if (this.selectedCostSheetId) {
-            this.paymentSchedule();
-            this.costSheetRecords = [];
-        }
+        if (!this.selectedCostSheetId) return;
+
+        this.isDisabledNext = true;
+
+        Promise.all([
+            getCostSheetPreview({ costSheetId: this.selectedCostSheetId }),
+            generatePaymentSchedulePreview({ costSheetId: this.selectedCostSheetId })
+        ])
+        .then(([previewResult, schedulePreview]) => {
+            this.costPricingAsstnList = previewResult.costPricingAsstnList || [];
+            this.paymentSchedules = schedulePreview || [];
+
+            this.resetTotals();
+
+            this.paymentSchedules = this.paymentSchedules.map((schedule, index) => {
+                this.installment += schedule.Installment__c || 0;
+                this.aggrementValue += schedule.Agreement_Value__c || 0;
+                this.taxAmount += schedule.Tax_Amount__c || 0;
+                this.otherCharges += schedule.Other_Charges__c || 0;
+                this.otherTaxAmount += schedule.Other_Tax_Amount__c || 0;
+
+                return {
+                    ...schedule,
+                    serialNumber: index + 1,
+                    Agreement_Value__c: Math.ceil(schedule.Agreement_Value__c || 0),
+                    Tax_Amount__c: Math.ceil(schedule.Tax_Amount__c || 0),
+                    Other_Charges__c: (schedule.Other_Charges__c || 0).toFixed(2),
+                    Other_Tax_Amount__c: (schedule.Other_Tax_Amount__c || 0).toFixed(2)
+                };
+            });
+
+            this.costPricingAsstnList.forEach(item => {
+                this.priceElementMasterinstallment += item.Amount__c || 0;
+                this.priceElementMasterDiscount += item.Discount_Amount__c || 0;
+                this.priceElementMasterActualDiscount += item.Actual_Amount__c || 0;
+                this.priceElementMasterActualDiscountWithoutTax += item.Total_Amount_Excluding_Tax__c || 0;
+                this.priceElementMasterTaxAmount += item.Final_Tax_Amount__c || 0;
+            });
+
+            this.aggrementValue = this.aggrementValue.toFixed(2);
+            this.taxAmount = this.taxAmount.toFixed(2);
+            this.otherCharges = this.otherCharges.toFixed(2);
+            this.otherTaxAmount = this.otherTaxAmount.toFixed(2);
+
+            this.showButton = false;
+            this.payment = true;
+            this.firstScreen = false;
+            this.approval = true;
+        })
+        .catch(error => {
+            console.error('Preview error:', error);
+            this.showToast('Error', 'Unable to fetch preview data.', 'error');
+        })
+        .finally(() => {
+            this.isDisabledNext = false;
+        });
+    }
+
+    resetTotals() {
+        this.installment = 0;
+        this.aggrementValue = 0;
+        this.taxAmount = 0;
+        this.otherCharges = 0;
+        this.otherTaxAmount = 0;
+
+        this.priceElementMasterinstallment = 0;
+        this.priceElementMasterDiscount = 0;
+        this.priceElementMasterActualDiscount = 0;
+        this.priceElementMasterActualDiscountWithoutTax = 0;
+        this.priceElementMasterTaxAmount = 0;
+    }
+
+    get roundedAgreementValue() {
+        return Math.ceil(this.aggrementValue);
+    }
+
+    get roundedTaxAmount() {
+        return Math.ceil(this.taxAmount);
     }
 
     @track costPricingAsstnList= [];
-    paymentSchedule() {
-        debugger;
-        this.isDisabledNext = true;
-        createPaymentSchedule({ recordId: this.recordId, costSheetId: this.selectedCostSheetId, selectedCostSheetTempId : this.selectedCostSheetTempId })
-            .then(result => {
-                console.log('Apex result:', result.paymentScheduleList);
-                this.isDisabledNext = false;
-                this.showToast('Success', 'Payment Schedule records created successfully.', 'success');
-                this.showButton = false;
-                this.paymentSchedules = result.paymentScheduleList;
-                this.costPricingAsstnList = result.costPricingAsstnList;
-
-                if (this.costPricingAsstnList && this.costPricingAsstnList.length > 0) {
-                    this.priceElementMasterinstallment = 0;
-                    this.priceElementMasterDiscount = 0;
-                    this.priceElementMasterActualDiscount = 0;
-                    this.priceElementMasterActualDiscountWithoutTax = 0;
-                    this.priceElementMasterTaxAmount = 0;
-                    this.priceElementMasterQuantity = 0;
-                    this.priceElementMasterRate = 0;
-                    for (var i = 0; i < this.costPricingAsstnList.length; i++) {
-                        const item = this.costPricingAsstnList[i];
-
-                            item.Actual_Amount__c != null ? item.Actual_Amount__c.toString() : '0';
-
-                             this.costPricingAsstnList = [...this.costPricingAsstnList];
-
-                        if (item) {
-                            // Ensure each field is checked for null or undefined
-                            this.priceElementMasterinstallment += item.Amount__c != null ? item.Amount__c : 0;
-                            this.priceElementMasterDiscount += item.Discount_Amount__c != null ? item.Discount_Amount__c : 0;
-                            this.priceElementMasterActualDiscount += item.Actual_Amount__c != null ? item.Actual_Amount__c : 0;
-                            this.priceElementMasterActualDiscountWithoutTax += item.Total_Amount_Excluding_Tax__c != null ? item.Total_Amount_Excluding_Tax__c : 0;
-                            this.priceElementMasterTaxAmount += item.Final_Tax_Amount__c != null ? item.Final_Tax_Amount__c : 0;
-                            this.priceElementMasterQuantity += item.Quantity__c != null ? item.Quantity__c : 0;
-                            this.priceElementMasterRate += item.Rate__c != null ? item.Rate__c : 0;
-                        }
-                    }
-                }
-
-
-               
-
-                this.paymentSchedules = this.paymentSchedules.map((schedule, index) => {
-                    // Accumulate the totals
-                    this.installment += schedule.Installment__c || 0;
-                    this.aggrementValue += schedule.Agreement_Value__c || 0;
-                    this.taxAmount += schedule.Tax_Amount__c || 0;
-                    this.otherCharges += schedule.Other_Charges__c || 0;
-                    this.otherTaxAmount += schedule.Other_Tax_Amount__c || 0;
-
-                    // Add serial number
-                    return {
-                        ...schedule,
-                        serialNumber: index + 1,
-                        Agreement_Value__c: (schedule.Agreement_Value__c || 0).toFixed(2),
-                        Tax_Amount__c: (schedule.Tax_Amount__c || 0).toFixed(2),
-                        Other_Charges__c: (schedule.Other_Charges__c || 0).toFixed(2),
-                        Other_Tax_Amount__c: (schedule.Other_Charges__c || 0).toFixed(2)
-                    };
-                });
-
-                // Format the totals after all rows are processed
-                //this.installment = this.installment.toFixed(2);
-                this.aggrementValue = this.aggrementValue.toFixed(2);
-                this.taxAmount = this.taxAmount.toFixed(2);
-                this.otherCharges = this.otherCharges.toFixed(2);
-                this.otherTaxAmount = this.otherTaxAmount.toFixed(2);
-
-
-                this.payment = true;
-                this.firstScreen = false;
-                this.approval = true;
-                //this.closeComponent();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                this.isDisabledNext = false;
-                this.showToast('Error', 'Something went wrong!', 'error');
-            });
-    }
 
     handleApproval() {
         debugger;
         this.isDisabledApproval = true;
-        console.log('this.recordId==>' + this.recordId);
-        sendApproval({ recordId: this.recordId })
+
+        createPaymentSchedule({
+            recordId: this.recordId,
+            costSheetId: this.selectedCostSheetId,
+            selectedCostSheetTempId: this.selectedCostSheetTempId
+        })
             .then(result => {
-                this.showToast('Success', 'Approval sent Successfully..', 'success');
-                console.log('Approval response:', result);
+                this.paymentSchedules = result.paymentScheduleList;
+                this.costPricingAsstnList = result.costPricingAsstnList;
+
+                this.showToast('Success', 'Payment Schedule created. Submitting for approval...', 'success');
+
+                return sendApproval({ recordId: this.recordId });
+            })
+            .then(() => {
+                this.showToast('Success', 'Approval sent successfully.', 'success');
                 this.isDisabledApproval = false;
                 this.closeComponent();
             })
             .catch(error => {
-                console.error('Error:', error);
+                console.error('Error during approval process:', error);
+                this.showToast('Error', 'Submission failed. ' + (error.body?.message || ''), 'error');
                 this.isDisabledApproval = false;
             });
     }

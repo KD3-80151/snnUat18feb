@@ -22,7 +22,8 @@ public without Sharing  class BatchToSendReminderOnPaymentDueDate implements Dat
 
             if(oppToPaymentsMap.size() > 0){
                 Map<String, List<String>> oppIdByContentVersionIds = new Map<String, List<String>>();
-                System.enqueueJob(new QueueableToGenerateDemandLetter(oppToPaymentsMap, oppIdByContentVersionIds));
+                Set<Id> processedPaymentScheduleIds = new Set<Id>();
+                System.enqueueJob(new QueueableToGenerateDemandLetter(oppToPaymentsMap, oppIdByContentVersionIds, processedPaymentScheduleIds));
             }
         } catch (Exception e) {
             System.debug('Error occurred in execute method: ' + e.getMessage());

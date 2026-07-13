@@ -64,18 +64,18 @@ public without sharing class bookingFormController {
                     
                     System.debug('con::'+con);
                     
-                    // if(con.Email != null && con.Phone != null){
-                    //     Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
-                    //     String htmlBody = temp.HtmlValue
-                    //         .replace('{!Contact.Name}', con.FirstName + ' ' + con.LastName)
-                    //         .replace('{!Contact.Phone}', con.Phone);
-                    //     email.setSubject(temp.Subject);
-                    //     email.setToAddresses(new String[]{con.Email});
-                    //     email.setWhatId(con.Id);
-                    //     email.setSaveAsActivity(false);
-                    //     email.setHtmlBody(htmlBody);
-                    //     emailsToSend.add(email);
-                    // }
+                    if(con.Email != null && con.Phone != null){
+                        Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
+                        String htmlBody = temp.HtmlValue
+                            .replace('{!Contact.Name}', con.FirstName + ' ' + con.LastName)
+                            .replace('{!Contact.Phone}', con.Phone);
+                        email.setSubject(temp.Subject);
+                        email.setToAddresses(new String[]{con.Email});
+                        email.setWhatId(con.Id);
+                        email.setSaveAsActivity(false);
+                        email.setHtmlBody(htmlBody);
+                        emailsToSend.add(email);
+                    }
                 }
             }
             

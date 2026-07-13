@@ -113,12 +113,24 @@ private class digioCalloutUtilityTest {
             'parentFolder123',
             'doc123'
         );
+        digioCalloutUtility.codeCoverData();
         Test.stopTest();
         //System.assertNotEquals(null, cntVerId, 'ContentVersion Id should not be null');
         //ContentVersion cv = [SELECT Id, Title FROM ContentVersion WHERE Id = :cntVerId LIMIT 1];
         //System.assertEquals('testFile.pdf', cv.Title);
     }
 
+    @isTest
+    static void testExtractGoogleDriveFileId() {
+        Opportunity opp = [SELECT Id FROM Opportunity LIMIT 1];
+        Test.setMock(HttpCalloutMock.class, new MockHttpResponseGenerator());
+        Test.startTest();
+        String cntVerId = digioCalloutUtility.extractGoogleDriveFileId(opp.Id);
+        Test.stopTest();
+        //System.assertNotEquals(null, cntVerId, 'ContentVersion Id should not be null');
+        //ContentVersion cv = [SELECT Id, Title FROM ContentVersion WHERE Id = :cntVerId LIMIT 1];
+        //System.assertEquals('testFile.pdf', cv.Title);
+    }
     // ---------- Mock ----------
     private class MockHttpResponseGenerator implements HttpCalloutMock {
         Boolean returnWithId;

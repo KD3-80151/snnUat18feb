@@ -86,7 +86,7 @@ public without Sharing  class bulkUpdateDueDateController {
                 throw new AuraHandledException('No payment installments provided.');
             }
             
-            List<Opportunity> opportunities = [SELECT Id FROM Opportunity WHERE Project__c = :projectId AND Payment_Scheme__c = :paymentSchemeId];
+            List<Opportunity> opportunities = [SELECT Id FROM Opportunity WHERE Project__c = :projectId AND Payment_Scheme__c = :paymentSchemeId ];
             system.debug('opportunities==='+opportunities);
             if (opportunities == null) {
                 throw new AuraHandledException('Opportunity not found for the given ProjectId and PaymentSchemeId.');

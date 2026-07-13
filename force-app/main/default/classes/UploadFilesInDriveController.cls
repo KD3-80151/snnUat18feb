@@ -21,8 +21,16 @@ public withOut sharing class UploadFilesInDriveController {
                 }
 
                 if (objectName != null) {
-                    String folderIdField = 'folderId__c';
+                    String folderIdField;
+                    if(objectName == 'Document__c'){
+                        folderIdField = 'Document_Id__c';
+                    }else {
+                        folderIdField = 'folderId__c';
+                    }
+
                     String queryString = 'SELECT ' + folderIdField + ' FROM ' + objectName + ' WHERE Id = :recordId LIMIT 1';
+                    system.debug('SOQL Query: ' + queryString);
+                    system.debug('folderIdField: ' + folderIdField);
                     List<SObject> results = Database.query(queryString);
 
                     if (!results.isEmpty()) {

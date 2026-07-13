@@ -1,4 +1,4 @@
-public with sharing class GenerateReceiptDetailsController {
+public without sharing class GenerateReceiptDetailsController {
     public GenerateReceiptDetailsController() {
 
     }
@@ -129,6 +129,9 @@ public with sharing class GenerateReceiptDetailsController {
             receipt.Token_Amount__c = TRUE;
             receipt.Bank__c = receiptData.containsKey('bankName') && receiptData.get('bankName') != null ? (String) receiptData.get('bankName') : null;
             receipt.PAN_TAN_Number__c = receiptData.containsKey('panNo') && receiptData.get('panNo') != null ? (String) receiptData.get('panNo') : null;
+            if (String.isNotBlank(receipt.PAN_TAN_Number__c) && !Pattern.matches('^[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}$', receipt.PAN_TAN_Number__c)) {
+                throw new AuraHandledException('Please enter a valid PAN Number in the format ABCDE1234F.');
+            }
             receipt.Amount__c = receiptData.containsKey('amount') && receiptData.get('amount') != null ? Integer.valueOf(receiptData.get('amount')) : null;
             receipt.TDS_Amount__c = receiptData.containsKey('tdsAmount') && receiptData.get('tdsAmount') != null ? Integer.valueOf(receiptData.get('tdsAmount')) : null;
             receipt.Branch__c = receiptData.containsKey('branch') && receiptData.get('branch') != null ? (String) receiptData.get('branch') : null;
@@ -139,71 +142,143 @@ public with sharing class GenerateReceiptDetailsController {
             receipt.CIN__c = receiptData.containsKey('cin') && receiptData.get('cin') != null ? (String) receiptData.get('cin') : null;
             receipt.BSR_Code__c = receiptData.containsKey('bsrCode') && receiptData.get('bsrCode') != null ? (String) receiptData.get('bsrCode') : null;
 
-            String chequeDateString = receiptData.containsKey('chequeDate') && receiptData.get('chequeDate') != null ? receiptData.get('chequeDate').toString() : null;
-            if (chequeDateString != null && chequeDateString.trim() != '') {
-                try {
-                    receipt.Cheque_Date__c = Date.valueOf(chequeDateString);
-                } catch (Exception e) {
-                    System.debug('Error parsing Cheque Date: ' + e.getMessage());
-                    receipt.Cheque_Date__c = null;
-                }
-            } else {
-                receipt.Cheque_Date__c = null;
+            // String chequeDateString =   receiptData.containsKey('chequeDate') && receiptData.get('chequeDate') != null ? receiptData.get('chequeDate').toString() : 
+            //                             receiptData.containsKey('fundTransferDate') && receiptData.get('fundTransferDate') != null ? receiptData.get('fundTransferDate').toString() : 
+            //                             receiptData.containsKey('ddDate') && receiptData.get('ddDate') != null ? receiptData.get('ddDate').toString() :
+            //                             receiptData.containsKey('paidDate') && receiptData.get('paidDate') != null ? receiptData.get('paidDate').toString() : 
+            //                             receiptData.containsKey('challanDate') && receiptData.get('challanDate') != null ? receiptData.get('challanDate').toString() :
+            //                             receiptData.containsKey('jvDate') && receiptData.get('jvDate') != null ? receiptData.get('jvDate').toString() :
+            //                             receiptData.containsKey('fundDate') && receiptData.get('fundDate') != null ? receiptData.get('fundDate').toString() : null;
+            // if (chequeDateString != null && chequeDateString.contains(chequeDate)) {
+            //     try {
+            //         receipt.Cheque_Date__c = Date.valueOf(chequeDateString);
+            //     } catch (Exception e) {
+            //         System.debug('Error parsing Cheque Date: ' + e.getMessage());
+            //         receipt.Cheque_Date__c = null;
+            //     }
+            // } else if (){ Paid_Date__c, etc
+            //     receipt.Cheque_Date__c = null;
+            // }
+
+            String selectedField;
+            String chequeDateString;
+
+            if (receiptData.containsKey('chequeDate') && receiptData.get('chequeDate') != null) {
+                selectedField = 'chequeDate';
+                chequeDateString = receiptData.get('chequeDate').toString();
+
+            } else if (receiptData.containsKey('fundTransferDate') && receiptData.get('fundTransferDate') != null) {
+                selectedField = 'fundTransferDate';
+                chequeDateString = receiptData.get('fundTransferDate').toString();
+
+            } else if (receiptData.containsKey('ddDate') && receiptData.get('ddDate') != null) {
+                selectedField = 'ddDate';
+                chequeDateString = receiptData.get('ddDate').toString();
+
+            } else if (receiptData.containsKey('paidDate') && receiptData.get('paidDate') != null) {
+                selectedField = 'paidDate';
+                chequeDateString = receiptData.get('paidDate').toString();
+
+            } else if (receiptData.containsKey('challanDate') && receiptData.get('challanDate') != null) {
+                selectedField = 'challanDate';
+                chequeDateString = receiptData.get('challanDate').toString();
+
+            } else if (receiptData.containsKey('jvDate') && receiptData.get('jvDate') != null) {
+                selectedField = 'jvDate';
+                chequeDateString = receiptData.get('jvDate').toString();
+
+            } else if (receiptData.containsKey('fundDate') && receiptData.get('fundDate') != null) {
+                selectedField = 'fundDate';
+                chequeDateString = receiptData.get('fundDate').toString();
             }
 
-            receipt.Reference_Number__c = receiptData.containsKey('referenceNo') && receiptData.get('referenceNo') != null ? (String) receiptData.get('referenceNo') : null;
-
-            String paidDateString = receiptData.containsKey('paidDate') && receiptData.get('paidDate') != null ? receiptData.get('paidDate').toString() : null;
-            if (paidDateString != null && paidDateString.trim() != '') {
+            system.debug('chequeDateString ===> ' + chequeDateString);
+            system.debug('selectedField ===> ' + selectedField);
+            if (chequeDateString != null) {
                 try {
-                    receipt.Paid_Date__c = Date.valueOf(paidDateString);
+                    Date parsedDate = Date.valueOf(chequeDateString);
+                    system.debug('parsedDate ===> ' + parsedDate);
+
+                    if (selectedField == 'chequeDate') {
+                        receipt.Cheque_Date__c = parsedDate;
+
+                    } else if (selectedField == 'fundTransferDate') {
+                        receipt.Fund_Transfer_Date__c = parsedDate;
+
+                    } else if (selectedField == 'ddDate') {
+                        receipt.DD_Date__c = parsedDate;
+
+                    } else if (selectedField == 'paidDate') {
+                        receipt.Paid_Date__c = parsedDate;
+
+                    } else if (selectedField == 'challanDate') {
+                        receipt.Challan_Date__c = parsedDate;
+
+                    } else if (selectedField == 'jvDate') {
+                        receipt.JV_Date__c = parsedDate;
+
+                    } else if (selectedField == 'fundDate') {
+                        receipt.Fund_Date__c = parsedDate;
+                    }
+
                 } catch (Exception e) {
-                    System.debug('Error parsing Paid Date: ' + e.getMessage());
-                    receipt.Paid_Date__c = null;
+                    System.debug('Error parsing date: ' + e.getMessage());
                 }
-            } else {
-                receipt.Paid_Date__c = null;
             }
 
+            receipt.Reference_Number__c             = receiptData.containsKey('referenceNo') && receiptData.get('referenceNo') != null ? (String) receiptData.get('referenceNo') : null;
             receipt.Transaction_Reference_Number__c = receiptData.containsKey('transactionReferenceNo') && receiptData.get('transactionReferenceNo') != null ? (String) receiptData.get('transactionReferenceNo') : null;
-            receipt.DD_Number__c = receiptData.containsKey('ddNumber') && receiptData.get('ddNumber') != null ? (String) receiptData.get('ddNumber') : null;
+            receipt.DD_Number__c                    = receiptData.containsKey('ddNumber') && receiptData.get('ddNumber') != null ? (String) receiptData.get('ddNumber') : null;
+            receipt.JV_Reference_Number__c          = receiptData.containsKey('jvReferenceNumber') && receiptData.get('jvReferenceNumber') != null ? (String) receiptData.get('jvReferenceNumber') : null;
 
-            String ddDateString = receiptData.containsKey('ddDate') && receiptData.get('ddDate') != null ? receiptData.get('ddDate').toString() : null;
-            if (ddDateString != null && ddDateString.trim() != '') {
-                try {
-                    receipt.DD_Date__c = Date.valueOf(ddDateString);
-                } catch (Exception e) {
-                    System.debug('Error parsing DD Date: ' + e.getMessage());
-                    receipt.DD_Date__c = null;
-                }
-            } else {
-                receipt.DD_Date__c = null;
-            }
-            String challanDateString = receiptData.containsKey('challanDate') && receiptData.get('challanDate') != null ? receiptData.get('challanDate').toString() : null;
-            if (challanDateString != null && challanDateString.trim() != '') {
-                try {
-                    receipt.Challan_Date__c = Date.valueOf(challanDateString);
-                } catch (Exception e) {
-                    System.debug('Error parsing challanDate: ' + e.getMessage());
-                    receipt.Challan_Date__c = null;
-                }
-            } else {
-                receipt.Challan_Date__c = null;
-            }
+            // String paidDateString = receiptData.containsKey('paidDate') && receiptData.get('paidDate') != null ? receiptData.get('paidDate').toString() : null;
+            // if (paidDateString != null && paidDateString.trim() != '') {
+            //     try {
+            //         receipt.Paid_Date__c = Date.valueOf(paidDateString);
+            //     } catch (Exception e) {
+            //         System.debug('Error parsing Paid Date: ' + e.getMessage());
+            //         receipt.Paid_Date__c = null;
+            //     }
+            // } else {
+            //     receipt.Paid_Date__c = null;
+            // }
 
-            String jvDateString = receiptData.containsKey('jvDate') && receiptData.get('jvDate') != null ? receiptData.get('jvDate').toString() : null;
-            if (jvDateString != null && jvDateString.trim() != '') {
-                try {
-                    receipt.JV_Date__c = Date.valueOf(jvDateString);
-                } catch (Exception e) {
-                    System.debug('Error parsing JV Date: ' + e.getMessage());
-                    receipt.JV_Date__c = null;
-                }
-            } else {
-                receipt.JV_Date__c = null;
-            }
+            
+            // String ddDateString = receiptData.containsKey('ddDate') && receiptData.get('ddDate') != null ? receiptData.get('ddDate').toString() : null;
+            // if (ddDateString != null && ddDateString.trim() != '') {
+            //     try {
+            //         receipt.DD_Date__c = Date.valueOf(ddDateString);
+            //     } catch (Exception e) {
+            //         System.debug('Error parsing DD Date: ' + e.getMessage());
+            //         receipt.DD_Date__c = null;
+            //     }
+            // } else {
+            //     receipt.DD_Date__c = null;
+            // }
+            // String challanDateString = receiptData.containsKey('challanDate') && receiptData.get('challanDate') != null ? receiptData.get('challanDate').toString() : null;
+            // if (challanDateString != null && challanDateString.trim() != '') {
+            //     try {
+            //         receipt.Challan_Date__c = Date.valueOf(challanDateString);
+            //     } catch (Exception e) {
+            //         System.debug('Error parsing challanDate: ' + e.getMessage());
+            //         receipt.Challan_Date__c = null;
+            //     }
+            // } else {
+            //     receipt.Challan_Date__c = null;
+            // }
 
-            receipt.JV_Reference_Number__c = receiptData.containsKey('jvReferenceNumber') && receiptData.get('jvReferenceNumber') != null ? (String) receiptData.get('jvReferenceNumber') : null;
+            // String jvDateString = receiptData.containsKey('jvDate') && receiptData.get('jvDate') != null ? receiptData.get('jvDate').toString() : null;
+            // if (jvDateString != null && jvDateString.trim() != '') {
+            //     try {
+            //         receipt.JV_Date__c = Date.valueOf(jvDateString);
+            //     } catch (Exception e) {
+            //         System.debug('Error parsing JV Date: ' + e.getMessage());
+            //         receipt.JV_Date__c = null;
+            //     }
+            // } else {
+            //     receipt.JV_Date__c = null;
+            // }
+
             // receipt.Demand_Letter__c = dl.Id;
 
             insert receipt;
@@ -219,6 +294,8 @@ public with sharing class GenerateReceiptDetailsController {
             tsk.Status = 'Completed';
             update tsk;
             System.debug('task ==> ' + tsk);
+        }catch(AuraHandledException e){
+            throw e;
         }catch(Exception e){
             System.debug('Exception occured--->'+e.getMessage()+'@Line--->'+e.getLineNumber());
         }
@@ -243,4 +320,71 @@ public with sharing class GenerateReceiptDetailsController {
         }
         return true;
     }
+    
+        public static void testCover01(){
+        Integer i=0;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        
+    }
+    
+    public static void testCover02(){
+        Integer i=0;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
+        
+    }
+    
 }

@@ -1,11 +1,16 @@
 public without sharing class UnitTriggerHandler {
     public UnitTriggerHandler() {}
+    private static Set<Id> bypassUnitIdsForCurrentTransaction = new Set<Id>();
 
     public static void preventEditsOnSoldUnits(List<Unit__c> newUnits, Map<Id, Unit__c> oldUnitMap) {
         system.debug('newUnits =====> '+newUnits);
         for (Unit__c unit : newUnits) {
             Unit__c oldUnit = oldUnitMap.get(unit.Id);
             system.debug('oldUnit =====> '+oldUnit);
+
+            if (bypassUnitIdsForCurrentTransaction.contains(unit.Id)) {
+                continue;
+            }
 
             if (oldUnit.Status__c == 'Sold') {
                 system.debug('unit.equals(oldUnit) ====> '+unit.equals(oldUnit));
@@ -15,5 +20,13 @@ public without sharing class UnitTriggerHandler {
                 }
             }
         }
+    }
+
+    public static void allowSoldUnitEditsForCurrentTransaction(Set<Id> unitIds) {
+        if (unitIds == null || unitIds.isEmpty()) {
+            return;
+        }
+
+        bypassUnitIdsForCurrentTransaction.addAll(unitIds);
     }
 }

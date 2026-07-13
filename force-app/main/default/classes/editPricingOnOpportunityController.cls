@@ -43,7 +43,17 @@ public without sharing class editPricingOnOpportunityController {
         }
 
         try {
-            List<Cost_Sheet__c> costSheets = [SELECT Id, Opportunity__c, finalize_CostSheet__c, (SELECT Id, Pricing_Element_Master__c, Pricing_Element_Master__r.Name, Unit__c, Quantity__c, Rate__c, Amount__c, Final_Tax_Amount__c, Discount_Amount__c, PE_Type__c FROM Pricing_Elements__r) FROM Cost_Sheet__c WHERE Opportunity__c = :opportunityId AND finalize_CostSheet__c = true LIMIT 1];
+            List<Cost_Sheet__c> costSheets = [
+                SELECT Id, Opportunity__c, finalize_CostSheet__c,
+               (SELECT Id, Pricing_Element_Master__c, Pricing_Element_Master__r.Name,
+                       Unit__c, Quantity__c, Rate__c, Amount__c,
+                       Final_Tax_Amount__c, Discount_Amount__c, PE_Type__c
+                FROM Pricing_Elements__r)
+        FROM Cost_Sheet__c
+        WHERE Opportunity__c = :opportunityId
+        ORDER BY CreatedDate DESC
+        LIMIT 1
+            ];
             return costSheets;
         }catch (Exception e) {
             System.debug('Error: ' + e.getMessage() + ' at line: ' + e.getLineNumber());

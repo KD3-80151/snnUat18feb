@@ -5,6 +5,7 @@ public class NumberToWordsHelper {
 
     public void convert() {
         wordText = numberToEnglish(numberVal);
+        System.debug('wordText:' + wordText);
     }
 
     static String[] firstTwenty = new String[] { 'NIL','One','Two','Three','Four','Five','Six','Seven','Eight','Nine',
@@ -59,6 +60,7 @@ public class NumberToWordsHelper {
     }
 
     public static String numberToEnglish(Integer value) {
+        system.debug('value:' + value);
         return value != null && value >= 0 ? String.join(convert(value),' ') : '';
     }
 

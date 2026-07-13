@@ -42,7 +42,84 @@ public class GenerateReceiptDetailsOnOppController {
     }
 
 
+    public class PricingPaymentSchedWrapper{
+        @AuraEnabled public String label;
+        @AuraEnabled public String value;
 
+        public PricingPaymentSchedWrapper(String label, String value) {
+            this.label = label;
+            this.value = value;
+        }
+    }
+
+    public class PaymentScheduleOptionWrapper{
+        @AuraEnabled public String label;
+        @AuraEnabled public String value;
+        @AuraEnabled public Decimal totalDueAmount;
+
+        public PaymentScheduleOptionWrapper(String label, String value, Decimal totalDueAmount) {
+            this.label = label;
+            this.value = value;
+            this.totalDueAmount = totalDueAmount;
+        }
+    }
+
+    @AuraEnabled
+    public static List<PricingPaymentSchedWrapper> getPricingElements(Id oppId){
+        try {
+            list<PricingPaymentSchedWrapper> pEOptions = new list<PricingPaymentSchedWrapper>();
+            if(oppId == null) return pEOptions;
+            List<Cost_Sheet__c> csList = [select Id from Cost_Sheet__c where Opportunity__c =: oppId and finalize_CostSheet__c = true limit 1];
+            if(csList.isEmpty()) return pEOptions;
+
+            Id finalizedCostSHeet = csList[0].Id;
+            System.debug('finalizedCostSHeet is '+finalizedCostSHeet);
+            list<Pricing_Element__c> pEmasterName = [select Id, Pricing_Element_Master__c, Pricing_Element_Master__r.Name from Pricing_Element__c where Cost_Sheet__c = :finalizedCostSHeet];
+            
+            for (Pricing_Element__c pe : pEmasterName) {
+                String masterLabelName = (pe.Pricing_Element_Master__r != null && String.isNotBlank(pe.Pricing_Element_Master__r.Name)) ? pe.Pricing_Element_Master__r.Name : '';
+                pEOptions.add(new PricingPaymentSchedWrapper(masterLabelName, pe.Id));
+            }
+            System.debug('pEOptions is '+pEOptions);
+            System.debug('pEOptions is '+pEOptions.size());
+            return pEOptions;
+        } catch (Exception e) {
+            System.debug('Error mesage is '+e.getMessage());
+            System.debug('Error line is '+e.getLineNumber());
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+    @AuraEnabled
+    public static List<PaymentScheduleOptionWrapper> getDebitPaymentSchedules(Id oppId){
+        try {
+            List<PaymentScheduleOptionWrapper> scheduleOptions = new List<PaymentScheduleOptionWrapper>();
+            if (oppId == null) {
+                return scheduleOptions;
+            }
+
+            List<Payment_Schedule__c> debitSchedules = [
+                SELECT Id, Name, Total_Due_Amount__c
+                FROM Payment_Schedule__c
+                WHERE Opportunity__c = :oppId
+                AND Debit_Payment_Schedule__c = true
+                AND Total_Due_Amount__c > 0
+                ORDER BY CreatedDate DESC
+            ];
+
+            for (Payment_Schedule__c ps : debitSchedules) {
+                String totalDue = ps.Total_Due_Amount__c != null ? String.valueOf(ps.Total_Due_Amount__c) : '0';
+                scheduleOptions.add(new PaymentScheduleOptionWrapper(ps.Name + ' - Total Due: ' + totalDue, ps.Id, ps.Total_Due_Amount__c));
+            }
+
+            return scheduleOptions;
+        } catch (Exception e) {
+            System.debug('Error in getDebitPaymentSchedules ==> ' + e.getMessage());
+            System.debug('Error line ==> ' + e.getLineNumber());
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+    
     @AuraEnabled
     public static void createReceipt(Map<String, Object> receiptData,String accId) {
         try {
@@ -68,6 +145,9 @@ public class GenerateReceiptDetailsOnOppController {
             //receipt.Token_Amount__c = TRUE;
             receipt.Bank__c = receiptData.containsKey('bankName') && receiptData.get('bankName') != null ? (String) receiptData.get('bankName') : null;
              receipt.PAN_TAN_Number__c = receiptData.containsKey('panNo') && receiptData.get('panNo') != null ? (String) receiptData.get('panNo') : null;
+            if (String.isNotBlank(receipt.PAN_TAN_Number__c) && !Pattern.matches('^[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}$', receipt.PAN_TAN_Number__c)) {
+                throw new AuraHandledException('Please enter a valid PAN Number in the format ABCDE1234F.');
+            }
             receipt.Amount__c = receiptData.containsKey('amount') && receiptData.get('amount') != null ? Integer.valueOf(receiptData.get('amount')) : null;
             receipt.TDS_Amount__c = receiptData.containsKey('tdsAmount') && receiptData.get('tdsAmount') != null ? Integer.valueOf(receiptData.get('tdsAmount')) : null;
             receipt.Branch__c = receiptData.containsKey('branch') && receiptData.get('branch') != null ? (String) receiptData.get('branch') : null;
@@ -78,84 +158,141 @@ public class GenerateReceiptDetailsOnOppController {
             receipt.CIN__c = receiptData.containsKey('cin') && receiptData.get('cin') != null ? (String) receiptData.get('cin') : null;
             receipt.BSR_Code__c = receiptData.containsKey('bsrCode') && receiptData.get('bsrCode') != null ? (String) receiptData.get('bsrCode') : null;
             receipt.Fund_Transfer_Date__c = receiptData.containsKey('fundDate') && receiptData.get('fundDate') != null ?  Date.valueOf((String)receiptData.get('fundDate')) : null;
+            receipt.Credit_Debit_Note_Date__c = receiptData.containsKey('creditDebitDate') && receiptData.get('creditDebitDate') != null ?  Date.valueOf((String)receiptData.get('creditDebitDate')) : null;
+            receipt.Description__c = receiptData.containsKey('description') && receiptData.get('description') != null ? (String) receiptData.get('description') : null;
+            
 
-            String chequeDateString = receiptData.containsKey('chequeDate') && receiptData.get('chequeDate') != null ? receiptData.get('chequeDate').toString() : null;
-            if (chequeDateString != null && chequeDateString.trim() != '') {
+            String selectedField;
+            String chequeDateString;
+
+            if (receiptData.containsKey('chequeDate') && receiptData.get('chequeDate') != null) {
+                selectedField = 'chequeDate';
+                chequeDateString = receiptData.get('chequeDate').toString();
+
+            } else if (receiptData.containsKey('fundTransferDate') && receiptData.get('fundTransferDate') != null) {
+                selectedField = 'fundTransferDate';
+                chequeDateString = receiptData.get('fundTransferDate').toString();
+
+            } else if (receiptData.containsKey('ddDate') && receiptData.get('ddDate') != null) {
+                selectedField = 'ddDate';
+                chequeDateString = receiptData.get('ddDate').toString();
+
+            } else if (receiptData.containsKey('paidDate') && receiptData.get('paidDate') != null) {
+                selectedField = 'paidDate';
+                chequeDateString = receiptData.get('paidDate').toString();
+
+            } else if (receiptData.containsKey('challanDate') && receiptData.get('challanDate') != null) {
+                selectedField = 'challanDate';
+                chequeDateString = receiptData.get('challanDate').toString();
+
+            } else if (receiptData.containsKey('jvDate') && receiptData.get('jvDate') != null) {
+                selectedField = 'jvDate';
+                chequeDateString = receiptData.get('jvDate').toString();
+
+            } else if (receiptData.containsKey('fundDate') && receiptData.get('fundDate') != null) {
+                selectedField = 'fundDate';
+                chequeDateString = receiptData.get('fundDate').toString();
+            }
+
+            system.debug('chequeDateString ===> ' + chequeDateString);
+            system.debug('selectedField ===> ' + selectedField);
+            if (chequeDateString != null) {
                 try {
-                    receipt.Cheque_Date__c = Date.valueOf(chequeDateString);
+                    Date parsedDate = Date.valueOf(chequeDateString);
+                    system.debug('parsedDate ===> ' + parsedDate);
+
+                    if (selectedField == 'chequeDate') {
+                        receipt.Cheque_Date__c = parsedDate;
+
+                    } else if (selectedField == 'fundTransferDate') {
+                        receipt.Fund_Transfer_Date__c = parsedDate;
+
+                    } else if (selectedField == 'ddDate') {
+                        receipt.DD_Date__c = parsedDate;
+
+                    } else if (selectedField == 'paidDate') {
+                        receipt.Paid_Date__c = parsedDate;
+
+                    } else if (selectedField == 'challanDate') {
+                        receipt.Challan_Date__c = parsedDate;
+
+                    } else if (selectedField == 'jvDate') {
+                        receipt.JV_Date__c = parsedDate;
+
+                    } else if (selectedField == 'fundDate') {
+                        receipt.Fund_Date__c = parsedDate;
+                    }
+
                 } catch (Exception e) {
-                    System.debug('Error parsing Cheque Date: ' + e.getMessage());
-                    receipt.Cheque_Date__c = null;
+                    System.debug('Error parsing date: ' + e.getMessage());
                 }
-            } else {
-                receipt.Cheque_Date__c = null;
             }
 
             receipt.Reference_Number__c = receiptData.containsKey('referenceNo') && receiptData.get('referenceNo') != null ? (String) receiptData.get('referenceNo') : null;
-
-            String paidDateString = receiptData.containsKey('paidDate') && receiptData.get('paidDate') != null ? receiptData.get('paidDate').toString() : null;
-            if (paidDateString != null && paidDateString.trim() != '') {
-                try {
-                    receipt.Paid_Date__c = Date.valueOf(paidDateString);
-                } catch (Exception e) {
-                    System.debug('Error parsing Paid Date: ' + e.getMessage());
-                    receipt.Paid_Date__c = null;
-                }
-            } else {
-                receipt.Paid_Date__c = null;
-            }
-
             receipt.Transaction_Reference_Number__c = receiptData.containsKey('transactionReferenceNo') && receiptData.get('transactionReferenceNo') != null ? (String) receiptData.get('transactionReferenceNo') : null;
             receipt.DD_Number__c = receiptData.containsKey('ddNumber') && receiptData.get('ddNumber') != null ? (String) receiptData.get('ddNumber') : null;
-
-            String ddDateString = receiptData.containsKey('ddDate') && receiptData.get('ddDate') != null ? receiptData.get('ddDate').toString() : null;
-            if (ddDateString != null && ddDateString.trim() != '') {
-                try {
-                    receipt.DD_Date__c = Date.valueOf(ddDateString);
-                } catch (Exception e) {
-                    System.debug('Error parsing DD Date: ' + e.getMessage());
-                    receipt.DD_Date__c = null;
-                }
-            } else {
-                receipt.DD_Date__c = null;
-            }
-            String challanDateString = receiptData.containsKey('challanDate') && receiptData.get('challanDate') != null ? receiptData.get('challanDate').toString() : null;
-            if (challanDateString != null && challanDateString.trim() != '') {
-                try {
-                    receipt.Challan_Date__c = Date.valueOf(challanDateString);
-                } catch (Exception e) {
-                    System.debug('Error parsing challanDate: ' + e.getMessage());
-                    receipt.Challan_Date__c = null;
-                }
-            } else {
-                receipt.Challan_Date__c = null;
-            }
-
-            String jvDateString = receiptData.containsKey('jvDate') && receiptData.get('jvDate') != null ? receiptData.get('jvDate').toString() : null;
-            if (jvDateString != null && jvDateString.trim() != '') {
-                try {
-                    receipt.JV_Date__c = Date.valueOf(jvDateString);
-                } catch (Exception e) {
-                    System.debug('Error parsing JV Date: ' + e.getMessage());
-                    receipt.JV_Date__c = null;
-                }
-            } else {
-                receipt.JV_Date__c = null;
-            }
-
             receipt.JV_Reference_Number__c = receiptData.containsKey('jvReferenceNumber') && receiptData.get('jvReferenceNumber') != null ? (String) receiptData.get('jvReferenceNumber') : null;
-            // receipt.Demand_Letter__c = dl.Id;
+
+            if(receiptData.containsKey('pricingElementId') && receiptData.get('pricingElementId') != null){
+                receipt.Pricing_Element__c = (String)receiptData.get('pricingElementId');
+            }
+
+            if(receiptData.containsKey('paymentScheduleId') && receiptData.get('paymentScheduleId') != null){
+                receipt.Payment_Schedule__c = (String)receiptData.get('paymentScheduleId');
+            }
+
+            if(receiptData.containsKey('againstDebit') && receiptData.get('againstDebit') != null){
+                receipt.Against_Debit__c = (Boolean) receiptData.get('againstDebit');
+            }
+            if(
+                receiptData.containsKey('againstDebit') &&
+                receiptData.get('againstDebit') != null &&
+                String.valueOf(receiptData.get('againstDebit')) == 'true' &&
+                receiptData.containsKey('paymentScheduleId') &&
+                receiptData.get('paymentScheduleId') != null
+            ){
+                receipt.Payment_Schedule__c = (String)receiptData.get('paymentScheduleId');
+            }
+
+            
+            if(receiptData.containsKey('taxMasterCgst') && receiptData.get('taxMasterCgst') != null){
+                receipt.Tax_Master_CGST__c = (String)receiptData.get('taxMasterCgst');
+            }
+
+            if(receiptData.containsKey('taxMasterSgst') && receiptData.get('taxMasterSgst') != null){
+                receipt.Tax_Master_SGST__c = (String)receiptData.get('taxMasterSgst');
+            }
+
+            Boolean hasTaxMasterCgst = receiptData.containsKey('taxMasterCgst') && receiptData.get('taxMasterCgst') != null;
+            Boolean hasTaxMasterSgst = receiptData.containsKey('taxMasterSgst') && receiptData.get('taxMasterSgst') != null;
+
+            if (receipt.Type__c == 'Credit' && hasTaxMasterCgst && hasTaxMasterSgst) {
+                receipt.Tax_Invoice_Included__c = true;
+            }
+
+
             System.debug('receipt==>'+receipt);
             insert receipt;
             System.debug('After Insertipn Of receipt==>'+receipt);
 
-            Approval.ProcessSubmitRequest req = new Approval.ProcessSubmitRequest();
-            req.setObjectId(receipt.Id);
-            req.setProcessDefinitionNameOrId('Receipt_Approval_Process');
-            Approval.ProcessResult result = Approval.process(req);
-            receipt.Approval_Status__c = 'Sent';
+                try {
+        Approval.ProcessSubmitRequest req = new Approval.ProcessSubmitRequest();
+        req.setObjectId(receipt.Id);
+        req.setProcessDefinitionNameOrId('Receipt_Approval_Process');
+        Approval.ProcessResult result = Approval.process(req);
+
+        receipt.Approval_Status__c = 'Sent';
+        update receipt;
+
+        } catch (Exception ex) {
+            receipt.Approval_Status__c = 'Approval Failed';
             update receipt;
 
+            throw new AuraHandledException('Receipt created but approval failed: ' + ex.getMessage());
+        }
+
+        } catch (AuraHandledException e) {
+            throw e;
         } catch (Exception e) {
             System.debug('Exception occurred--->' + e.getMessage() + '@Line--->' + e.getLineNumber());
         }
@@ -179,4 +316,5 @@ public class GenerateReceiptDetailsOnOppController {
         }
         return true;
     }
+
 }

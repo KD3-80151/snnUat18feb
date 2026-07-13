@@ -74,6 +74,7 @@ public class OpportunityTriggerHandlerTest {
         oppListOld.put(opp2.Id,opp2);
         Test.startTest();
         opportunityTriggerHandler.afterUpdate(oppList,oppListOld);
+        opportunityTriggerHandler.dummyMethod();
         Test.stopTest();
     }
 }

@@ -31,14 +31,10 @@ public without sharing class receiptTransferController {
     }
 
     @AuraEnabled(cacheable=true)
-public static List<Opportunity> fetchOpportunityDetails(Id blockId) {
+    public static List<Opportunity> fetchOpportunityDetails(Id blockId) {
     try {
         // Step 1: Get all Floor Ids under the Block
-        List<Floor__c> floorList = [
-            SELECT Id,Blocks__c 
-            FROM Floor__c 
-            WHERE Blocks__c = :blockId
-        ];
+        List<Floor__c> floorList = [SELECT Id,Blocks__c FROM Floor__c  WHERE Blocks__c = :blockId];
         
         Set<Id> floorIds = new Set<Id>();
         for (Floor__c floor : floorList) {
@@ -79,6 +75,20 @@ public static List<Opportunity> fetchOpportunityDetails(Id blockId) {
     }
 }
 
+
+    @AuraEnabled(cacheable=true)
+    public static List<Opportunity> fetchOpportunityByAccount(Id accountId) {
+        try {
+            List<Opportunity> oppList = [
+                SELECT Id, Name
+                FROM Opportunity
+                WHERE AccountId = :accountId
+            ];
+            return oppList.isEmpty() ? null : oppList;
+        } catch (Exception e) {
+            throw new AuraHandledException('Error fetching opportunities by account: ' + e.getMessage());
+        }
+    }
 
     @AuraEnabled
 public static oppWrapper fetchOppDetails(Id fromAccountId, Id toAccountId, Id fromOpp, Id toOpp) {

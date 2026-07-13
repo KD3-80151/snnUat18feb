@@ -439,11 +439,21 @@ update oldLead;
                                 lead.Next_Follow_Up_Date_Time__c.addError('Next Follow Up Date Time is a required field and must be a future date.');
                             }else if(lead.Budget_In_Lakhs__c == null || lead.Budget_In_Lakhs__c == ''){
                                 lead.Budget_In_Lakhs__c.addError('Budget is a required field.');
-                            }else if (!lead.Is_Qualified__c) {
-                                lead.Is_Qualified__c.addError('Is Qualified must be true.');
                             }
-                            else if (lead.Qualification_Criteria__c == null) {
-                                lead.Qualification_Criteria__c.addError('Please add Qualification Critieria.');
+                            // else if (!lead.Is_Qualified__c) {
+                            //     lead.Is_Qualified__c.addError('Is Qualified must be true.');
+                            // }
+                            // else if (lead.Qualification_Criteria__c == null) {
+                            //     lead.Qualification_Criteria__c.addError('Please add Qualification Critieria.');
+                            // }
+                            else if(lead.Interested_Unit__c == null) {
+                                lead.Interested_Unit__c.addError('Interested Unit must be filled.');
+                            }
+                            else if(lead.Region__c == null) {
+                                lead.Region__c.addError('Region must be filled.');
+                            }
+                            else if (lead.Customer_Response__c == null || lead.Customer_Response__c == 'Not Interested') {
+                                lead.Customer_Response__c.addError('Customer Response must be provided and should not be Not Interested.');
                             }
                         } else if (lead.Status == 'SV Planned') {
                             if (lead.Next_Follow_Up_Date_Time__c == null || lead.Next_Follow_Up_Date_Time__c <= System.now()) {

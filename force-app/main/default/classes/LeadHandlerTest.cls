@@ -366,7 +366,7 @@ insert  duplicateLead2;
     insert lead;
 
     // Update Lead status
-    Lead updatedLead = [SELECT Id, Status, Is_User_Assigned__c, Dropped_Reason__c,Is_Qualified__c, By_Pass_Validations__c,Email_Conversation_Done__c FROM Lead WHERE Id = :lead.Id];
+    Lead updatedLead = [SELECT Id, Status, Is_User_Assigned__c, Dropped_Reason__c,Is_Qualified__c, Interested_Unit__c, By_Pass_Validations__c,Email_Conversation_Done__c FROM Lead WHERE Id = :lead.Id];
     updatedLead.Status = 'Qualified';
     updatedLead.Is_User_Assigned__c = true;
     updatedLead.Is_Qualified__c = true;
@@ -378,7 +378,7 @@ insert  duplicateLead2;
 
     // Prepare oldMap for validation
     Map<Id, Lead> oldMap = new Map<Id, Lead>{lead.Id => lead};
-    List<Lead> newLeads = [SELECT Id, Status,Qualification_Criteria__c, Is_User_Assigned__c, By_Pass_Validations__c,Email_Conversation_Done__c,Is_Qualified__c,Next_Follow_Up_Date_Time__c,Budget_In_Lakhs__c FROM Lead WHERE Id = :lead.Id];
+    List<Lead> newLeads = [SELECT Id, Status,Qualification_Criteria__c, Is_User_Assigned__c, By_Pass_Validations__c,Interested_Unit__c,Email_Conversation_Done__c,Is_Qualified__c,Next_Follow_Up_Date_Time__c,Budget_In_Lakhs__c FROM Lead WHERE Id = :lead.Id];
 
     // Start test block
     Test.startTest();

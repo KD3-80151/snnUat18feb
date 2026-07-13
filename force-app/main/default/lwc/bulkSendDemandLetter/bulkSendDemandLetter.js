@@ -4,6 +4,7 @@ import getFilters from '@salesforce/apex/BulkSendDemandLetterController.getFilte
 import getTowers from '@salesforce/apex/BulkSendDemandLetterController.getTowers';
 import getFilteredOpportunities from "@salesforce/apex/BulkSendDemandLetterController.getFilteredOpportunities";
 import sendInstallmentIds from '@salesforce/apex/BulkSendDemandLetterController.sendInstallmentIds';
+import generateStatementOfAccounts from '@salesforce/apex/GenerateSOAforDL.generateStatementOfAccounts';
 
 export default class BulkSendDemandLetter extends LightningElement {
     @track projectOptions = [];
@@ -14,6 +15,9 @@ export default class BulkSendDemandLetter extends LightningElement {
     @track selectedInstallments = [];
     @track opportunityData = [];
     @track showTable = false;
+    @track showSendModal = false;
+    @track modalInstallmentData = [];
+    @track showSpinner = false;
 
     @wire(getFilters)
     wiredFilters({ data, error }) {
@@ -56,6 +60,9 @@ export default class BulkSendDemandLetter extends LightningElement {
                 installmentName: JSON.stringify(this.selectedInstallments),
             })
                 .then((data) => {
+                    this.selectedInstallmentIds.clear();
+                    this.modalInstallmentData = [];
+                    this.showSendModal = false;
                     this.opportunityData = data.map(row => ({ ...row, isSelected: false }));
                     this.showTable = true;
                 })
@@ -106,9 +113,9 @@ export default class BulkSendDemandLetter extends LightningElement {
     }
 
     handleSendToCustomer() {
-        debugger
+        debugger;
         const installmentIdList = Array.from(this.selectedInstallmentIds);
-
+        console.log('Selected Installment Ids:', installmentIdList);
         if (installmentIdList.length === 0) {
             this.showToast('Error', 'No Installments selected.', 'error');
             return;
@@ -125,6 +132,8 @@ export default class BulkSendDemandLetter extends LightningElement {
                     row.isSelected = false;
                     return row;
                 });
+                this.modalInstallmentData = [];
+                this.showSendModal = false;
 
 
                 const checkboxes = this.template.querySelectorAll('input[data-installment-id]');
@@ -136,6 +145,45 @@ export default class BulkSendDemandLetter extends LightningElement {
 
                 console.error('Error:', error);
                 this.showToast('Error', 'Error occurred while sending installments.', 'error');
+            });
+    }
+
+    handleGenerateSOA() {
+        const selectedRows = this.opportunityData.filter(
+            row => this.selectedInstallmentIds.has(row.InstallmentId)
+        );
+
+        if (selectedRows.length === 0) {
+            this.showToast('Error', 'No Installments selected.', 'error');
+            return;
+        }
+
+        const oppToInstallmentIds = new Map();
+        console.log('Selected Rows for SOA Generation:', selectedRows);
+        selectedRows.forEach(row => {
+            if (!oppToInstallmentIds.has(row.Id)) {
+                oppToInstallmentIds.set(row.Id, []);
+            }
+            oppToInstallmentIds.get(row.Id).push(row.InstallmentId);
+        });
+
+        this.showSpinner = true;
+        Promise.all(
+            Array.from(oppToInstallmentIds.entries()).map(([oppId, installmentIds]) =>
+                generateStatementOfAccounts({ oppId, selectedPaymentScheduleIds: installmentIds })
+            )
+        )
+            .then(() => {
+                this.modalInstallmentData = selectedRows;
+                this.showSendModal = true;
+                this.showToast('Success', 'Statement of Accounts generated successfully.', 'success');
+            })
+            .catch((error) => {
+                console.error('Error generating Statement of Accounts:', error);
+                this.showToast('Error', 'Error occurred while generating Statement of Accounts.', 'error');
+            })
+            .finally(() => {
+                this.showSpinner = false;
             });
     }
 
@@ -154,5 +202,12 @@ export default class BulkSendDemandLetter extends LightningElement {
         this.selectedInstallments = [];
         this.opportunityData = [];
         this.showTable = false;
+        this.selectedInstallmentIds.clear();
+        this.modalInstallmentData = [];
+        this.showSendModal = false;
+    }
+
+    closeSendModal() {
+        this.showSendModal = false;
     }
 }

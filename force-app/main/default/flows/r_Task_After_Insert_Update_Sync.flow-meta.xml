@@ -1,6 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Flow xmlns="http://soap.sforce.com/2006/04/metadata">
     <actionCalls>
+        <name>Bypass_Sold_Unit_Edit_Validation</name>
+        <label>Bypass Sold Unit Edit Validation</label>
+        <locationX>2690</locationX>
+        <locationY>647</locationY>
+        <actionName>UnitEditBypassInvoker</actionName>
+        <actionType>apex</actionType>
+        <connector>
+            <targetReference>Update_Unit_To_For_Sale</targetReference>
+        </connector>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>unitId</name>
+            <value>
+                <elementReference>Get_Case_To_Update_Opp_Status.From_Unit__c</elementReference>
+            </value>
+        </inputParameters>
+        <nameSegment>UnitEditBypassInvoker</nameSegment>
+        <offset>0</offset>
+    </actionCalls>
+    <actionCalls>
         <name>Send_Approval_to</name>
         <label>Send Approval to Case</label>
         <locationX>1634</locationX>
@@ -26,6 +46,23 @@
     </actionCalls>
     <apiVersion>62.0</apiVersion>
     <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <assignments>
+        <name>mdvForSaleFalse</name>
+        <label>mdvForSaleFalse</label>
+        <locationX>2690</locationX>
+        <locationY>863</locationY>
+        <assignmentItems>
+            <assignToReference>mdvForSale</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <booleanValue>false</booleanValue>
+            </value>
+        </assignmentItems>
+        <connector>
+            <isGoTo>true</isGoTo>
+            <targetReference>Check_with_Subject_Name</targetReference>
+        </connector>
+    </assignments>
     <customErrors>
         <name>Throw_Message_for_Opp_or_Unit</name>
         <label>Throw Message for Opp or Unit</label>
@@ -192,6 +229,13 @@
                 <operator>EqualTo</operator>
                 <rightValue>
                     <stringValue>Completed</stringValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>mdvForSale</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <booleanValue>true</booleanValue>
                 </rightValue>
             </conditions>
             <connector>
@@ -519,7 +563,7 @@
         <locationY>539</locationY>
         <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
         <connector>
-            <targetReference>Update_To_Close_Lost</targetReference>
+            <targetReference>Bypass_Sold_Unit_Edit_Validation</targetReference>
         </connector>
         <filterLogic>and</filterLogic>
         <filters>
@@ -650,7 +694,10 @@
         <name>Update_To_Close_Lost</name>
         <label>Update To Close Lost</label>
         <locationX>2690</locationX>
-        <locationY>647</locationY>
+        <locationY>755</locationY>
+        <connector>
+            <targetReference>mdvForSaleFalse</targetReference>
+        </connector>
         <filterLogic>and</filterLogic>
         <filters>
             <field>Id</field>
@@ -703,6 +750,30 @@
         </inputAssignments>
         <object>Case</object>
     </recordUpdates>
+    <recordUpdates>
+        <name>Update_Unit_To_For_Sale</name>
+        <label>Update Unit To For Sale</label>
+        <locationX>2690</locationX>
+        <locationY>647</locationY>
+        <connector>
+            <targetReference>Update_To_Close_Lost</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>Get_Case_To_Update_Opp_Status.From_Unit__c</elementReference>
+            </value>
+        </filters>
+        <inputAssignments>
+            <field>Status__c</field>
+            <value>
+                <stringValue>For Sale</stringValue>
+            </value>
+        </inputAssignments>
+        <object>Unit__c</object>
+    </recordUpdates>
     <start>
         <locationX>1574</locationX>
         <locationY>0</locationY>
@@ -714,4 +785,14 @@
         <triggerType>RecordAfterSave</triggerType>
     </start>
     <status>Active</status>
+    <variables>
+        <name>mdvForSale</name>
+        <dataType>Boolean</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>true</isOutput>
+        <value>
+            <booleanValue>true</booleanValue>
+        </value>
+    </variables>
 </Flow>

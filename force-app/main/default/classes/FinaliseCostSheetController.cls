@@ -114,7 +114,15 @@ public without sharing class FinaliseCostSheetController {
          allPaymentSchedules.add(ps);
      }
      insert allPaymentSchedules;
-     List<Cost_Sheet__c> costSheetList = [SELECT Id, Unit__c FROM Cost_Sheet__c 
+
+     // If payment schedules were previously deleted via Delete_Approval__c approval,
+     // backfill received amounts from already-approved receipts onto the new schedules.
+     Opportunity oppApprovalCheck = [SELECT Id, Delete_Approval__c FROM Opportunity WHERE Id = :ts.WhatId LIMIT 1];
+     if (oppApprovalCheck.Delete_Approval__c == 'Approved') {
+         receiptTriggerHandler.applyApprovedReceiptsToSchedules(ts.WhatId);
+     }
+
+     List<Cost_Sheet__c> costSheetList = [SELECT Id, Unit__c FROM Cost_Sheet__c
                                              WHERE Id =: costSheetId];
 
      List<Payment_Schedule__c> insertedPaymentSchedules = [SELECT Id, Name, Installment__c, Agreement_Value__c, Opportunity__c, Opportunity__r.Name ,Tax_Amount__c,Due_Date__c,Pay_Date__c,Other_Charges__c,Other_Tax_Amount__c
@@ -143,6 +151,63 @@ public without sharing class FinaliseCostSheetController {
 
 
  @AuraEnabled
+ public static CostSheetWrapper getCostSheetPreview(Id costSheetId) {
+     System.debug('costSheetId:::>> ' + costSheetId);
+     Cost_Sheet__c cs = [SELECT Id, finalize_CostSheet__c, Opportunity__c, Opportunity__r.Name
+                         FROM Cost_Sheet__c WHERE Id = :costSheetId LIMIT 1];
+
+     List<Pricing_Element__c> pricingElements = [
+         SELECT Id, Name, Pricing_Element_Master__r.Name, Amount__c, Actual_Amount__c, Discount__c,
+                Discount_Amount__c, Tax_Amount__c, Final_Tax_Amount__c, PE_Type__c, Quantity__c, Rate__c,
+                Total_Amount_Excluding_Tax__c
+         FROM Pricing_Element__c WHERE Cost_Sheet__c = :costSheetId
+     ];
+
+     List<Payment_Schedule__c> existingSchedules = new List<Payment_Schedule__c>();
+     if (cs.finalize_CostSheet__c == true) {
+         existingSchedules = [SELECT Id, Name, Installment__c, Agreement_Value__c, Tax_Amount__c,
+                                     Due_Date__c, Pay_Date__c, Other_Charges__c, Other_Tax_Amount__c,
+                                     Opportunity__c, Opportunity__r.Name
+                              FROM Payment_Schedule__c WHERE Opportunity__c = :cs.Opportunity__c];
+     }
+
+     CostSheetWrapper wrapper = new CostSheetWrapper();
+     wrapper.costSheetRecords = new List<Cost_Sheet__c>{ cs };
+     wrapper.paymentScheduleRecords = existingSchedules;
+     wrapper.costPricingAsstnList = pricingElements;
+     return wrapper;
+ }
+
+ @AuraEnabled
+ public static List<Payment_Schedule__c> generatePaymentSchedulePreview(Id costSheetId) {
+     Cost_Sheet__c getCostSheet = [SELECT Id, Opportunity__c, Total_Pricing_Value_Excluding_Tax__c,
+                                          Total_Tax_Value__c, Cost_Scheme_Linking__r.Payment_Scheme__c
+                                   FROM Cost_Sheet__c WHERE Id = :costSheetId LIMIT 1];
+
+     List<Payment_Scheme_Installment__c> schemeInstallments = [
+         SELECT Installment__c, Name, Payment_Schedule_Master__r.Name,
+                Payment_Schedule_Master__r.Installment_Sequence__c, Display_Order__c
+         FROM Payment_Scheme_Installment__c
+         WHERE Payment_Scheme__c = :getCostSheet.Cost_Scheme_Linking__r.Payment_Scheme__c
+     ];
+
+     List<Payment_Schedule__c> previewList = new List<Payment_Schedule__c>();
+     for (Payment_Scheme_Installment__c psi : schemeInstallments) {
+         Payment_Schedule__c ps = new Payment_Schedule__c();
+         ps.Opportunity__c = getCostSheet.Opportunity__c;
+         ps.Name = psi.Payment_Schedule_Master__r.Name;
+         ps.Installment__c = psi.Installment__c;
+         ps.Agreement_Value__c = (getCostSheet.Total_Pricing_Value_Excluding_Tax__c / 100) * psi.Installment__c;
+         ps.Tax_Amount__c = (getCostSheet.Total_Tax_Value__c / 100) * psi.Installment__c;
+         ps.Other_Charges__c = 0;
+         ps.Other_Tax_Amount__c = 0;
+         ps.Installment_Sequence__c = psi.Payment_Schedule_Master__r.Installment_Sequence__c;
+         previewList.add(ps);
+     }
+     return previewList;
+ }
+
+ @AuraEnabled
  public static String sendApproval(Id recordId) {
      try {
          System.debug('taskId==>'+recordId);
@@ -167,7 +232,9 @@ public without sharing class FinaliseCostSheetController {
                             LIMIT 1];
 
            System.debug('opportunityId ==>'+opp);
+           opp.StageName = 'Cost Sheet Approved';
            opp.Cost_Sheet_Finalised__c = true;
+           opp.Cost_Sheet_Approval_Status__c = 'Approved';
            update opp;                
 
          if (opp != null && opp.Id != null) {

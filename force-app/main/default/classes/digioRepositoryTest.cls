@@ -192,7 +192,7 @@ private class digioRepositoryTest {
             Document_Id__c = 'Receipts'
         );
         insert ReceiptsDoc;
-
+        
         Document__c postSalesDoc = new Document__c(
             Name = 'Post Sales',
             Opportunity__c = opp.Id,
@@ -249,10 +249,16 @@ private class digioRepositoryTest {
             Cost_Sheet_Template_Key__c = 'Cost_Sheet_Template_Key__c',
             Agreement_Copy_Key__c = 'Agreement_Copy_Key__c',
             Data_Sheet_Format_6__c = 'Data_Sheet_Format_6__c',
-            Debit_Note_Template_Key__c = 'Debit_Note_Template_Key__c'
+            Debit_Note_Template_Key__c = 'Debit_Note_Template_Key__c',
+            Booking_Form_1__c = 'Booking_Form_1__c',
+            Booking_Form_2__c = 'Booking_Form_2__c',
+            Booking_Form_3__c = 'Booking_Form_3__c',
+            Booking_Form_4__c = 'Booking_Form_4__c',
+            Booking_Form_5__c = 'Booking_Form_5__c',
+            Booking_Form_6__c = 'Booking_Form_6__c'
         );
         insert digi;
-                
+        
         Pricing_Element_Master__c pricingEleMaster = new Pricing_Element_Master__c(Name = 'Test Pricing');
         insert pricingEleMaster;
         
@@ -298,7 +304,7 @@ private class digioRepositoryTest {
         insert receipt2;
         
         Receipt__c receipt3 = new Receipt__c(
-        	Debit_Note_Reminder_Sent__c = false,
+            Debit_Note_Reminder_Sent__c = false,
             Opportunity__c = opp.Id,
             Type__c = 'Debit',
             Description__c = 'Debit',
@@ -334,7 +340,7 @@ private class digioRepositoryTest {
         digioRepository.generateAgreementCopyDoc(testOpp.Id);
         Test.stopTest();
     }
-
+    
     @isTest
     static void testgenerateDataSheetFormatDoc() {
         Opportunity testOpp = [SELECT Id FROM Opportunity LIMIT 1];
@@ -342,7 +348,7 @@ private class digioRepositoryTest {
         digioRepository.docwrpperClass result = digioRepository.generateDataSheetFormatDoc(testOpp.Id);
         Test.stopTest();
     }
-
+    
     @isTest
     static void testgenerateAllotmentLetter() {
         Opportunity testOpp = [SELECT Id FROM Opportunity LIMIT 1];
@@ -350,7 +356,7 @@ private class digioRepositoryTest {
         digioRepository.docwrpperClass result = digioRepository.generateAllotmentLetter(testOpp.Id);
         Test.stopTest();
     }
-
+    
     @isTest
     static void testgenerateWelcomeKit() {
         Opportunity testOpp = [SELECT Id FROM Opportunity LIMIT 1];
@@ -366,7 +372,7 @@ private class digioRepositoryTest {
         digioRepository.docwrpperClass result = digioRepository.generateSnnHomeOwner(testOpp.Id);
         Test.stopTest();
     }
-
+    
     @isTest
     static void testsaleAndConstructionAgreement() {
         Opportunity testOpp = [SELECT Id FROM Opportunity LIMIT 1];
@@ -374,7 +380,23 @@ private class digioRepositoryTest {
         digioRepository.docwrpperClass result = digioRepository.saleAndConstructionAgreement(testOpp.Id);
         Test.stopTest();
     }
-
+    
+    @isTest
+    static void testgenerateBookingFormDocument() {
+        Opportunity testOpp = [SELECT Id FROM Opportunity LIMIT 1];
+        Test.startTest();
+        digioRepository.docwrpperClass result = digioRepository.generateBookingFormDocument(testOpp.Id);
+        Test.stopTest();
+    }
+    
+    @isTest
+    static void testgenerateHandOverOfFlat() {
+        Opportunity testOpp = [SELECT Id FROM Opportunity LIMIT 1];
+        Test.startTest();
+        digioRepository.docwrpperClass result = digioRepository.generateHandOverOfFlat(testOpp.Id);
+        Test.stopTest();
+    }
+    
     @isTest
     static void testgenerateCostSheet() {
         Cost_Sheet__c cs = [SELECT Id FROM Cost_Sheet__c LIMIT 1];
@@ -383,7 +405,7 @@ private class digioRepositoryTest {
         digioRepository.docwrpperClass result2 = digioRepository.generateCostSheet('cs.Id');
         Test.stopTest();
     }
-
+    
     @isTest
     static void testgenerateSerenityReceipt() {
         Receipt__c receipt = [SELECT Id FROM Receipt__c LIMIT 1];
@@ -391,7 +413,7 @@ private class digioRepositoryTest {
         digioRepository.docwrpperClass result = digioRepository.generateSerenityReceipt(receipt.Id);
         Test.stopTest();
     }
-
+    
     @isTest
     static void testgenerateDemandLetter() {
         Opportunity testOpp = [SELECT Id FROM Opportunity LIMIT 1];
@@ -399,7 +421,7 @@ private class digioRepositoryTest {
         digioRepository.docwrpperClass result = digioRepository.generateDemandLetter(testOpp.Id);
         Test.stopTest();
     }
-
+    
     @isTest
     static void testgenerateDebitNoteWrapper() {
         Opportunity testOpp = [SELECT Id FROM Opportunity LIMIT 1];
@@ -416,7 +438,7 @@ private class digioRepositoryTest {
         digioRepository.generateDebitNoteWrapper(psIds);
         Test.stopTest();
     }
-
+    
     @isTest
     static void testGenerateStatementOfAccounts() {
         Test.setMock(HttpCalloutMock.class, new MockHttpResponseGenerator());

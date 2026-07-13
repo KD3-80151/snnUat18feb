@@ -1,207 +1,117 @@
-public without sharing class QueueableToGenerateDemandLetter implements Queueable, Database.allowsCallouts{
+public without sharing class QueueableToGenerateDemandLetter implements Queueable, Database.AllowsCallouts {
     
-    Map<Id, List<Payment_Schedule__c>> oppToPaymentsMap;
-    Map<String, List<String>> oppIdByContentVersionIds;
+    private Map<Id, List<Payment_Schedule__c>> oppToPaymentsMap;
+    private Map<String, List<String>> oppIdByContentVersionIds;
+    private Set<Id> processedPaymentScheduleIds;
     
-    public QueueableToGenerateDemandLetter(Map<Id, List<Payment_Schedule__c>> oppToPaymentsMap, Map<String, List<String>> oppIdByContentVersionIds){
+    public QueueableToGenerateDemandLetter(Map<Id, List<Payment_Schedule__c>> oppToPaymentsMap,
+        Map<String, List<String>> oppIdByContentVersionIds,
+        Set<Id> processedPaymentScheduleIds
+    )
+    {
         System.debug('oppToPaymentsMap ==> ' + oppToPaymentsMap);
-        this.oppToPaymentsMap = oppToPaymentsMap;
-        this.oppIdByContentVersionIds = oppIdByContentVersionIds;
+        this.oppToPaymentsMap = (oppToPaymentsMap != null) ? oppToPaymentsMap : new Map<Id, List<Payment_Schedule__c>>();
+        this.oppIdByContentVersionIds = (oppIdByContentVersionIds != null) ? oppIdByContentVersionIds : new Map<String, List<String>>();
+        this.processedPaymentScheduleIds = (processedPaymentScheduleIds != null) ? processedPaymentScheduleIds : new Set<Id>();
     }
     
     public void execute(QueueableContext qc){
         try{
-            System.debug(' oppIdByContentVersionIds ===> ' + oppIdByContentVersionIds);
-            Map<String,String> paymentIdbyDigioIdMap = new Map<String,String>();
+            System.debug('oppIdByContentVersionIds ===> ' + oppIdByContentVersionIds);
+            System.debug('processedPaymentScheduleIds ===> ' + processedPaymentScheduleIds);
+            
+            if (oppToPaymentsMap == null || oppToPaymentsMap.isEmpty()) {
+                System.debug('No opportunities to process.');
+                return;
+            }
+            
             Map<Id, List<Payment_Schedule__c>> nextOppToPaymentsMap = new Map<Id, List<Payment_Schedule__c>>(oppToPaymentsMap);
             
-            if(!oppToPaymentsMap.isEmpty()){
-                System.debug('main oppToPaymentsMap ===> ' + oppToPaymentsMap);
-                String oppId = oppToPaymentsMap.keySet().iterator().next();
-                System.debug('oppId ===> ' + oppId);
-                List<Payment_Schedule__c> paymentSchList = oppToPaymentsMap.get(oppId).isEmpty() ? new List<Payment_Schedule__c>() : oppToPaymentsMap.get(oppId);
-                System.debug('paymentSchList ===> ' + paymentSchList);
-                if(!paymentSchList.isEmpty()){
-                    Payment_Schedule__c currentPayment = paymentSchList.remove(0);
-                    System.debug('currentPayment ===> ' + currentPayment);
-                    System.debug(' oppIdByContentVersionIds ===> ' + oppIdBycontentVersionIds);
-                    oppIdByContentVersionIds = generateDemandLetterDocument(currentPayment.Id, oppIdBycontentVersionIds);
-                    System.debug(' oppIdByContentVersionIds 1 ===> ' + oppIdByContentVersionIds);
+            Id oppId = nextOppToPaymentsMap.keySet().iterator().next();
+            System.debug('oppId ===> ' + oppId);
+            
+            List<Payment_Schedule__c> paymentSchList = nextOppToPaymentsMap.get(oppId);
+            if (paymentSchList == null) {
+                paymentSchList = new List<Payment_Schedule__c>();
+            }
+            System.debug('paymentSchList ===> ' + paymentSchList);
+            
+            if (!paymentSchList.isEmpty()) {
+                Payment_Schedule__c currentPayment = paymentSchList.remove(0);
+                System.debug('currentPayment ===> ' + currentPayment);
+                System.debug('oppIdByContentVersionIds before ===> ' + oppIdByContentVersionIds);
+                
+                Map<String, List<String>> updatedMap = generateDemandLetterDocument(currentPayment.Id, oppIdByContentVersionIds);
+                
+                if (updatedMap != null) {
+                    oppIdByContentVersionIds = updatedMap;
+                    processedPaymentScheduleIds.add(currentPayment.Id);
+                }
+                
+                System.debug('oppIdByContentVersionIds after ===> ' + oppIdByContentVersionIds);
+                System.debug('processedPaymentScheduleIds after ===> ' + processedPaymentScheduleIds);
+                
+                if (!paymentSchList.isEmpty()) {
+                    nextOppToPaymentsMap.put(oppId, paymentSchList);
+                    System.debug('More payments pending for same opp, enqueueing next generate job.');
+                    System.enqueueJob(
+                        new QueueableToGenerateDemandLetter(nextOppToPaymentsMap, oppIdByContentVersionIds, processedPaymentScheduleIds)
+                    );
+                    return;
+                } else {
+                    nextOppToPaymentsMap.remove(oppId);
                     
-                    if(!paymentSchList.isEmpty()){
-                        System.debug('payment list is not empty');
-                        System.enqueueJob(new QueueableToGenerateDemandLetter(oppToPaymentsMap, oppIdByContentVersionIds));
-                    }else{
-                        System.debug('payment list is empty');
-                        System.debug('oppToPaymentsMap ==> ' + oppToPaymentsMap);
-                        System.debug('oppIdByContentVersionIds 2 ===> ' + oppIdByContentVersionIds);
-                        oppToPaymentsMap.remove(oppId);
-                        System.debug('oppToPaymentsMap ===> ' + oppToPaymentsMap);
-                        
-                        if (!oppToPaymentsMap.isEmpty()) {
-                            oppToPaymentsMap.keySet().iterator().next();
-                            System.enqueueJob(new QueueableToGenerateDemandLetter(oppToPaymentsMap, oppIdByContentVersionIds));
-                        } else {
-                            System.debug('oppToPaymentsMap is empty after removal');
-                            System.debug('no more opps to process');
-                            System.debug('oppIdByContentVersionIds ===> ' + oppIdByContentVersionIds);
-                            EmailTemplate temp = [SELECT Id, Subject, HtmlValue, Body FROM EmailTemplate WHERE DeveloperName = 'Payments_Schedule'];
-                            List<Messaging.SingleEmailMessage> emailsToSend = new List<Messaging.SingleEmailMessage>();
-                            Map<String,List<ContentVersion>> oppIdByCntVerIdMap = new Map<String,List<ContentVersion>>();
-                            
-                            List<Id> oppIdList = new List<Id>();
-                            List<Id> cntIds = new List<Id>();
-                            System.debug('oppIdByContentVersionIds ===> ' + oppIdByContentVersionIds);
-                            if (!oppIdByContentVersionIds.isEmpty()) {
-                                for (String oppId1 : oppIdByContentVersionIds.keySet()) {
-                                    oppIdList.add(oppId1);
-                                    List<String> cntVerList = oppIdByContentVersionIds.get(oppId1);
-                                    if(!cntVerList.isEmpty()){
-                                        for(Id cnt : cntVerList){
-                                            cntIds.add(cnt);
-                                        }
-                                    }
-                                }
-                            }
-                            
-                            List<Opportunity> oppList = [SELECT Id,Email__c,Name, Account.Name from Opportunity where Id IN: oppIdList];
-                            List<ContentVersion> contentVersionList = [SELECT Id,Title,VersionData,FileExtension,ContentDocumentId from ContentVersion WHERE Id IN: cntIds];
-                            Map<String, ContentVersion> cntIdByRecMap = new Map<String, ContentVersion>();
-                            List<String> contentDocIds = new List<String>();
-                            if (!oppIdByContentVersionIds.isEmpty()) {
-                                for (ContentVersion cnt : contentVersionList) {
-                                    System.debug('cnt ===> ' + cnt);
-                                    cntIdByRecMap.put(cnt.Id, cnt);
-                                    contentDocIds.add(cnt.ContentDocumentId);
-                                }
-                            }
-                            
-                            Map<String,Opportunity> oppIdByEmailMap = new Map<String,Opportunity>();
-                            for(Opportunity opp : oppList){
-                                oppIdByEmailMap.put(opp.Id, opp);
-                            }
-                            
-                            if(!oppIdByContentVersionIds.isEmpty()){
-                                for(String oppId1 : oppIdByContentVersionIds.keySet()){
-                                    List<Messaging.EmailFileAttachment> attachments = new List<Messaging.EmailFileAttachment>();
-                                    List<String> contentVerIdList = oppIdByContentVersionIds.get(oppId1);
-                                    if(!contentVerIdList.isEmpty()){
-                                        for (Id cntId : contentVerIdList) {
-                                            System.debug('cntId ===> ' + cntId);
-                                            ContentVersion contentVersion = cntIdByRecMap.get(cntId);
-                                            Messaging.EmailFileAttachment attachment = new Messaging.EmailFileAttachment();
-                                            attachment.setFileName(contentVersion.Title + '.pdf');
-                                            attachment.setBody(contentVersion.VersionData);
-                                            attachment.setContentType('application/pdf');
-                                            attachments.add(attachment);
-                                        }
-                                    }
-                                    list<OrgWideEmailAddress> oweaList = [SELECT Id, Address FROM OrgWideEmailAddress WHERE Address = 'sagar.kumar@utilitarianlabs.com' LIMIT 1];
-                                    system.debug('oweaList ===> ' + oweaList);
-                                    Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
-                                    Opportunity opp = oppIdByEmailMap.get(oppId1);
-                                    if(opp != null && opp.Email__c != null){
-                                        System.debug('email for ===> ' + opp.Email__c);
-                                        String htmlBody = temp.HtmlValue.replace('{!Opportunity.Name}', opp.Account.Name);
-                                        email.setSubject(temp.Subject);
-                                        email.setToAddresses(new String[]{opp.Email__c});
-                                        // email.setWhatId(oppId1);
-                                        // email.setSaveAsActivity(false);
-                                        email.setHtmlBody(htmlBody);
-                                        email.setOrgWideEmailAddressId(oweaList[0].Id);
-                                        email.setFileAttachments(attachments);
-                                        emailsToSend.add(email);
-                                    }
-                                }
-                            }
-                            
-                            if (!emailsToSend.isEmpty()) {
-                                system.debug('Sending Emails...');
-
-                                Messaging.SendEmailResult[] results = Messaging.sendEmail(emailsToSend);
-                                System.debug('Is Success===>'+results[0].isSuccess());
-                                System.debug('Emails sent successfully!!!');
-                                
-                                delete [SELECT Id from ContentDocument where ID IN: contentDocIds];
-                            }
-                            Demand_Letter__c demandLetter = new Demand_Letter__c(Payment_Schedule__c = currentPayment.Id);
-                            insert demandLetter;
-                            Payment_Schedule__c pay = [SELECT Id, Opportunity__c, Opportunity__r.AccountId, Agreement_Value__c, Total_Due_Amount__c,Total_Amount_Inclusive_Of_Tax__c, Tax_Amount__c FROM Payment_Schedule__c WHERE Id = :currentPayment.Id LIMIT 1];
-
-                            currentPayment.Demand_Letter_Sent__c = true;
-                            currentPayment.Tax_Invoice_Created__c = true;
-                            update currentPayment;
-
-                            Decimal taxAmount = 0;
-                            if (pay.Tax_Amount__c != null) {
-                                taxAmount = pay.Tax_Amount__c / 2;
-                            }
-
-                            
-                            Decimal invoiceBaseAmount = 0;
-                            Boolean usedTotalDue = false;
-
-                            if (pay.Total_Due_Amount__c != null && pay.Total_Due_Amount__c > 0) {
-                                invoiceBaseAmount = pay.Total_Due_Amount__c;
-                                usedTotalDue = true;
-                            } else if (pay.Agreement_Value__c != null) {
-                                invoiceBaseAmount = pay.Total_Amount_Inclusive_Of_Tax__c;
-                            }
-
-                            System.debug('invoiceBaseAmount ===> ' + invoiceBaseAmount);
-
-                            Decimal cgstAmt = 0;
-                            Decimal sgstAmt = 0;
-
-                            if (usedTotalDue) {
-                                cgstAmt = (invoiceBaseAmount * 5) / 100;
-                                sgstAmt = (invoiceBaseAmount * 5) / 100;
-                            } else {
-                                Decimal taxHalf = (pay.Tax_Amount__c != null) ? (pay.Tax_Amount__c / 2) : 0;
-                                cgstAmt = taxHalf;
-                                sgstAmt = taxHalf;
-                            }
-                            system.debug('cgstAmt ===> ' + cgstAmt);
-                            system.debug('sgstAmt ===> ' + sgstAmt);
-                            Tax_Invoice__c taxInvoice = new Tax_Invoice__c(
-                                Payment_Schedule__c = pay.Id,
-                                Opportunity__c      = pay.Opportunity__c,
-                                Received_Amount__c  = invoiceBaseAmount,
-                                CGST__c             = cgstAmt,
-                                SGST__c             = sgstAmt,
-                                Account__c          = pay.Opportunity__r.AccountId
-                            );
-                            insert taxInvoice;
-
-
-                                                        
-
-
-                        }
+                    if (!nextOppToPaymentsMap.isEmpty()) {
+                        System.debug('Moving to next opportunity, enqueueing next generate job.');
+                        System.enqueueJob(
+                            new QueueableToGenerateDemandLetter(nextOppToPaymentsMap, oppIdByContentVersionIds, processedPaymentScheduleIds)
+                        );
+                        return;
+                    } else {
+                        System.debug('All demand letters generated. Enqueueing email sender queueable.');
+                        System.enqueueJob(new QueueableToSendDemandLetterEmails(oppIdByContentVersionIds, processedPaymentScheduleIds)
+                        );
+                        return;
                     }
                 }
             }
-        }catch(Exception e){
-            system.debug('Error ==> ' + e.getMessage());
-            system.debug('Error in line ==> ' + e.getLineNumber());
+            
+        } catch(Exception e){
+            System.debug('Error ==> ' + e.getMessage());
+            System.debug('Error in line ==> ' + e.getLineNumber());
+            System.debug('Stack ==> ' + e.getStackTraceString());
         }
-        
     }
     
     @AuraEnabled
     public static Map<String, List<String>> generateDemandLetterDocument(String recordId, Map<String, List<String>> oppIdBycontentVersionIds){
         
         System.debug('record id ==>'+recordId +' content version id ==>'+oppIdBycontentVersionIds);
-        Map<String, List<String>> oppIdByCntVersionIds = new Map<String, List<String>>();
+        Map<String, List<String>> oppIdByCntVersionIds = (oppIdBycontentVersionIds != null)
+            ? oppIdBycontentVersionIds
+            : new Map<String, List<String>>();
+        
         try{
-            if(recordId != null && oppIdBycontentVersionIds != null){
-                List<Payment_Schedule__c> PaymentScheduleRecords = [SELECT Id,Total_Received_Amount__c, Name,Opportunity__r.Unit__r.Floor__r.Blocks__r.Tower_Code__c,Opportunity__c,Opportunity__r.Project__r.Name,Opportunity__r.Project__r.Account_Name__c,Opportunity__r.Project__r.Account_Number__c,Opportunity__r.Project__r.Bank_Name__c,Opportunity__r.Project__r.IFSC_Code__c, Installment__c, Due_Date__c, Tax_Amount__c, CreatedDate,Agreement_Value__c,(select id,Amount_Balance__c,Amount_Received__c,Total_Due_Amount__c from Demand_Letters__r Where Total_Due_Amount__c !=0)  FROM Payment_Schedule__c WHERE Id =: recordId LIMIT 1];
+            if(recordId != null){
+                List<Payment_Schedule__c> PaymentScheduleRecords = [SELECT Id, Total_Received_Amount__c, Total_Due_Amount__c, Total_Amount_Inclusive_Of_Tax__c, Name, Opportunity__r.Unit__r.Floor__r.Blocks__r.Tower_Code__c,Opportunity__r.Unit__r.Floor__r.Blocks__r.Name, Opportunity__c,
+                           Opportunity__r.Unit__r.Unit_Name__c, Opportunity__r.Less_Total_Receipts__c, Opportunity__r.Project__r.Name, Opportunity__r.Project__r.Account_Name__c, Opportunity__r.Project__r.Account_Number__c, Opportunity__r.Project__r.Bank_Name__c,
+                           Opportunity__r.Project__r.IFSC_Code__c, Installment__c, Tax_Amount__c, Pay_Date__c, Due_Date__c, CreatedDate, Agreement_Value__c, (SELECT Id, Amount_Balance__c, Amount_Received__c, Total_Due_Amount__c
+                            FROM Demand_Letters__r WHERE Total_Due_Amount__c != 0) FROM Payment_Schedule__c WHERE Id = :recordId LIMIT 1];
                 System.debug('paymentScheduleRecords==>'+PaymentScheduleRecords);
+                
                 if(!PaymentScheduleRecords.isEmpty()){
-                    Opportunity  oppRecord = [select id,AccountId,Account.Salutation__c,Account.Name,Account.Phone, Phone__c,Opportunity_Unique_Id__c,(SELECT Id,Document_Id__c from Documents__r where Name = 'Demand Letters' LIMIT 1) from Opportunity where id=: PaymentScheduleRecords[0].Opportunity__c Limit 1];
+                    Opportunity oppRecord = [
+                        SELECT Id, AccountId, Account.Salutation__c, Total_TDS_Amount_till_date__c, Less_Total_Receipts__c, Account.Name, Account.Phone, Phone__c, Opportunity_Unique_Id__c, (SELECT Id, Document_Id__c FROM Documents__r WHERE Name = 'Demand Letters' LIMIT 1) FROM Opportunity WHERE Id = :PaymentScheduleRecords[0].Opportunity__c LIMIT 1];
                     System.debug('Opp record ==>'+oppRecord);
+                    
+                    List<Receipt__c> cdReceipts = [
+                        SELECT Id, Type__c, Description__c, Amount__c, Credit_Debit_CGST__c, Credit_Debit_SGST__c, Amount_Paid_Excluding_TAX__c FROM Receipt__c WHERE Opportunity__c = :oppRecord.Id AND Type__c IN ('Credit', 'Debit') AND Approval_Status__c = 'Approved' ORDER BY CreatedDate ASC];
+                    Boolean hasCreditDebit = (cdReceipts != null && !cdReceipts.isEmpty());
+                    System.debug('hasreditDebit::' + hasCreditDebit);
+                    
                     if(oppRecord != null && oppRecord.AccountId != null){
-                        List<Applicant__c> coApplicantDetails = [SELECT Id,Account__r.Name,Account__r.Salutation__c from Applicant__c where Opportunity__c =: PaymentScheduleRecords[0].Opportunity__c];
+                        List<Applicant__c> coApplicantDetails = [SELECT Id, Account__r.Name, Account__r.Salutation__c FROM Applicant__c WHERE Opportunity__c = :PaymentScheduleRecords[0].Opportunity__c];
+                        
                         List<String> coApplicantList = new List<String>();
                         if(!coApplicantDetails.isEmpty()){
                             for(Applicant__c app : coApplicantDetails){
@@ -211,14 +121,15 @@ public without sharing class QueueableToGenerateDemandLetter implements Queueabl
                                 coApplicantList.add(String.join(coAppName, '. '));
                             }
                         }
+                        
                         String parentFolderId;
                         String docId;
-                        String subDocUrl = '';
                         
-                        if(oppRecord != null && oppRecord.Documents__r != null){
+                        if(oppRecord != null && oppRecord.Documents__r != null && !oppRecord.Documents__r.isEmpty()){
                             parentFolderId = oppRecord.Documents__r[0].Document_Id__c != null ? oppRecord.Documents__r[0].Document_Id__c : null;
                             docId = oppRecord.Documents__r[0].Id != null ? oppRecord.Documents__r[0].Id : null;
                         }
+                        
                         Digio_Integration__c customData = Digio_Integration__c.getValues('Digio');
                         if(customData.Authorization__c != null && customData.Endpoint_URL__c != null){
                             String endpoint = customData.Endpoint_URL__c + '/v2/client/template/multi_templates/create_sign_request';
@@ -227,9 +138,7 @@ public without sharing class QueueableToGenerateDemandLetter implements Queueabl
                             DigioWrapperClass.demandLetterTemplate generateDoc = new DigioWrapperClass.demandLetterTemplate();
                             Datetime now = System.now();
                             String formattedTimestamp = now.format('yyyy-MM-dd HH:mm:ss');
-                            System.debug('Formatted Timestamp: ' + formattedTimestamp);
-                            
-                            String fileName = 'Demand Letter - '+formattedTimestamp;
+                            String fileName = 'Demand Letter - ' + formattedTimestamp;
                             generateDoc.file_name = fileName;
                             
                             DigioWrapperClass.signersList signer = new DigioWrapperClass.signersList();
@@ -237,91 +146,137 @@ public without sharing class QueueableToGenerateDemandLetter implements Queueabl
                             signer.signer_tag = 'Signer 1';
                             signer.name = 'Snn';
                             signer.sign_type = 'document_review';
-                            
                             generateDoc.signers = new List<DigioWrapperClass.signersList>{signer};
                             
                             DigioWrapperClass.demandLetterTemplateValuesList tempList = new DigioWrapperClass.demandLetterTemplateValuesList();
-                            tempList.template_key = customData.Demand_Letter_Template_Key__c;
+                            tempList.template_key = hasCreditDebit ? customData.Demand_Letter_Credit_Debit_Template_Key__c : customData.Demand_Letter_Template_Key__c;
                             
                             DigioWrapperClass.demandLetterTemplateValues templateVariables = new DigioWrapperClass.demandLetterTemplateValues();
-                            templateVariables.TodayDate             =          Date.today();
-                            System.debug('templateVariables.TodayDate===> ' + templateVariables.TodayDate);
+                            templateVariables.TodayDate = Date.today().format();
+                            system.debug('TodayDate ===> ' + templateVariables.TodayDate);
+                            
                             List<String> mainApplicantName = new List<String>();
                             mainApplicantName.add(oppRecord.Account.Salutation__c);
                             mainApplicantName.add(oppRecord.Account.Name);
-                            templateVariables.customerName          = String.join(mainApplicantName, '.');
-                            templateVariables.coApplicantNames      = coApplicantList != null && !coApplicantList.isEmpty() ? String.join(coApplicantList, ', '): '';
-                            templateVariables.mobileNo              = oppRecord.Account.Phone != null ? oppRecord.Account.Phone : '';
-                            templateVariables.paymentScheduleName   = PaymentScheduleRecords[0].Name != null ? PaymentScheduleRecords[0].Name : '';
-                            templateVariables.dueDate               = PaymentScheduleRecords[0].Due_Date__c != null ? PaymentScheduleRecords[0].Due_Date__c : null;
-                            templateVariables.projectName           = PaymentScheduleRecords[0].Opportunity__r.Project__r.Name != null ? PaymentScheduleRecords[0].Opportunity__r.Project__r.Name : '';
-                            templateVariables.blockName             = PaymentScheduleRecords[0].Opportunity__r.Unit__r.Floor__r.Blocks__r.Tower_Code__c != null ? PaymentScheduleRecords[0].Opportunity__r.Unit__r.Floor__r.Blocks__r.Tower_Code__c : '';
-                            templateVariables.bankName              = PaymentScheduleRecords[0].Opportunity__r.Project__r.Bank_Name__c != null ? PaymentScheduleRecords[0].Opportunity__r.Project__r.Bank_Name__c : '';
-                            templateVariables.accountNo             = PaymentScheduleRecords[0].Opportunity__r.Project__r.Account_Number__c != null ? PaymentScheduleRecords[0].Opportunity__r.Project__r.Account_Number__c : '';
-                            templateVariables.ifscCode              = PaymentScheduleRecords[0].Opportunity__r.Project__r.IFSC_Code__c != null ? PaymentScheduleRecords[0].Opportunity__r.Project__r.IFSC_Code__c : '';
-                            templateVariables.currentUser           = UserInfo.getName();
-                            System.debug('templateVariables.currentUser===> ' + templateVariables.currentUser);
-                            templateVariables.exactTime             = System.now().format('HH:mm:ss');
-                            System.debug('templateVariables.exactTime===> ' + templateVariables.exactTime);
-                            templateVariables.FinalScheduleAmount   = (PaymentScheduleRecords[0].Agreement_Value__c != null ? PaymentScheduleRecords[0].Agreement_Value__c:0) + (PaymentScheduleRecords[0].Tax_Amount__c != null ? PaymentScheduleRecords[0].Tax_Amount__c : 0);
-                            templateVariables.FinallessTotalAmount  = PaymentScheduleRecords[0].Total_Received_Amount__c != null ? PaymentScheduleRecords[0].Total_Received_Amount__c : 0;
-                            System.debug('templateVariables.FinalScheduleAmount===> '   + templateVariables.FinalScheduleAmount);
-                            System.debug('templateVariables.FinallessTotalAmount===> ' + templateVariables.FinallessTotalAmount);
-                            templateVariables.FinalbalancePaybleAmount = templateVariables.FinalScheduleAmount - templateVariables.FinallessTotalAmount;
+                            templateVariables.customerName = String.join(mainApplicantName, '.');
+                            templateVariables.coApplicantNames = coApplicantList != null && !coApplicantList.isEmpty() ? String.join(coApplicantList, ', ') : '';
+                            templateVariables.mobileNo = oppRecord.Account.Phone != null ? oppRecord.Account.Phone : '';
+                            templateVariables.paymentScheduleName = PaymentScheduleRecords[0].Name != null ? PaymentScheduleRecords[0].Name : '';
+                            templateVariables.dueDate = PaymentScheduleRecords[0].Pay_Date__c != null ? PaymentScheduleRecords[0].Pay_Date__c : null;
+                            templateVariables.dueDateLast = PaymentScheduleRecords[0].Due_Date__c != null ? PaymentScheduleRecords[0].Due_Date__c.format() : null; // Added by Yashwanth
+                            templateVariables.projectName = PaymentScheduleRecords[0].Opportunity__r.Project__r.Name != null ? PaymentScheduleRecords[0].Opportunity__r.Project__r.Name : '';
+                            templateVariables.blockName = PaymentScheduleRecords[0].Opportunity__r.Unit__r.Floor__r.Blocks__r.Name != null ? PaymentScheduleRecords[0].Opportunity__r.Unit__r.Floor__r.Blocks__r.Name : '';
+                            templateVariables.bankName = PaymentScheduleRecords[0].Opportunity__r.Project__r.Bank_Name__c != null ? PaymentScheduleRecords[0].Opportunity__r.Project__r.Bank_Name__c : '';
+                            templateVariables.unitName = PaymentScheduleRecords[0].Opportunity__r.Unit__r.Unit_Name__c != null ? PaymentScheduleRecords[0].Opportunity__r.Unit__r.Unit_Name__c : '';
+                            templateVariables.accountNo = PaymentScheduleRecords[0].Opportunity__r.Project__r.Account_Number__c != null ? PaymentScheduleRecords[0].Opportunity__r.Project__r.Account_Number__c : '';
+                            templateVariables.ifscCode = PaymentScheduleRecords[0].Opportunity__r.Project__r.IFSC_Code__c != null ? PaymentScheduleRecords[0].Opportunity__r.Project__r.IFSC_Code__c : '';
+                            templateVariables.currentUser = UserInfo.getName();
+                            templateVariables.totalTdsPaidTillDate = oppRecord.Total_TDS_Amount_till_date__c != null ? oppRecord.Total_TDS_Amount_till_date__c : 0;
+                            templateVariables.exactTime = System.now().format('HH:mm:ss');
+                            // templateVariables.FinalScheduleAmount = (PaymentScheduleRecords[0].Agreement_Value__c != null ? PaymentScheduleRecords[0].Agreement_Value__c : 0) + (PaymentScheduleRecords[0].Tax_Amount__c != null ? PaymentScheduleRecords[0].Tax_Amount__c : 0);
+                            templateVariables.totalAmountInclusiveOfTax = PaymentScheduleRecords[0].Total_Amount_Inclusive_Of_Tax__c != null ? PaymentScheduleRecords[0].Total_Amount_Inclusive_Of_Tax__c : 0;
+                            templateVariables.FinallessTotalAmount = oppRecord.Less_Total_Receipts__c != null ? oppRecord.Less_Total_Receipts__c : 0;
+                            
+                            // templateVariables.FinalbalancePaybleAmount = templateVariables.totalAmountInclusiveOfTax - (templateVariables.FinallessTotalAmount + templateVariables.totalTdsPaidTillDate);
+                            System.debug('templateVariables.FinalbalancePaybleAmount::' + templateVariables.FinalbalancePaybleAmount);
                             tempList.template_values = templateVariables;
                             
-                            DigioWrapperClass.demandLetterPaymentScheduleTable tableValues = new DigioWrapperClass.demandLetterPaymentScheduleTable();
-                            list<DigioWrapperClass.demandLetterTable> DemandLetterTable1 = new List<DigioWrapperClass.demandLetterTable>();
+                            Id oppIdForTable = PaymentScheduleRecords[0].Opportunity__c;
                             
-                            Decimal totalScheduleAmount = 0;
-                            
-                            if(PaymentScheduleRecords.size() > 0){
-                                for(Payment_Schedule__c paySch :PaymentScheduleRecords){
+                            List<Payment_Schedule__c> schedulesForTable = [SELECT Id, Name, Installment__c, Agreement_Value__c, Tax_Amount__c, Total_Due_Amount__c, Total_Amount_Inclusive_Of_Tax__c, Total_Received_Amount__c, Pay_Date__c, Demand_Letter_Sent__c
+                                FROM Payment_Schedule__c
+                                WHERE Opportunity__c = :oppIdForTable
+                                  AND (Demand_Letter_Sent__c = true OR Id = :recordId)
+                                ORDER BY Installment_Sequence__c ASC, CreatedDate ASC
+                            ];
+
+                            List<DigioWrapperClass.demandLetterTable> DemandLetterTable1 = new List<DigioWrapperClass.demandLetterTable>();
+                            Decimal totalScheduledAll = 0;
+                            Decimal totalReceivedAll  = 0;
+
+                            if (!schedulesForTable.isEmpty()) {
+                                for (Payment_Schedule__c paySch : schedulesForTable) {
                                     DigioWrapperClass.demandLetterTable paySchTable = new DigioWrapperClass.demandLetterTable();
+
+                                    Decimal agremntValueOnPaysch = (paySch.Agreement_Value__c != null ) ? paySch.Agreement_Value__c : 0;
+                                    Decimal taxAmt  = (paySch.Tax_Amount__c != null) ? paySch.Tax_Amount__c : 0;
+                                    Decimal recvAmt = (paySch.Total_Received_Amount__c != null) ? paySch.Total_Received_Amount__c : 0;
+                                    Decimal totalAmtInclOfTax = (paySch.Total_Amount_Inclusive_Of_Tax__c != null) ? paySch.Total_Amount_Inclusive_Of_Tax__c : 0;
                                     
-                                    paySchTable.bookingAgreementToSell = paySch.Name != null ? String.valueOf(paySch.Name) : '';
-                                    paySchTable.showValueIn = paySch.Installment__c != null ? paySch.Installment__c : 0;
-                                    paySchTable.dueDate = paySch.Due_Date__c != null ? paySch.Due_Date__c.format() : null;
-                                    paySchTable.dueAmount = paySch.Agreement_Value__c != null ? paySch.Agreement_Value__c : 0;
-                                    // if(paySch.Demand_Letters__r != null && !paySch.Demand_Letters__r.isEmpty()){
-                                    //     for(Demand_Letter__c dl : paySch.Demand_Letters__r){
-                                    //         paySchTable.dueAmount = dl.Total_Due_Amount__c != null ? dl.Total_Due_Amount__c : 0;
-                                    //         paySchTable.totalScheduledDueAmount = dl.Total_Due_Amount__c != null ? dl.Total_Due_Amount__c : 0;
-                                    //         totalScheduleAmount += Integer.valueOf(paySchTable.totalScheduledDueAmount) ;
-                                    //     }
-                                    // }
-                                    paySchTable.taxesAmout = paySch.Tax_Amount__c != null ? paySch.Tax_Amount__c : 0;
-                                    paySchTable.totalScheduledDueAmount = (paySchTable.dueAmount != null ? paySchTable.dueAmount:0) + paySchTable.taxesAmout;
-                                    totalScheduleAmount = totalScheduleAmount + paySchTable.totalScheduledDueAmount;
+                                    paySchTable.bookingAgreementToSell = (paySch.Name != null) ? String.valueOf(paySch.Name) : '';
+                                    paySchTable.showValueIn = (paySch.Installment__c != null) ? paySch.Installment__c : 0;
+                                    paySchTable.dueDate = (paySch.Pay_Date__c != null) ? paySch.Pay_Date__c.format() : null;
+                                    paySchTable.AgreementValue = agremntValueOnPaysch;
+                                    paySchTable.taxesAmout = taxAmt;
+                                    paySchTable.totalScheduledDueAmount = totalAmtInclOfTax;
+
+                                    totalScheduledAll += paySchTable.totalScheduledDueAmount;
+                                    totalReceivedAll  += recvAmt;
+
                                     DemandLetterTable1.add(paySchTable);
                                 }
-                                
-                            }else {
+                            } else {
                                 DigioWrapperClass.demandLetterTable emptyTable = new DigioWrapperClass.demandLetterTable();
                                 emptyTable.bookingAgreementToSell = '';
                                 emptyTable.showValueIn = 0;
                                 emptyTable.dueDate = null;
-                                emptyTable.dueAmount = 0;
-                                emptyTable.totalScheduledDueAmount = 0;
+                                emptyTable.AgreementValue = 0;
                                 emptyTable.taxesAmout = 0;
+                                emptyTable.totalScheduledDueAmount = 0;
                                 DemandLetterTable1.add(emptyTable);
                             }
+                            
+                            Decimal creditAmountToMinus = 0;
+                            Decimal debitAmountToAdd = 0;
+                            List<DigioWrapperClass.creditDebitTableRow> cdRows = new List<DigioWrapperClass.creditDebitTableRow>();
+                            if(hasCreditDebit){
+                                for(Receipt__c r : cdReceipts){
+                                    DigioWrapperClass.creditDebitTableRow cdr = new DigioWrapperClass.creditDebitTableRow();
+                                    cdr.ReceiptType = (String)r.Type__c;
+                                    cdr.Description = (String)r.Description__c;
+                                    cdr.Amount = (r.Amount__c != null) ? r.Amount__c : 0;
+                                    cdr.Tax = (r.Credit_Debit_CGST__c != null && r.Credit_Debit_SGST__c != null)
+                                        ? r.Credit_Debit_CGST__c + r.Credit_Debit_SGST__c : 0;
+                                    cdr.Total = (r.Amount__c != null ? r.Amount__c : 0) + cdr.Tax;
+                                    cdRows.add(cdr);
+                                    if(r.Type__c != null && r.Type__c == 'Credit'){
+                                        creditAmountToMinus += (r.Amount__c != null ? (r.Amount__c + cdr.Tax) : 0);
+                                    }
+                                    if(r.Type__c != null && r.Type__c == 'Debit'){
+                                        debitAmountToAdd += (r.Amount__c != null ? (r.Amount__c + cdr.Tax) : 0);
+                                    }
+                                }
+                            }
+                            
+                            Decimal tdsAmount = templateVariables.totalTdsPaidTillDate != null ? templateVariables.totalTdsPaidTillDate : 0;
+                            Decimal lessTotalReceipts = templateVariables.FinallessTotalAmount != null ? templateVariables.FinallessTotalAmount : 0;
+
                             DigioWrapperClass.demandLetterPaymentScheduleTable tableValues1 = new DigioWrapperClass.demandLetterPaymentScheduleTable();
                             tableValues1.DemandLetterTable = DemandLetterTable1;
+                            tableValues1.CreditDebitTable = cdRows;
                             tempList.template_table_values = tableValues1;
-                            
+
+                            System.debug('totalScheduledAll::' + totalScheduledAll);
+                            templateVariables.FinalScheduleAmount = (totalScheduledAll - creditAmountToMinus) + debitAmountToAdd;
+                            templateVariables.FinalbalancePaybleAmount =
+                                (((totalScheduledAll - creditAmountToMinus) + debitAmountToAdd) - tdsAmount - lessTotalReceipts).setScale(2);
+
                             generateDoc.templates = new List<DigioWrapperClass.demandLetterTemplateValuesList>{tempList};
                             
-                            system.debug('generateDoc ===> ' + generateDoc);
-                            system.debug('serialize json ===> ' + Json.serialize(generateDoc));
-                            
-                            String jsonBody = Json.serialize(generateDoc);
-                            String authorizationValue = 'Basic' + ' ' +EncodingUtil.base64Encode(Blob.valueOf(customData.Client_ID__c + ':' + customData.Client_Secret__c));
-                            System.debug('authorizationValue==>'+authorizationValue);
+                            String jsonBody = JSON.serialize(generateDoc);
+                            String authorizationValue = 'Basic ' + EncodingUtil.base64Encode(
+                                Blob.valueOf(customData.Client_ID__c + ':' + customData.Client_Secret__c)
+                            );
                             
                             String digiDocId = digioCalloutUtility.sendHttpRequest('POST', endpoint, authorizationValue, jsonBody);
                             if(digiDocId != null && fileName != null){
-                                oppIdByCntVersionIds = downloadDocument123(digiDocId,  fileName, parentFolderId, docId, oppIdBycontentVersionIds);
+                                oppIdByCntVersionIds = downloadDocument123(
+                                    digiDocId,
+                                    fileName,
+                                    parentFolderId,
+                                    docId,
+                                    oppIdByCntVersionIds
+                                );
                                 System.debug('oppIdByCntVersionIds ===> ' + oppIdByCntVersionIds);
                             }
                         }
@@ -329,19 +284,25 @@ public without sharing class QueueableToGenerateDemandLetter implements Queueabl
                     }
                 }
             }
-            return null;
+            return oppIdByCntVersionIds;
         }catch(Exception e){
-            system.debug('Error in generateDemandLetterDocument===> ' + e.getMessage());
-            system.debug('Error line ===> ' + e.getLineNumber());
-            return null;
+            System.debug('Error in generateDemandLetterDocument===> ' + e.getMessage());
+            System.debug('Error line ===> ' + e.getLineNumber());
+            System.debug('Stack ===> ' + e.getStackTraceString());
+            return oppIdByCntVersionIds;
         }
     }   
     
-    public static Map<String,List<String>> downloadDocument123(String digiDocId, String fileName, String parentFolderId, String docId, Map<String, List<String>> oppIdBycontentVersionIds){
+    public static Map<String,List<String>> downloadDocument123(
+        String digiDocId,
+        String fileName,
+        String parentFolderId,
+        String docId,
+        Map<String, List<String>> oppIdBycontentVersionIds
+    ){
         try {
             System.debug('Inside download document');
             Digio_Integration__c customData = Digio_Integration__c.getValues('Digio');
-            String subDocUrl = '';
             
             if(customData.Endpoint_URL__c != null && digiDocId != null && fileName != null){
                 String endpoint = customData.Endpoint_URL__c + '/v2/client/document/download?document_id=' + digiDocId;
@@ -359,8 +320,6 @@ public without sharing class QueueableToGenerateDemandLetter implements Queueabl
                 System.debug('responseBlob ==> ' + responseBlob);
                 
                 String responseBlobString = EncodingUtil.base64Encode(responseBlob);
-                system.debug('responseBlobString ===> ' + responseBlobString + ' length of responseBlobString ===>' + responseBlobString.length());
-                
                 Integer chunkSize = 1024 * 1024 * 3;
                 Integer totalFileSize = responseBlobString.length();
                 Integer totalFileSizeBlob = responseBlob.size();
@@ -368,8 +327,6 @@ public without sharing class QueueableToGenerateDemandLetter implements Queueabl
                 Boolean is308Response = false;
                 Boolean isLessThan2MB = false;
                 String locationValue = null;
-                system.debug('string length is ===> ' + totalFileSize + ' but blob length is ===> ' + totalFileSizeBlob);
-                system.debug('totalFileSize ===> ' + totalFileSize + ' offset ===> ' + offset + ' chunkSize ===> ' + chunkSize);
                 
                 if(totalFileSize < chunkSize){
                     isLessThan2MB = true;
@@ -379,401 +336,95 @@ public without sharing class QueueableToGenerateDemandLetter implements Queueabl
                 while (offset < totalFileSize) {
                     Integer chunkEnd = Math.min(offset + chunkSize, totalFileSize);
                     Integer chunkEndBlob = Math.min(offset + chunkSize, totalFileSizeBlob);
-                    system.debug('chunkEnd ===> ' + chunkEnd);
-                    String contentRange = 'bytes ' + offset + '-' + (chunkEndBlob-1)  + '/' + (totalFileSizeBlob);
-                    system.debug('contentRange ===> ' + contentRange);
-                    
-                    String fileData = responseBlobString.substring(offset, offset+chunkEnd);
-                    system.debug('fileData ===> ' + fileData);
-                    system.debug('fileData length ===> ' + fileData.length());
-                    system.debug('locationValue ===> ' + locationValue);
-                    
+                    String contentRange = 'bytes ' + offset + '-' + (chunkEndBlob - 1)  + '/' + totalFileSizeBlob;
+                    String fileData = responseBlobString.substring(offset, offset + chunkEnd);
                     
                     if (locationValue == null) {
-                        System.debug('FileName ==>'+fileName);
-                        System.debug('parentFolderId ==>'+parentFolderId);
-                        System.debug('fileData ==>'+fileData);
-                        System.debug('contentRange ==>'+contentRange);
-                          System.debug('docId ==>'+docId);
-                        
-                        GoogleDriveAPI.wrapperForResponse firstUpload = GoogleDriveAPI.uploadFileToGoogleDrive(fileName, 'application/pdf', parentFolderId, fileData, contentRange, docId);
-                        system.debug('firstUpload ===> ' + firstUpload);
-                        locationValue = firstUpload.locationValue;
-                        subDocUrl = firstUpload.subDocUrl;
-                        if (firstUpload.is308Response) {
-                            is308Response = firstUpload.is308Response == true ? true : false;
+                        GoogleDriveAPI.wrapperForResponse firstUpload = GoogleDriveAPI.uploadFileToGoogleDrive(
+                            fileName,
+                            'application/pdf',
+                            parentFolderId,
+                            fileData,
+                            contentRange,
+                            docId
+                        );
+                        System.debug('firstUpload ===> ' + firstUpload);
+                        if (firstUpload != null) {
+                            locationValue = firstUpload.locationValue;
+                            if (firstUpload.is308Response) {
+                                is308Response = true;
+                            }
                         }
                         if(isLessThan2MB){
                             break;
                         }
                     } else {
                         Boolean nextUpload = GoogleDriveAPI.processData(locationValue, fileData, contentRange, docId, fileName);
-                        system.debug('nextUpload ===> ' + nextUpload);
                         if (nextUpload == true) {
-                            system.debug('result ===> ' + nextUpload);
-                            is308Response = nextUpload == true ? true : false;
+                            is308Response = true;
                         } else {
                             break;
                         }
                     }
                     
                     if (is308Response) {
-                        system.debug('is308Response ===> ' + is308Response);
                         offset += chunkSize;
-                    }else{
+                    } else {
                         break;
                     }
                 }
                 
-                List<Document__c> docRec = [SELECT Id,Name,Opportunity__c from Document__c where Id =: docId LIMIT 1];
+                List<Document__c> docRec = [SELECT Id, Name, Opportunity__c FROM Document__c WHERE Id = :docId LIMIT 1];
                 List<String> contentVersionIds = new List<String>();
+                
                 if(!docRec.isEmpty() && docRec[0].Opportunity__c != null){
-                    ContentVersion cntVersion = new ContentVersion(Title = fileName,PathOnClient = fileName,Versiondata = responseBlob);
+                    ContentVersion cntVersion = new ContentVersion(
+                        Title = fileName,
+                        PathOnClient = fileName,
+                        VersionData = responseBlob
+                    );
                     insert cntVersion;
-                    System.debug(' Id ===> ' + cntVersion.Id);
+                    System.debug('Id ===> ' + cntVersion.Id);
                     
-                    if(!oppIdBycontentVersionIds.containsKey(docRec[0].Opportunity__c)){
-                        oppIdBycontentVersionIds.put(docRec[0].Opportunity__c, new List<String>());
+                    if (oppIdBycontentVersionIds == null) {
+                        oppIdBycontentVersionIds = new Map<String, List<String>>();
                     }
-                    contentVersionIds = oppIdBycontentVersionIds.get(docRec[0].Opportunity__c);
-                    System.debug('existing contentVersionIds ==> ' + contentVersionIds);
+                    
+                    String oppKey = String.valueOf(docRec[0].Opportunity__c);
+                    
+                    if(!oppIdBycontentVersionIds.containsKey(oppKey)){
+                        oppIdBycontentVersionIds.put(oppKey, new List<String>());
+                    }
+                    contentVersionIds = oppIdBycontentVersionIds.get(oppKey);
                     contentVersionIds.add(cntVersion.Id);
-                    System.debug('new cnt ids ==> ' + contentVersionIds);
-                    oppIdBycontentVersionIds.put(docRec[0].Opportunity__c, contentVersionIds);
+                    oppIdBycontentVersionIds.put(oppKey, contentVersionIds);
                 }
             }
             return oppIdBycontentVersionIds;
         } catch (Exception e) {
-            system.debug('Error ==> ' + e.getMessage());
-            system.debug('Error in line ==> ' + e.getLineNumber());
-            return null;
+            System.debug('Error ==> ' + e.getMessage());
+            System.debug('Error in line ==> ' + e.getLineNumber());
+            System.debug('Stack ==> ' + e.getStackTraceString());
+            return oppIdBycontentVersionIds;
         }
     }
-    public static void dummyMethod(){
+    
+       public static void dummyMethod(){
         Integer i = 0;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
-        i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
     }
 }

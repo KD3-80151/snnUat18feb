@@ -426,7 +426,10 @@ public without sharing class DigioWrapperClass {
         public String coApplicantName{get;set;}
         public String clientAddress{get;set;}
         public String amountInWords{get;set;}
+        public Decimal amount {get; set;}
         public String modeOfPayment{get;set;}
+        public String unitName{get;set;}
+        public String unitType{get;set;}
         public String referenceNo{get;set;}
         public String chequeDate{get;set;}
         public String bankName{get;set;}
@@ -437,7 +440,7 @@ public without sharing class DigioWrapperClass {
         public String amountValues{get;set;}
         public String loginUserName{get;set;}
         public String exactTime{get;set;}
-        public Date todayDate{get;set;}
+        public String todayDate{get;set;}
         public String companyName{get;set;}
         public String companyAddress{get;set;}
         public String companyEmail{get;set;}
@@ -461,16 +464,25 @@ public without sharing class DigioWrapperClass {
     }
 
     public class accountTemplateValues{
-        public String TodayDate{get;set;}
+        public String todayDate{get;set;}
         public String customerName{get;set;}
         public String customerAddress{get;set;}
         public String projectName{get;set;}
         public String unitNo{get;set;}
-        public String blockNo{get;set;}
+        // public String blockNo{get;set;}
+        public String towerCode{get;set;}
         public String generatedTime{get;set;}
         public String userName{get;set;}
         public Decimal oppFinalBalance{get;set;}
-                public String towerCode{get;set;}
+        public String todayTime {get;set;}
+        public Decimal FinalReceiptAmount{get;set;}
+        public Decimal finalAmountCd{get;set;}
+        public Decimal finalAmountTaxCd{get;set;}
+        public Decimal finalTotalAmountCd{get;set;}
+        public Decimal totalBalancePaidTwrdUnit{get;set;}
+        public Decimal totalPaidTillDate { get; set; }
+        public Decimal totalScheduleAmount{get;set;}
+        
     }
 
     public class accountScheduleDynamicTable{
@@ -478,6 +490,7 @@ public without sharing class DigioWrapperClass {
         public List<statementOfScheduleTable> statementOfScheduleTable{get;set;}
         public List<statementOfReceipt> statementOfReceipt{get;set;}
         public List<statementOfReceiptTotal> statementOfReceiptTotal{get;set;}
+        public List<statementOfReceiptCreditDebit> statementOfReceiptCreditDebit{get;set;}
     }
 
     public class statementOfAccountTable{
@@ -492,6 +505,7 @@ public without sharing class DigioWrapperClass {
         public Decimal FinaltotalBilled{get;set;}
         public Decimal FinalamountReceived{get;set;}
         public Decimal FinalamountBalance{get;set;}
+
     }
 
     public class statementOfReceipt{
@@ -502,10 +516,25 @@ public without sharing class DigioWrapperClass {
         public String paymentCategory{get;set;}
         public String bankName{get;set;}
         public Decimal amount{get;set;}
+
+
+    }
+
+    public class statementOfReceiptCreditDebit{
+        public String receiptTypeCD{get;set;}
+        public String receiptNoCD{get;set;}
+        public String receiptDescCD{get;set;}
+        public Decimal receiptAmountCD{get;set;}
+        public Decimal receiptTaxCD{get;set;}
+        public Decimal receiptTotalAmountCD{get;set;}
+
     }
 
     public class statementOfReceiptTotal{
-        public Decimal Finalamount{get;set;}
+        public Decimal FinalAmount{get;set;}
+        public Decimal finalAmountCd{get;set;}
+        public Decimal finalAmountTaxCd{get;set;}
+        public Decimal finalTotalAmountCd{get;set;}
     }
 
     //Generate Demand Letter
@@ -526,32 +555,38 @@ public without sharing class DigioWrapperClass {
     }
 
     public class demandLetterTemplateValues{
-        public Date TodayDate{get;set;}
+        public String TodayDate{get;set;}
         public String customerName{get;set;}
         public String customerAddress{get;set;}
         public String customerPincode{get;set;}
         public String mobileNo{get;set;}
-        public String SubjectName{get;set;}
+        // public String paymentScheduleName{get;set;}
         public String projectName{get;set;}
         public String bankName{get;set;}
+        public Decimal totalTdsPaidTillDate{get;set;}
         public String accountNo{get;set;}
         public String ifscCode{get;set;}
         public Date dueDate{get;set;}
         public String currentUser{get;set;}
         public String exactTime{get;set;}
+
         public String coApplicantNames{get;set;}
         public String paymentScheduleName{get;set;}
+        public String dueDateLast{get; set;}
         public String blockName{get;set;}
+        public String unitName{get;set;}
         public String loggedInUser{get;set;}
         public Decimal FinalScheduleAmount{get;set;}
         public Decimal FinallessTotalAmount{get;set;}
         public Decimal FinallessTdsAmount{get;set;}
-        public Decimal FinalbalancePaybleAmount{get;set;}
+        public Decimal FinalbalancePaybleAmount{get;set;}        
+        public Decimal totalAmountInclusiveOfTax{get;set;}
     }
 
     public class demandLetterPaymentScheduleTable{
         public List<demandLetterTable> DemandLetterTable{get;set;}
         public List<demandLetterTotal> DemandLetterTotalTable{get;set;}
+        public List<creditDebitTableRow> CreditDebitTable{get;set;}
     }
 
     public class demandLetterTable{
@@ -559,6 +594,7 @@ public without sharing class DigioWrapperClass {
         public Decimal showValueIn{get;set;}
         public String dueDate{get;set;}
         public Decimal dueAmount{get;set;}
+        public Decimal AgreementValue{get;set;}
         public Decimal taxesAmout{get;set;}
         public Decimal totalScheduledDueAmount{get;set;}
     }
@@ -568,6 +604,14 @@ public without sharing class DigioWrapperClass {
         public Decimal FinallessTotalAmount{get;set;}
         public Decimal FinallessTdsAmount{get;set;}
         public Decimal FinalbalancePaybleAmount{get;set;}
+    }
+
+     public class creditDebitTableRow{
+        public String ReceiptType{get;set;}     
+        public String Description{get;set;} 
+        public Decimal Amount{get;set;}      
+        public Decimal Tax{get;set;}
+        public Decimal Total{get;set;}   
     }
 
     //Generate CostSheet
@@ -601,6 +645,11 @@ public without sharing class DigioWrapperClass {
         public String addressDetail{get;set;}
         public String customerName{get;set;}
         public String projectName{get;set;}
+        public String companyName{get;set;}
+        public String terraceArea{get;set;}
+        public Decimal basicPriceValue{get; set;}
+        
+        
     }
 
     public class costSheetPaymentTable{
@@ -611,6 +660,7 @@ public without sharing class DigioWrapperClass {
     public class costSheetAssociationTable{
         public String floorRise{get;set;}
         public Decimal amount{get;set;}
+        
     }
 
     public class costSheetTable{
@@ -797,4 +847,327 @@ public without sharing class DigioWrapperClass {
         public String type{get;set;}
         public Date closeDate{get;set;}
     }
+
+        public class generateBookingFormDocs {
+        public List<signersList> signers { get; set; }
+        public String display_on_page = 'FIRST';
+        public String expire_in_days = '1';
+        public String file_name { get; set; }
+        public List<bookingFormTemplateList> templates { get; set; } //
+        public Boolean send_sign_link = false;
+        public Boolean notify_signers = false;
+    }
+
+    public class bookingFormTemplateList {
+        public String template_key { get; set; }
+        public bookingFormTemplateValues template_values { get; set; }// 
+    }
+
+    public class bookingFormTemplateValues {
+
+        public String applicationDate { get; set; }
+        public String projectName { get; set; }
+        public String reraNo { get; set; }
+        public String unitNo { get; set; }
+        public String unitType{ get; set; }
+        public String superBuiltArea { get; set; }
+        
+        public String firstApplicantName { get; set; }
+        public String firstCompanyAuthorized { get; set; }
+        public String firstRelation { get; set; }
+        public String firstDob{ get; set; }
+        public String firstSpouseName { get; set; }
+        public String firstSpouseDob { get; set; }
+        public String firstAnniDate { get; set; }
+        public String firstResidentStatus { get; set; }
+        public String firstCOR { get; set; }
+        public String firstPan { get; set; }
+        public String firstPermanAdd { get; set; }
+        public String firstPermPinCode { get; set; }
+        public String firstAddComm { get; set; }
+        public String firstCommPinCode { get; set; }
+        public String firstPrimaryCont { get; set; }
+        public String firstAltCont { get; set; }
+        public String firstEmail { get; set; }
+        public String firstOfficialEmail { get; set; }
+        public String firstPassportNo { get; set; }
+        public String firstIndustry { get; set; }
+        public String firstCompanyName { get; set; }
+        public String firstLocation { get; set; }
+        public String firstDesignation { get; set; }
+
+        public String firstReferalName { get; set; }
+        public String firstReferalNumb { get; set; }
+        public String firstReferalEmail { get; set; }
+        public String firstReferalProject { get; set; }
+
+        public String totalReciptAmount { get; set; }
+        public String totalReciptAmountWords { get; set; }
+
+        public String salesuserName { get; set; }
+        public String crmUser { get; set; }
+        public Date todayDate{get;set;}
+        public String allotmentLetterDate { get; set; }
+        public String oppChanelPartName { get; set; }
+        
+        public String secondApplicantName { get; set; }
+        public String secondCompanyAuthorized { get; set; }
+        public String secondRelation { get; set; }
+        public String secondDob{ get; set; }
+        public String secondSpouseName { get; set; }
+        public String secondSpouseDob { get; set; }
+        public String secAnniDate { get; set; }
+        public String secondResidentStatus { get; set; }
+        public String secondCOR { get; set; }
+        public String secondPan { get; set; }
+        public String secondPermanAdd { get; set; }
+        public String secondPermPinCode { get; set; }
+        public String secondAddComm { get; set; }
+
+        public String secondCommPinCode { get; set; }
+        public String secondPrimaryCont { get; set; }
+        public String secondEmail { get; set; }
+        public String secondOfficialEmail { get; set; }
+        public String secondIndustry { get; set; }
+        public String secondCompanyName { get; set; }
+        public String secondLocation { get; set; }
+        public String secondDesignation { get; set; }
+
+        public String secondAnnualHouseHoldIncome { get; set; }
+        public String secondPurposeOfPurchase { get; set; }
+        public String secondSourceOfFunding { get; set; }
+        public String secondSourceOfInformation { get; set; }
+        public String secondWorkRole { get; set; }
+        public String secondRefferedBy { get; set; }
+
+        public String secondReferalName { get; set; }
+        public String secondReferalNumb { get; set; }
+        public String secondReferalEmail { get; set; }
+        public String secondReferalProject { get; set; }
+        
+        public String thirdApplicantName { get; set; }
+        public String thirdCompanyAuthorized { get; set; }
+        public String thirdRelation { get; set; }
+        public String thirdDob{ get; set; }
+        public String thirdSpouseName { get; set; }
+        public String thirdSpouseDob { get; set; }
+        public String thirdResidentStatus { get; set; }
+        public String thirdPan { get; set; }
+        public String thirdPermanAdd { get; set; }
+        public String thirdPermPinCode { get; set; }
+        public String thirdAddComm { get; set; }
+        public String thirdCommPinCode { get; set; }
+        public String thirdPrimaryCont { get; set; }
+        public String thirdEmail { get; set; }
+        public String thirdOfficialEmail { get; set; }
+        public String thirdPassportNo { get; set; }
+        public String thirdIndustry { get; set; }
+        public String thirdCompanyName { get; set; }
+        public String thirdLocation { get; set; }
+        public String thirdDesignation { get; set; }
+
+        public String thirdAnnualHouseHoldIncome { get; set; }
+        public String thirdPurposeOfPurchase { get; set; }
+        public String thirdSourceOfFunding { get; set; }
+        public String thirdSourceOfInformation { get; set; }
+        public String thirdWorkRole { get; set; }
+        public String thirdRefferedBy { get; set; }
+
+        public String thirdReferalName { get; set; }
+        public String thirdReferalNumb { get; set; }
+        public String thirdReferalEmail { get; set; }
+        public String thirdReferalProject { get; set; }
+
+        public String fourthApplicantName { get; set; }
+        public String fourthCompanyAuthorized { get; set; }
+        public String fourthRelation { get; set; }
+        public String fourthDob{ get; set; }
+        public String fourthSpouseName { get; set; }
+        public String fourthSpouseDob { get; set; }
+        public String fourthAnnivDate { get; set; }
+        public String fourthResidentStatus { get; set; }
+        public String fourthCOR { get; set; }
+        public String fourthPan { get; set; }
+        public String fourthPermanAdd { get; set; }
+        public String fourthPermPinCode { get; set; }
+        public String fourthAddComm { get; set; }
+        public String fourthCommPinCode { get; set; }
+        public String fourthPrimaryCont { get; set; }
+        public String fourthAltCont { get; set; }
+        public String fourthEmail { get; set; }
+        public String fourthOfficialEmail { get; set; }
+        public String fourthPassportNo { get; set; }
+        public String fourthIndustry { get; set; }
+        public String fourthCompanyName { get; set; }
+        public String fourthLocation { get; set; }
+        public String fourthDesignation { get; set; }
+
+        public String fourthAnnualHouseHoldIncome { get; set; }
+        public String fourthPurposeOfPurchase { get; set; }
+        public String fourthSourceOfFunding { get; set; }
+        public String fourthSourceOfInformation { get; set; }
+        public String fourthWorkRole { get; set; }
+        public String fourthRefferedBy { get; set; }
+
+        public String fourthReferalName { get; set; }
+        public String fourthReferalNumb { get; set; }
+        public String fourthReferalEmail { get; set; }
+        public String fourthReferalProject { get; set; }        
+
+        public String fifthApplicantName { get; set; }
+        public String fifthCompanyAuthorized { get; set; }
+        public String fifthRelation { get; set; }
+        public String fifthDob{ get; set; }
+        public String fifthSpouseName { get; set; }
+        public String fifthSpouseDob { get; set; }
+        public String fifthAnniDate { get; set; }
+        public String fifthResidentStatus { get; set; }
+        public String fifthCOR { get; set; }
+        public String fifthPan { get; set; }
+        public String fifthPermanAdd { get; set; }
+        public String fifthPermPinCode { get; set; }
+        public String fifthAddComm { get; set; }
+        public String fifthCommPinCode { get; set; }
+        public String fifthPrimaryCont { get; set; }
+        public String fifthAltCont { get; set; }
+        public String fifthEmail { get; set; }
+        public String fifthOfficialEmail { get; set; }
+        public String fifthPassportNo { get; set; }
+        public String fifthIndustry { get; set; }
+        public String fifthCompanyName { get; set; }
+        public String fifthLocation { get; set; }
+        public String fifthDesignation { get; set; }
+        public String fifthAnnualHouseHoldIncome { get; set; }
+        public String fifthPurposeOfPurchase { get; set; }
+        public String fifthSourceOfFunding { get; set; }
+        public String fifthSourceOfInformation { get; set; }
+        public String fifthWorkRole { get; set; }
+        public String fifthRefferedBy { get; set; }
+
+        public String fifthReferalName { get; set; }
+        public String fifthReferalNumb { get; set; }
+        public String fifthReferalEmail { get; set; }
+        public String fifthReferalProject { get; set; }
+        
+        public String sixthApplicantName { get; set; }
+        public String sixthCompanyAuthorized { get; set; }
+        public String sixthRelation { get; set; }
+        public String sixthDob{ get; set; }
+        public String sixthSpouseName { get; set; }
+        public String sixthSpouseDob { get; set; }
+        public String sixthAnnivDate { get; set; }
+        public String sixthResidentStatus { get; set; }
+        public String sixthCOR { get; set; }
+        public String sixthPan { get; set; }
+        public String sixthPermanAdd { get; set; }
+        public String sixthPermPinCode { get; set; }
+        public String sixthAddComm { get; set; }
+        public String sixthCommPinCode { get; set; }
+        public String sixthPrimaryCont { get; set; }
+        public String sixthAltCont { get; set; }
+        public String sixthEmail { get; set; }
+        public String sixthOfficialEmail { get; set; }
+        public String sixthPassportNo { get; set; }
+        public String sixthIndustry { get; set; }
+        public String sixthCompanyName { get; set; }
+        public String sixthLocation { get; set; }
+        public String sixthDesignation { get; set; }
+
+        public String sixthAnnualHouseHoldIncome { get; set; }
+        public String sixthPurposeOfPurchase { get; set; }
+        public String sixthSourceOfFunding { get; set; }
+        public String sixthSourceOfInformation { get; set; }
+        public String sixthWorkRole { get; set; }
+        public String sixthRefferedBy { get; set; }
+
+        public String sixthReferalName { get; set; }
+        public String sixthReferalNumb { get; set; }
+        public String sixthReferalEmail { get; set; }
+        public String sixthReferalProject { get; set; }
+
+        public String totalAgreementValues { get; set; }
+        public String superBuiltUpArea { get; set; } 
+        public String towerCode { get; set; } 
+        public String carpetArea { get; set; }
+        public String floorNumber { get; set; } 
+        public String terraceArea { get; set; }
+        public String sumOfbaconyAndCarpetArea{ get; set; }
+        public String numberofCarParks { get; set; }
+        public String twoWheeler { get; set; }
+
+        public String otherOnOpp { get; set; }
+        public String receiptPayment { get; set; } 
+        public String receiptDate { get; set; } 
+        public String receiptBank { get; set; } 
+      
+
+    }
+
+    //welcome letter 
+    public class WelcomeLetterWrapper {
+        public List<signersList> signers { get; set; }
+        public String display_on_page = 'FIRST';
+        public String expire_in_days  = '1';
+        public String file_name       { get; set; }
+        public List<WelcomeLetterTemplateList> templates { get; set; }
+        public Boolean send_sign_link = false;
+        public Boolean notify_signers = false;
+    }
+
+    public class WelcomeLetterTemplateList {
+        public String template_key { get; set; }
+        public WelcomeLetterTemplateValues template_values { get; set; }
+        public WelcomeLetterTableToAdd template_table_values { get; set; }
+        
+    }
+
+    public class WelcomeLetterTableToAdd{
+        public List<contactListTableRow> contactListTable{get;set;}
+        public List<bankDetailsRow> bankDetailsTable{get;set;}
+
+    }
+
+    public class WelcomeLetterTemplateValues {
+        public String salutationName     { get; set; }
+        public String allApplicantDetails{ get; set; }
+        public String unitName           { get; set; }
+        public String towerCode          { get; set; }
+        public String welcomeDate        { get; set; }
+        public String projectName        { get; set; } 
+        public String crmName            { get; set; }  
+        public String crmEmail           { get; set; } 
+        public String crmPhone           { get; set; }
+        public String crmTitle           { get; set; }
+        public String pronouns           { get; set; }
+        public String companyName        { get; set; }
+        public String companyAddress     { get; set; }
+        public String companyEmail       { get; set; }
+        public String bookingFormDate    { get; set; }
+        public String companyPan         { get; set; }
+        public String aosDate            { get; set; }
+        public String projectBankActName { get; set; }
+        public String projectAccntNumber { get; set; }
+        public String bankType           { get; set; }
+        public String bankName           { get; set; }
+        public String bankBranch         { get; set; }
+        public String bankIfsc           { get; set; }
+        public String accntName          { get; set; }
+        public String allotmentDate      { get; set; }
+    }
+
+    //!leagal department contact details
+    public class contactListTableRow{ 
+        public String deptName{get;set;}
+        public String csEmailId{get;set;}
+        public String execName{get;set;}
+        public String cSMobileNo{get;set;}
+    }
+
+    public class bankDetailsRow{
+        public String bankNameDetails {get; set; }
+        public String bankContactPerson {get; set; }
+        public String bankContacNo {get; set; }
+        public String bankEmailId {get; set; }
+    }
+
 }

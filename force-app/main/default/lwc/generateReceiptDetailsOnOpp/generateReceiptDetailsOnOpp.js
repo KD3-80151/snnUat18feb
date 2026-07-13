@@ -5,7 +5,10 @@ import createReceipt from '@salesforce/apex/GenerateReceiptDetailsOnOppControlle
 import checkDuplicate from '@salesforce/apex/GenerateReceiptDetailsOnOppController.checkDuplicate';
 import getPicklistValues from '@salesforce/apex/GenerateReceiptDetailsOnOppController.getPicklistValues';
 import getAccountValues from '@salesforce/apex/GenerateReceiptDetailsOnOppController.getAccountValues';
+import getDebitPaymentSchedules from '@salesforce/apex/GenerateReceiptDetailsOnOppController.getDebitPaymentSchedules';
 import { CloseActionScreenEvent } from 'lightning/actions';
+
+const PAN_REGEX = /^[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}$/;
 
 export default class GenerateReceiptDetailsOnOpp extends LightningElement {
     @api recordId;
@@ -40,6 +43,10 @@ export default class GenerateReceiptDetailsOnOpp extends LightningElement {
     @track upiProviderOptions = [];
     @track accountOptions = [];
     @track selectedAccount;
+    @track isAgainstDebit = false;
+    @track showDebitScheduleModal = false;
+    @track debitPaymentScheduleOptions = [];
+    @track selectedDebitPaymentScheduleId;
 
     isCheque = false;
     isEFT = false;
@@ -145,7 +152,11 @@ export default class GenerateReceiptDetailsOnOpp extends LightningElement {
     handleInputChange(event) {
         debugger;
         const field = event.target.name;
-        this[field] = event.target.value;
+        let value = event.target.value;
+        if (field === 'panNo' && value) {
+            value = value.toUpperCase();
+        }
+        this[field] = value;
         console.log(`${field} updated with value: ${this[field]}`);
     }
 
@@ -192,6 +203,82 @@ export default class GenerateReceiptDetailsOnOpp extends LightningElement {
             isJV: this.isJV,
             isFundTransfer: this.isFundTransfer
         });
+    }
+
+    handleAgainstDebitChange(event) {
+        this.isAgainstDebit = event.target.checked;
+
+        if (this.isAgainstDebit) {
+            this.openDebitScheduleModal();
+        } else {
+            this.showDebitScheduleModal = false;
+            this.selectedDebitPaymentScheduleId = null;
+        }
+    }
+
+    openDebitScheduleModal() {
+        getDebitPaymentSchedules({ oppId: this.recordId })
+            .then(result => {
+                this.debitPaymentScheduleOptions = result || [];
+
+                if (this.debitPaymentScheduleOptions.length === 0) {
+                    this.isAgainstDebit = false;
+                    this.dispatchEvent(new ShowToastEvent({
+                        title: 'Info',
+                        message: 'No debit payment schedules found for this opportunity.',
+                        variant: 'info'
+                    }));
+                    return;
+                }
+
+                this.showDebitScheduleModal = true;
+            })
+            .catch(error => {
+                console.error('Error fetching debit payment schedules:', error);
+                this.isAgainstDebit = false;
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'Error',
+                    message: error?.body?.message || 'Unable to fetch debit payment schedules.',
+                    variant: 'error'
+                }));
+            });
+    }
+
+    handleDebitScheduleSelection(event) {
+        this.selectedDebitPaymentScheduleId = event.detail.value;
+    }
+
+    get selectedDebitPaymentSchedule() {
+        return this.debitPaymentScheduleOptions.find(
+            option => option.value === this.selectedDebitPaymentScheduleId
+        );
+    }
+
+    get againstDebitHelpText() {
+        if (!this.isAgainstDebit || !this.selectedDebitPaymentSchedule) {
+            return '';
+        }
+
+        return `Selected debit schedule due amount: ${this.selectedDebitPaymentSchedule.totalDueAmount}`;
+    }
+
+    handleDebitModalCancel() {
+        this.showDebitScheduleModal = false;
+        this.isAgainstDebit = false;
+        this.selectedDebitPaymentScheduleId = null;
+    }
+
+    handleDebitModalConfirm() {
+        if (!this.selectedDebitPaymentScheduleId) {
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Error',
+                message: 'Please select one payment schedule.',
+                variant: 'error'
+            }));
+            return;
+        }
+
+        this.showDebitScheduleModal = false;
     }
 
     async handleSubmit() {
@@ -269,9 +356,12 @@ export default class GenerateReceiptDetailsOnOpp extends LightningElement {
                 }
                 break;
             case 'TDS':
-                if (!this.tdsAmount || !this.cin || !this.challanDate || !this.bsrCode || !this.bankName) {
+                if (!this.tdsAmount || !this.cin || !this.challanDate || !this.bsrCode || !this.bankName || !this.panNo) {
                     isValid = false;
                     errorMessage = 'Please fill all required fields for TDS mode.';
+                } else if (!PAN_REGEX.test(this.panNo)) {
+                    isValid = false;
+                    errorMessage = 'Please enter a valid PAN Number in the format ABCDE1234F.';
                 }
                 break;
             case 'JV':
@@ -301,6 +391,32 @@ export default class GenerateReceiptDetailsOnOpp extends LightningElement {
             return;
         }
 
+        if (this.isAgainstDebit && !this.selectedDebitPaymentScheduleId) {
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Error',
+                message: 'Please select a debit payment schedule.',
+                variant: 'error'
+            }));
+            return;
+        }
+
+        if (this.isAgainstDebit) {
+            const selectedSchedule = this.selectedDebitPaymentSchedule;
+            const enteredAmount = this.modeOfPayment === 'TDS'
+                ? parseFloat(this.tdsAmount) || 0
+                : parseFloat(this.amount) || 0;
+            const totalDueAmount = selectedSchedule?.totalDueAmount || 0;
+
+            if (enteredAmount > totalDueAmount) {
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'Error',
+                    message: `Amount cannot be greater than selected debit payment schedule due amount (${totalDueAmount}).`,
+                    variant: 'error'
+                }));
+                return;
+            }
+        }
+
         const receiptData = {
             opportunityId: this.recordId,
             receiptType: this.receiptType,
@@ -324,7 +440,9 @@ export default class GenerateReceiptDetailsOnOpp extends LightningElement {
             bsrCode: this.bsrCode,
             drawnOnBank: this.drawnOnBank,
             jvDate: this.jvDate,
-            jvReferenceNumber: this.jvReferenceNumber
+            jvReferenceNumber: this.jvReferenceNumber,
+            paymentScheduleId: this.selectedDebitPaymentScheduleId,
+            againstDebit: this.isAgainstDebit
 
         };
 
@@ -397,6 +515,10 @@ export default class GenerateReceiptDetailsOnOpp extends LightningElement {
         this.drawnOnBank = '';
         this.jvDate = null;
         this.jvReferenceNumber = '';
+        this.isAgainstDebit = false;
+        this.showDebitScheduleModal = false;
+        this.debitPaymentScheduleOptions = [];
+        this.selectedDebitPaymentScheduleId = null;
     }
 
     closeComponent() {

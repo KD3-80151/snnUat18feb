@@ -19,7 +19,7 @@
                 <!-- Receipt Type -->
                 <div class="slds-col slds-size_1-of-1 slds-p-horizontal_large">
                     <lightning-combobox label="Receipt Type" value={receiptType} placeholder="Select Receipt Type"
-                        options={receiptOptions} class="custom-inputrecp" name="receiptType"
+                        options={receiptOptions} class="custom-inputrecp" name="receiptType" disabled
                         onchange={handleInputChange} required>
                     </lightning-combobox>
                 </div>
@@ -30,7 +30,7 @@
                 </div>
                 <!-- Mode of Payment -->
                 <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
-                    <lightning-combobox label="Mode of Payment1" value={modeOfPayment}
+                    <lightning-combobox label="Mode of Payment" value={modeOfPayment}
                         placeholder="Select Mode of Payment" options={modeOfPaymentOptions} class="custom-input"
                         name="modeOfPayment" onchange={handleModeOfPaymentChange} required>
                     </lightning-combobox>
@@ -141,6 +141,8 @@
                     </div>
                     <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
                         <lightning-input type="text" label="PAN NO" value={panNo} class="custom-input" name="panNo"
+                            pattern="[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}" maxlength="10"
+                            message-when-pattern-mismatch="Please enter a valid PAN Number in the format ABCDE1234F."
                             onchange={handleInputChange} required></lightning-input>
                     </div>
                 </template>

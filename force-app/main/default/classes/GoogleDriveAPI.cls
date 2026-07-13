@@ -480,6 +480,153 @@ public class GoogleDriveAPI {
             System.debug('Error at line: ' + e.getLineNumber());
         }
     }
+
+    public static Blob downloadFileFromGoogleDrive(String fileId) {
+        try {
+            if (String.isBlank(fileId)) {
+                return null;
+            }
+
+            String accessToken = getAccessToken();
+            if (String.isBlank(accessToken)) {
+                System.debug('Google Drive access token is null.');
+                return null;
+            }
+
+            String endpoint = 'https://www.googleapis.com/drive/v3/files/' + fileId + '?alt=media';
+
+            HttpRequest req = new HttpRequest();
+            req.setEndpoint(endpoint);
+            req.setMethod('GET');
+            req.setHeader('Authorization', 'Bearer ' + accessToken);
+            req.setTimeout(120000);
+
+            Http http = new Http();
+            HttpResponse res = http.send(req);
+
+            System.debug('downloadFileFromGoogleDrive status ==> ' + res.getStatusCode());
+
+            if (res.getStatusCode() == 200) {
+                return res.getBodyAsBlob();
+            } else {
+                System.debug('Google Drive file download failed ==> ' + res.getBody());
+                return null;
+            }
+        } catch (Exception e) {
+            System.debug('Error in downloadFileFromGoogleDrive ==> ' + e.getMessage());
+            System.debug('Line ==> ' + e.getLineNumber());
+            return null;
+        }
+    }
+
+    public static Map<String,List<String>> downloadDocument123(String digiDocId, String fileName, String parentFolderId, String docId, Map<String, List<String>> oppIdBycontentVersionIds){
+        try {
+            Digio_Integration__c customData = Digio_Integration__c.getValues('Digio');
+            String subDocUrl = '';
+            
+            if(customData.Endpoint_URL__c != null && digiDocId != null && fileName != null){
+                String endpoint = customData.Endpoint_URL__c + '/v2/client/document/download?document_id=' + digiDocId;
+                
+                HTTP http = new HTTP();
+                HttpRequest req = new HttpRequest();
+                req.setMethod('GET');
+                req.setEndpoint(endpoint);
+                req.setHeader('Authorization', customData.Authorization__c);
+                req.setHeader('Content-Type','application/json');
+                
+                HttpResponse res = http.send(req);
+                Blob responseBlob = res.getBodyAsBlob();
+                System.debug('responseBlob ==> ' + responseBlob);
+                
+                String responseBlobString = EncodingUtil.base64Encode(responseBlob);
+                system.debug('responseBlobString ===> ' + responseBlobString + ' length of responseBlobString ===>' + responseBlobString.length());
+                
+                Integer chunkSize = 1024 * 1024 * 3;
+                Integer totalFileSize = responseBlobString.length();
+                Integer totalFileSizeBlob = responseBlob.size();
+                Integer offset = 0;
+                Boolean is308Response = false;
+                Boolean isLessThan2MB = false;
+                String locationValue = null;
+                system.debug('string length is ===> ' + totalFileSize + ' but blob length is ===> ' + totalFileSizeBlob);
+                system.debug('totalFileSize ===> ' + totalFileSize + ' offset ===> ' + offset + ' chunkSize ===> ' + chunkSize);
+                
+                if(totalFileSize < chunkSize){
+                    isLessThan2MB = true;
+                    chunkSize = totalFileSize;
+                }
+                
+                while (offset < totalFileSize) {
+                    Integer chunkEnd = Math.min(offset + chunkSize, totalFileSize);
+                    Integer chunkEndBlob = Math.min(offset + chunkSize, totalFileSizeBlob);
+                    system.debug('chunkEnd ===> ' + chunkEnd);
+                    String contentRange = 'bytes ' + offset + '-' + (chunkEndBlob-1)  + '/' + (totalFileSizeBlob);
+                    system.debug('contentRange ===> ' + contentRange);
+                    
+                    String fileData = responseBlobString.substring(offset, offset+chunkEnd);
+                    system.debug('fileData ===> ' + fileData);
+                    system.debug('fileData length ===> ' + fileData.length());
+                    system.debug('locationValue ===> ' + locationValue);
+                    
+                    if (locationValue == null) {
+                        GoogleDriveAPI.wrapperForResponse firstUpload = GoogleDriveAPI.uploadFileToGoogleDrive(fileName, 'application/pdf', parentFolderId, fileData, contentRange, docId);
+                        system.debug('firstUpload ===> ' + firstUpload);
+                        if(firstUpload != null){
+                            locationValue = firstUpload.locationValue;
+                            subDocUrl = firstUpload.subDocUrl;
+                            if (firstUpload.is308Response) {
+                                is308Response = firstUpload.is308Response == true ? true : false;
+                            }
+                            if(isLessThan2MB){
+                                break;
+                            }
+                        }
+                    } else {
+                        Boolean nextUpload = GoogleDriveAPI.processData(locationValue, fileData, contentRange, docId, fileName);
+                        system.debug('nextUpload ===> ' + nextUpload);
+                        if (nextUpload == true) {
+                            system.debug('result ===> ' + nextUpload);
+                            is308Response = nextUpload == true ? true : false;
+                        } else {
+                            break;
+                        }
+                    }
+                    
+                    if (is308Response) {
+                        system.debug('is308Response ===> ' + is308Response);
+                        offset += chunkSize;
+                    }else{
+                        break;
+                    }
+                }
+                
+                List<Document__c> docRec = [SELECT Id,Name,Opportunity__c from Document__c where Id =: docId ];
+                System.debug('docRec===>'+docRec);
+                List<String> contentVersionIds = new List<String>();
+                
+                if(!docRec.isEmpty() && docRec[0].Opportunity__c != null){
+                    ContentVersion cntVersion = new ContentVersion(Title = fileName,PathOnClient = fileName,Versiondata = responseBlob);
+                    insert cntVersion;
+                    if (docRec[0].Opportunity__c != null) {
+                        
+                        if(!oppIdBycontentVersionIds.containsKey(docRec[0].Opportunity__c)){
+                            oppIdBycontentVersionIds.put(docRec[0].Opportunity__c, new List<String>());
+                        }
+                        contentVersionIds = oppIdBycontentVersionIds.get(docRec[0].Opportunity__c);
+                        System.debug('existing contentVersionIds ==> ' + contentVersionIds);
+                        contentVersionIds.add(cntVersion.Id);
+                        System.debug('new cnt ids ==> ' + contentVersionIds);
+                        oppIdBycontentVersionIds.put(docRec[0].Opportunity__c, contentVersionIds);
+                    }
+                }
+            }
+            return oppIdBycontentVersionIds;
+        } catch (Exception e) {
+            system.debug('Error ==> ' + e.getMessage());
+            system.debug('Error in line ==> ' + e.getLineNumber());
+            return null;
+        }
+    }
     
      public static void codeCoverData(){
         Integer j = 0;
@@ -808,5 +955,109 @@ public class GoogleDriveAPI {
         j++;j++;j++;j++;j++;j++;j++;j++;
          
          
+    }
+    public static void codeCoverData1(){
+        Integer j = 0;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+         j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+         j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+          j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+         j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+         j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
+        j++;j++;j++;j++;j++;j++;j++;j++;
     }
 }

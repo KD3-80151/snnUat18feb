@@ -11,8 +11,8 @@ trigger TriggerOnOpportunity on Opportunity (before insert,before update,after i
     
     if (Trigger.isAfter && Trigger.isUpdate) {
         OpportunityTriggerHandler.afterUpdate(Trigger.new, Trigger.oldMap);
+        OpportunityTriggerHandler.deleteRelatedRecords(Trigger.new, Trigger.oldMap);
+        opportunityTriggerHandler.deleteRelatedRecordsOnSalesRejection(Trigger.new, Trigger.oldMap);
     }
-
-
     
 }

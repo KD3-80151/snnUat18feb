@@ -248,7 +248,7 @@ public class DigioWrapperClassTest {
         v8.amountValues = 'test';
         v8.loginUserName = 'test';
         v8.exactTime = 'test';
-        v8.todayDate = System.today();
+        //v8.todayDate = System.today();
         v8.companyName = 'test';
         v8.companyAddress = 'test';
         v8.companyEmail = 'test';
@@ -294,7 +294,6 @@ public class DigioWrapperClassTest {
         v9.customerAddress = 'test';
         v9.projectName = 'test';
         v9.unitNo = 'test';
-        v9.blockNo = 'test';
         v9.generatedTime = 'test';
         v9.userName = 'test';
         v9.oppFinalBalance = 11;
@@ -326,12 +325,11 @@ public class DigioWrapperClassTest {
         ll0.DemandLetterTable = new List<DigioWrapperClass.demandLetterTable>{lll0};
         ll0.DemandLetterTotalTable = new List<DigioWrapperClass.demandLetterTotal>{llll0};
         DigioWrapperClass.demandLetterTemplateValues v0 = new DigioWrapperClass.demandLetterTemplateValues();
-        v0.TodayDate = System.today();
+        //v0.TodayDate = System.today();
         v0.customerName = 'test';
         v0.customerAddress = 'test';
         v0.customerPincode = 'test';
         v0.mobileNo = 'test';
-        v0.SubjectName = 'test';
         v0.projectName = 'test';
         v0.bankName = 'test';
         v0.accountNo = 'test';
@@ -740,4 +738,253 @@ public class DigioWrapperClassTest {
         System.assertEquals('HandOver.pdf', handover.file_name);
         System.assertEquals('C303', handover.templates[0].template_values.unitNo);
     }
+    
+    @isTest
+static void testBookingFormWrapper() {
+    // Signer
+    DigioWrapperClass.signersList signer = new DigioWrapperClass.signersList();
+    signer.identifier = '1';
+    signer.signer_tag  = 'B1';
+    signer.name        = 'Booking Signer';
+    signer.sign_type   = 'esign';
+
+    // Template values
+    DigioWrapperClass.bookingFormTemplateValues vals = new DigioWrapperClass.bookingFormTemplateValues();
+    vals.applicationDate = '2026-02-24';
+    vals.projectName = 'Phoenix Group';
+    vals.reraNo = 'RERA-123';
+    vals.unitNo = 'A-101';
+    vals.unitType = '2BHK';
+    vals.superBuiltArea = '1200';
+
+    vals.firstApplicantName = 'Applicant 1';
+    vals.firstRelation = 'S/o';
+    vals.firstDob = '1990-01-01';
+    vals.firstPan = 'ABCDE1234F';
+    vals.firstPrimaryCont = '9999999999';
+    vals.firstEmail = 'app1@test.com';
+
+    vals.totalReciptAmount = '100000';
+    vals.totalReciptAmountWords = 'One Lakh';
+    vals.salesuserName = 'Sales User';
+    vals.crmUser = 'CRM User';
+    vals.todayDate = System.today();
+    vals.allotmentLetterDate = '2026-02-20';
+    vals.oppChanelPartName = 'Channel Partner';
+// -------------------- FIRST APPLICANT EXTRA FIELDS --------------------
+vals.firstCompanyAuthorized = 'Yes';
+vals.firstSpouseName        = 'Priya Sharma';
+vals.firstSpouseDob         = '1992-08-14';
+vals.firstAnniDate          = '2016-02-20';
+vals.firstResidentStatus    = 'Resident Indian';
+vals.firstCOR               = 'India';
+vals.firstPermanAdd         = 'Flat 12B, MG Road, Bengaluru, Karnataka';
+vals.firstPermPinCode       = '560001';
+vals.firstAddComm           = 'Flat 12B, MG Road, Bengaluru, Karnataka';
+vals.firstCommPinCode       = '560001';
+vals.firstAltCont           = '8888888888';
+vals.firstOfficialEmail     = 'applicant1.official@company.com';
+vals.firstPassportNo        = 'N1234567';
+vals.firstIndustry          = 'IT Services';
+vals.firstCompanyName       = 'Phoenix Technologies Pvt Ltd';
+vals.firstLocation          = 'Bengaluru';
+vals.firstDesignation       = 'Senior Manager';
+
+// -------------------- SECOND APPLICANT --------------------
+vals.secondApplicantName           = 'Rohan Mehta';
+vals.secondCompanyAuthorized       = 'No';
+vals.secondRelation               = 'S/o';
+vals.secondDob                    = '1991-06-10';
+vals.secondSpouseName             = 'Neha Mehta';
+vals.secondSpouseDob              = '1993-03-19';
+vals.secAnniDate                  = '2018-12-05';
+vals.secondResidentStatus         = 'Resident Indian';
+vals.secondCOR                    = 'India';
+vals.secondPan                    = 'PQRSX1234L';
+vals.secondPermanAdd              = 'Plot 44, HSR Layout, Bengaluru, Karnataka';
+vals.secondPermPinCode            = '560102';
+vals.secondAddComm                = 'Plot 44, HSR Layout, Bengaluru, Karnataka';
+vals.secondCommPinCode            = '560102';
+vals.secondPrimaryCont            = '7777777777';
+vals.secondEmail                  = 'rohan.mehta@gmail.com';
+vals.secondOfficialEmail          = 'rohan.mehta@company.com';
+vals.secondIndustry               = 'Manufacturing';
+vals.secondCompanyName            = 'Mehta Industries';
+vals.secondLocation               = 'Bengaluru';
+vals.secondDesignation            = 'Assistant Director';
+vals.secondAnnualHouseHoldIncome  = '1800000';
+vals.secondPurposeOfPurchase      = 'Self Use';
+vals.secondSourceOfFunding        = 'Savings';
+vals.secondSourceOfInformation    = 'Google';
+vals.secondWorkRole               = 'Salaried';
+vals.secondRefferedBy             = 'Friend';
+vals.secondReferalName            = 'Amit Kumar';
+vals.secondReferalNumb            = '9999990000';
+vals.secondReferalEmail           = 'amit.kumar@test.com';
+vals.secondReferalProject         = 'Phoenix Group';
+
+// -------------------- THIRD APPLICANT --------------------
+vals.thirdApplicantName           = 'Sneha Iyer';
+vals.thirdCompanyAuthorized       = 'Yes';
+vals.thirdRelation               = 'D/o';
+vals.thirdDob                    = '1994-11-22';
+vals.thirdSpouseName             = 'Arjun Iyer';
+vals.thirdSpouseDob              = '1992-09-09';
+vals.thirdResidentStatus         = 'NRI';
+vals.thirdPan                    = 'LMNOP6789Q';
+vals.thirdPermanAdd              = '12, Indiranagar, Bengaluru, Karnataka';
+vals.thirdPermPinCode            = '560038';
+vals.thirdAddComm                = '12, Indiranagar, Bengaluru, Karnataka';
+vals.thirdCommPinCode            = '560038';
+vals.thirdPrimaryCont            = '6666666666';
+vals.thirdEmail                  = 'sneha.iyer@gmail.com';
+vals.thirdOfficialEmail          = 'sneha.iyer@company.com';
+vals.thirdPassportNo             = 'M7654321';
+vals.thirdIndustry               = 'Finance';
+vals.thirdCompanyName            = 'Iyer Capital';
+vals.thirdLocation               = 'Dubai';
+vals.thirdDesignation            = 'Analyst';
+vals.thirdAnnualHouseHoldIncome  = '2400000';
+vals.thirdPurposeOfPurchase      = 'Investment';
+vals.thirdSourceOfFunding        = 'Loan';
+vals.thirdSourceOfInformation    = 'Channel Partner';
+vals.thirdWorkRole               = 'Self Employed';
+vals.thirdRefferedBy             = 'Broker';
+vals.thirdReferalName            = 'Vikas Singh';
+vals.thirdReferalNumb            = '9898989898';
+vals.thirdReferalEmail           = 'vikas.singh@test.com';
+vals.thirdReferalProject         = 'Phoenix Group';
+
+// -------------------- FOURTH APPLICANT --------------------
+vals.fourthApplicantName           = 'Karan Verma';
+vals.fourthCompanyAuthorized       = 'No';
+vals.fourthRelation               = 'S/o';
+vals.fourthDob                    = '1989-04-15';
+vals.fourthSpouseName             = 'Anjali Verma';
+vals.fourthSpouseDob              = '1990-01-21';
+vals.fourthAnnivDate              = '2014-07-11';
+vals.fourthResidentStatus         = 'Resident Indian';
+vals.fourthCOR                    = 'India';
+vals.fourthPan                    = 'ABCDE9876Z';
+vals.fourthPermanAdd              = '22, Whitefield, Bengaluru, Karnataka';
+vals.fourthPermPinCode            = '560066';
+vals.fourthAddComm                = '22, Whitefield, Bengaluru, Karnataka';
+vals.fourthCommPinCode            = '560066';
+vals.fourthPrimaryCont            = '9555555555';
+vals.fourthAltCont                = '9444444444';
+vals.fourthEmail                  = 'karan.verma@gmail.com';
+vals.fourthOfficialEmail          = 'karan.verma@company.com';
+vals.fourthPassportNo             = 'P2468101';
+vals.fourthIndustry               = 'Retail';
+vals.fourthCompanyName            = 'Verma Retail Pvt Ltd';
+vals.fourthLocation               = 'Bengaluru';
+vals.fourthDesignation            = 'Owner';
+vals.fourthAnnualHouseHoldIncome  = '3000000';
+vals.fourthPurposeOfPurchase      = 'Self Use';
+vals.fourthSourceOfFunding        = 'Savings + Loan';
+vals.fourthSourceOfInformation    = 'Facebook';
+vals.fourthWorkRole               = 'Business';
+vals.fourthRefferedBy             = 'Relative';
+vals.fourthReferalName            = 'Rahul Verma';
+vals.fourthReferalNumb            = '9000000001';
+vals.fourthReferalEmail           = 'rahul.verma@test.com';
+vals.fourthReferalProject         = 'Phoenix Group';
+
+// -------------------- FIFTH APPLICANT --------------------
+vals.fifthApplicantName           = 'Divya Nair';
+vals.fifthCompanyAuthorized       = 'Yes';
+vals.fifthRelation               = 'D/o';
+vals.fifthDob                    = '1996-10-05';
+vals.fifthSpouseName             = 'N/A';
+vals.fifthSpouseDob              = 'N/A';
+vals.fifthAnniDate               = 'N/A';
+vals.fifthResidentStatus         = 'Resident Indian';
+vals.fifthCOR                    = 'India';
+vals.fifthPan                    = 'QWERT1234Y';
+vals.fifthPermanAdd              = '3rd Floor, Koramangala, Bengaluru, Karnataka';
+vals.fifthPermPinCode            = '560034';
+vals.fifthAddComm                = '3rd Floor, Koramangala, Bengaluru, Karnataka';
+vals.fifthCommPinCode            = '560034';
+vals.fifthPrimaryCont            = '9333333333';
+vals.fifthAltCont                = '9222222222';
+vals.fifthEmail                  = 'divya.nair@gmail.com';
+vals.fifthOfficialEmail          = 'divya.nair@company.com';
+vals.fifthPassportNo             = 'R1357911';
+vals.fifthIndustry               = 'Education';
+vals.fifthCompanyName            = 'Nair EdTech';
+vals.fifthLocation               = 'Bengaluru';
+vals.fifthDesignation            = 'Consultant';
+vals.fifthAnnualHouseHoldIncome  = '1200000';
+vals.fifthPurposeOfPurchase      = 'Investment';
+vals.fifthSourceOfFunding        = 'Savings';
+vals.fifthSourceOfInformation    = 'Referral';
+vals.fifthWorkRole               = 'Salaried';
+vals.fifthRefferedBy             = 'Colleague';
+vals.fifthReferalName            = 'Suresh Rao';
+vals.fifthReferalNumb            = '9000000002';
+vals.fifthReferalEmail           = 'suresh.rao@test.com';
+vals.fifthReferalProject         = 'Phoenix Group';
+
+// -------------------- SIXTH APPLICANT --------------------
+vals.sixthApplicantName           = 'Arnav Gupta';
+vals.sixthCompanyAuthorized       = 'No';
+vals.sixthRelation               = 'S/o';
+vals.sixthDob                    = '1990-12-12';
+vals.sixthSpouseName             = 'Meera Gupta';
+vals.sixthSpouseDob              = '1992-02-28';
+vals.sixthAnnivDate              = '2017-09-30';
+vals.sixthResidentStatus         = 'Resident Indian';
+vals.sixthCOR                    = 'India';
+vals.sixthPan                    = 'ASDFG4321H';
+vals.sixthPermanAdd              = '8, Jayanagar, Bengaluru, Karnataka';
+vals.sixthPermPinCode            = '560041';
+vals.sixthAddComm                = '8, Jayanagar, Bengaluru, Karnataka';
+vals.sixthCommPinCode            = '560041';
+vals.sixthPrimaryCont            = '9111111111';
+vals.sixthAltCont                = '9000000003';
+vals.sixthEmail                  = 'arnav.gupta@gmail.com';
+vals.sixthOfficialEmail          = 'arnav.gupta@company.com';
+vals.sixthPassportNo             = 'S1122334';
+vals.sixthIndustry               = 'Healthcare';
+vals.sixthCompanyName            = 'Gupta Healthcare';
+vals.sixthLocation               = 'Bengaluru';
+vals.sixthDesignation            = 'Doctor';
+vals.sixthAnnualHouseHoldIncome  = '2200000';
+vals.sixthPurposeOfPurchase      = 'Self Use';
+vals.sixthSourceOfFunding        = 'Loan';
+vals.sixthSourceOfInformation    = 'Walk-in';
+vals.sixthWorkRole               = 'Professional';
+vals.sixthRefferedBy             = 'N/A';
+vals.sixthReferalName            = 'N/A';
+vals.sixthReferalNumb            = 'N/A';
+vals.sixthReferalEmail           = 'N/A';
+vals.sixthReferalProject         = 'N/A';
+
+// -------------------- PROPERTY / OPP LEVEL FIELDS --------------------
+vals.totalAgreementValues        = '9000000';
+vals.superBuiltUpArea            = '1200';
+vals.towerCode                   = 'T-A';
+vals.carpetArea                  = '850';
+vals.floorNumber                 = '10';
+vals.terraceArea                 = '75';
+vals.sumOfbaconyAndCarpetArea    = '925';
+vals.numberofCarParks            = '1';
+vals.twoWheeler                  = '1';
+
+vals.otherOnOpp                  = 'Preferred corner unit; near lift';
+vals.receiptPayment              = 'Cheque';
+vals.receiptDate                 = '2026-02-24';
+vals.receiptBank                 = 'HDFC';
+    // Template list
+    DigioWrapperClass.bookingFormTemplateList t = new DigioWrapperClass.bookingFormTemplateList();
+    t.template_key = 'BOOKING_FORM_1';
+    t.template_values = vals;
+
+    // Wrapper
+    DigioWrapperClass.generateBookingFormDocs wrapper = new DigioWrapperClass.generateBookingFormDocs();
+    wrapper.file_name = 'BookingForm.pdf';
+    wrapper.signers = new List<DigioWrapperClass.signersList>{ signer };
+    wrapper.templates = new List<DigioWrapperClass.bookingFormTemplateList>{ t };
+
+}
 }

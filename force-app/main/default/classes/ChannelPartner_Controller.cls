@@ -359,7 +359,6 @@ public without sharing class ChannelPartner_Controller {
                 acc.Team_Member__c = accRecord.Id;
                 acc.RecordTypeId = channelPartnerRecTypeId;
                 insert acc;
-                //uncommented by me 
                 EmailTemplate et = [SELECT Id, HtmlValue, Subject FROM EmailTemplate WHERE DeveloperName = 'Channel_Partner_account_creation_Email_Template'];
                 Id orgWideEmailAddressId = [SELECT Id FROM OrgWideEmailAddress ].Id;
                 Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();

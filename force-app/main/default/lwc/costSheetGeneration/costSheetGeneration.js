@@ -319,19 +319,27 @@ export default class CostSheetGeneration extends NavigationMixin(LightningElemen
 
         if (priceMasterId) {
             console.log('lineItems ==>' + JSON.stringify(this.discountLineItem));
+            let maximumDiscountAmount = null;
             for (let i = 0; i < this.discountLineItem.length; i++) {
                 console.log('priceMasterId ==>' + priceMasterId);
                 console.log('lineItems ==>' + JSON.stringify(this.discountLineItem[i].Pricing_Element_Master__c));
                 if (priceMasterId === this.discountLineItem[i].Discount_Master__r?.Pricing_Element_Master__c) {
-                    if (this.discountLineItem[i].Maximum__c < value) {
-                        this.pricingElements[rowIndex]['limitExceed'] = "Discount Amount Limit exceeded" + this.discountLineItem[i].Maximum__c;
-                        this.showToast('Error', 'Please Enter Discount Amount Less Than ' + this.discountLineItem[i].Maximum__c, 'error');
-                        return;
-                    } else {
-                        this.pricingElements[rowIndex]['limitExceed'] = "";
+                    const lineMaximum = parseFloat(this.discountLineItem[i].Maximum__c);
+                    if (!isNaN(lineMaximum)) {
+                        maximumDiscountAmount = maximumDiscountAmount == null
+                            ? lineMaximum
+                            : Math.max(maximumDiscountAmount, lineMaximum);
                     }
                 }
             }
+
+            if (maximumDiscountAmount != null && value > maximumDiscountAmount) {
+                this.pricingElements[rowIndex]['limitExceed'] = "Discount Amount Limit exceeded :" + maximumDiscountAmount;
+                this.showToast('Error', 'Please Enter Discount Amount Less Than ' + maximumDiscountAmount, 'error');
+                return;
+            }
+
+            this.pricingElements[rowIndex]['limitExceed'] = "";
         }
 
         // Update the Discount_Amount__c in pricingElements
@@ -474,9 +482,7 @@ export default class CostSheetGeneration extends NavigationMixin(LightningElemen
     }
 
     console.log('Updated Rows:', JSON.stringify(this.rows));
-}
-
-
+    }
 
 
     handleParkingTypeChange(event) {
@@ -576,7 +582,6 @@ export default class CostSheetGeneration extends NavigationMixin(LightningElemen
         this.formattedTotalAmount = this.totalAmount;
     }
 
-
     updateAvailableOptions() {
         debugger;
         const selectedTypes = this.rows.map(row => row.type);
@@ -653,6 +658,18 @@ export default class CostSheetGeneration extends NavigationMixin(LightningElemen
         this.updateAvailableOptions();
     }
 
+    computeDiscountedAmount(item) {
+        const rate = item.Rate__c || 0;
+        const quantity = item.Quantity__c || 0;
+        const discount = item.Discount_Amount__c || 0;
+        if (!discount) {
+            return { ...item, ActualAmount: item.Amount__c };
+        }
+        const netRate = rate - discount;
+        const netAmount = netRate * quantity;
+        return { ...item, Rate__c: netRate, Amount__c: netAmount, ActualAmount: netAmount };
+    }
+
     @track discountAdded = false;
     @track discountByPricingMap = [];
     handleFouth() {
@@ -684,10 +701,8 @@ export default class CostSheetGeneration extends NavigationMixin(LightningElemen
             createparkingElements({ parkingElements: this.rows, costId: this.newCostSheetId })
                 .then(result => {
                     console.log('Apex result:', result);
-                    this.pricingElements = [...this.pricingElements, ...result].map(item => ({
-                        ...item,
-                        ActualAmount: (item.Discount_Amount__c != null) ? (item.Amount__c - item.Discount_Amount__c)  : (item.Amount__c)
-                    }));
+                    const newParkingElements = result.map(item => this.computeDiscountedAmount(item));
+                    this.pricingElements = [...this.pricingElements, ...newParkingElements];
 
                     console.log('Updated pricingElements:', this.pricingElements);
                     
@@ -703,10 +718,7 @@ export default class CostSheetGeneration extends NavigationMixin(LightningElemen
             console.log('No parking element records to send.');
         }
 
-        this.pricingElements = this.pricingElements.map(item => ({
-            ...item, 
-            ActualAmount: (item.Discount_Amount__c != null) ? (item.Amount__c - item.Discount_Amount__c) * item.Quantity__c : (item.Amount__c * item.Quantity__c)
-        }));
+        this.pricingElements = this.pricingElements.map(item => this.computeDiscountedAmount(item));
         this.discountAdded = this.pricingElements.some(item => item.Discount_Amount__c != null);
         
         this.pricingElements.forEach(item => {
@@ -729,6 +741,7 @@ export default class CostSheetGeneration extends NavigationMixin(LightningElemen
         console.log('discountByPricingMap'+ this.discountByPricingMap);
         console.log('Pricing Elements to update:', JSON.stringify(this.pricingElements));
         this.isFianlSaveDisabled = true;
+
         updatePricingElements({ pricingElements: this.pricingElements })
         .then(result => {
             if(this.discountAdded == true){

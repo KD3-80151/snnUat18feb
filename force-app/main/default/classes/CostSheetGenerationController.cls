@@ -20,9 +20,15 @@ public without Sharing  class CostSheetGenerationController {
                 System.debug('opp==>'+opp);
             }
             System.debug('opp==>'+opp);
-            List<Unit__c> unitList = [SELECT Id, Name FROM Unit__c Where Status__c != 'Sold'];
+            List<Opportunity> oppList = [SELECT Id, Unit__c, Project__c FROM Opportunity WHERE Id =: opp.Id LIMIT 1];
+            system.debug('oppList==> '+oppList);
+            List<Unit__c> unitList = new List<Unit__c>();
+            if(oppList.size() > 0 && oppList[0].Project__c != null ){
+                unitList = [SELECT Id, Name, Unit_Name__c, Floor__r.Blocks__r.Project__c FROM Unit__c Where Status__c != 'Sold' and Status__c != null and Floor__r.Blocks__r.Project__c =: oppList[0].Project__c ORDER BY Unit_Name__c];
+
+            }
+
             System.debug('unitList --->' + unitList);
-        
             List<Cost_Sheet_Template__c> costSheetTemplateList = [SELECT Id, Name, 
                                                                     (SELECT Id, Name, Payment_Scheme__r.Name,Payment_Scheme__r.Block__c FROM Cost_Scheme_Linkings__r), 
                                                                     (SELECT Id, Name, Unit__c FROM Cost_Unit_Linking__r)
@@ -52,8 +58,7 @@ public without Sharing  class CostSheetGenerationController {
         @AuraEnabled public String errorMessage{get; set;}
     }
 
-
-     @AuraEnabled
+    @AuraEnabled
     public static Unit__c getUnitRecord(String unitId) {
         try {
             return [
@@ -65,7 +70,7 @@ public without Sharing  class CostSheetGenerationController {
         }
     }
 
-     @AuraEnabled
+    @AuraEnabled
     public static String createCostSheet(Opportunity opp, List<Task> tasks, String unitId, String cslId) {
         try {
             String costSheetId;
@@ -144,8 +149,7 @@ public without Sharing  class CostSheetGenerationController {
             }
             
             System.debug('mapofPricingElements==>'+mapofPricingElements);
-            
-            
+        
             List<Pricing_Element__c> pricingElementsToInsert = new List<Pricing_Element__c>();
             List<PricingElements__c> pricingRecords = [SELECT Name, Unit_Field__c FROM PricingElements__c];
             
@@ -179,48 +183,47 @@ public without Sharing  class CostSheetGenerationController {
                 System.debug('matchedElement==>'+matchedElement);
                 
                 
-                if(csp.Pricing_Element_Master__r.Name == pricingMap.get('Corner Premium Charges')  && unitList[0].Premium_Charges_per_sqft__c != null ){
+                if(csp.Pricing_Element_Master__r.Name == pricingMap.get('Corner Premium Charges') && unitList[0].Premium_Charges_per_sqft__c != null){
                     System.debug('entered..');
-                    pe.Quantity__c = area;
+                    pe.Quantity__c = (csp.Unit__c == 'sqft') ? area : (csp.Quantity__c != null ? csp.Quantity__c : area);
                     pe.Rate__c = unitList[0].Premium_Charges_per_sqft__c;
-                    pe.Amount__c = unitList[0].Premium_Charges_per_sqft__c * area;
-                    
-                }else if(csp.Pricing_Element_Master__r.Name == pricingMap.get('Floor Rise') && unitList[0].Floor_Rise__c != null ){
+                    pe.Amount__c = pe.Rate__c * pe.Quantity__c;
+
+                }else if(csp.Pricing_Element_Master__r.Name == pricingMap.get('Floor Rise') && unitList[0].Floor_Rise__c != null){
                     System.debug('entered..');
-                    pe.Quantity__c = area;
+                    pe.Quantity__c = (csp.Unit__c == 'sqft') ? area : (csp.Quantity__c != null ? csp.Quantity__c : area);
                     pe.Rate__c = unitList[0].Floor_Rise__c;
-                    pe.Amount__c = unitList[0].Floor_Rise__c * area;
-                    
-                    
+                    pe.Amount__c = pe.Rate__c * pe.Quantity__c;
+
                 }else if(csp.Pricing_Element_Master__r.Name == pricingMap.get('Facilities Development Charges') && unitList[0].Facilities_Development_Charges_pSqft__c != null){
-                    
                     system.debug('csp.Quantity__c of facilities::>>' + csp.Quantity__c);
-                    pe.Quantity__c = (csp.Quantity__c != null) ? csp.Quantity__c : 0;
+                    pe.Quantity__c = (csp.Unit__c == 'sqft') ? area : (csp.Quantity__c != null ? csp.Quantity__c : area);
                     pe.Rate__c = unitList[0].Facilities_Development_Charges_pSqft__c;
-                    pe.Amount__c = unitList[0].Facilities_Development_Charges_pSqft__c * area;
-                    
-                    
-                }else if(csp.Pricing_Element_Master__r.Name == pricingMap.get('Basic Price') ){
+                    pe.Amount__c = pe.Rate__c * pe.Quantity__c;
+
+                }else if(csp.Pricing_Element_Master__r.Name == pricingMap.get('Basic Price')){
                     System.debug('entered..');
                     System.debug('unitList==>'+unitList[0]);
                     System.debug('unitList==>'+unitList[0].Base_Price_per_sqft__c);
-                    pe.Quantity__c = area;
+                    pe.Quantity__c = (csp.Unit__c == 'sqft') ? area : (csp.Quantity__c != null ? csp.Quantity__c : area);
                     pe.Rate__c = unitList[0].Base_Price_per_sqft__c;
-                    pe.Amount__c = unitList[0].Base_Price_per_sqft__c * area;
+                    pe.Amount__c = pe.Rate__c != null ? pe.Rate__c * pe.Quantity__c : null;
+
                 }else if(csp.Pricing_Element_Master__r.Name == pricingMap.get('Car Parking')){
                     System.debug('entered..');
                     System.debug('unitList==>'+unitList[0]);
                     System.debug('unitList==>'+unitList[0].Car_Parking_Amount__c);
-                    pe.Quantity__c = 1;
+                    pe.Quantity__c = (csp.Unit__c == 'sqft') ? area : (csp.Quantity__c != null ? csp.Quantity__c : 1);
                     pe.Rate__c = unitList[0].Car_Parking_Amount__c;
-                    pe.Amount__c =   unitList[0].Car_Parking_Amount__c;
-                }else if (csp.Pricing_Element_Master__r.Name == pricingMap.get('Infrastructure Development Charges') && unitList[0].Infrastructure_Development_Char_pSqft__c != null){
+                    pe.Amount__c = pe.Rate__c != null ? pe.Rate__c * pe.Quantity__c : null;
+
+                }else if(csp.Pricing_Element_Master__r.Name == pricingMap.get('Infrastructure Development Charges') && unitList[0].Infrastructure_Development_Char_pSqft__c != null){
                     System.debug('entered..');
                     system.debug('csp.Quantity__c of Infrastructure: :>>' + csp.Quantity__c);
-                    pe.Quantity__c = (csp.Quantity__c != null) ? csp.Quantity__c : 0;
+                    pe.Quantity__c = (csp.Unit__c == 'sqft') ? area : (csp.Quantity__c != null ? csp.Quantity__c : area);
                     pe.Rate__c = unitList[0].Infrastructure_Development_Char_pSqft__c;
-                    pe.Amount__c = unitList[0].Infrastructure_Development_Char_pSqft__c * area;
-                    
+                    pe.Amount__c = pe.Rate__c * pe.Quantity__c;
+
                 }
                 else{
                     pe.Quantity__c = (csp.Unit__c != null && csp.Unit__c == 'sqft' && unitList[0].Super_Built_Up_Area_sq_ft__c != null) ? unitList[0].Super_Built_Up_Area_sq_ft__c : csp.Quantity__c;
@@ -273,6 +276,7 @@ public without Sharing  class CostSheetGenerationController {
             return 'Error during insert: ' + e.getMessage();
         } catch (Exception e) {
             System.debug('Error in createCostSheet ---> ' + e.getMessage());
+            system.debug('error at line number:: ' + e.getLineNumber());
             return e.getMessage();
         }
     }
@@ -402,9 +406,7 @@ public without Sharing  class CostSheetGenerationController {
                     allDiscountMasterIds.add(discountMaster[i].Id);
                 }
                 if(allDiscountMasterIds.size() > 0 ){
-                    
-                    
-                    List<Discount_LineItem__c> discountLineItems = [select id,Roles__c,Maximum__c,Minimum__c,Discount_Master__c,Discount_Master__r.Pricing_Element_Master__c from Discount_LineItem__c where Discount_Master__c In: allDiscountMasterIds];
+                    List<Discount_LineItem__c> discountLineItems = [select id,Roles__c,Maximum__c,Minimum__c,Discount_Master__c,Discount_Master__r.Pricing_Element_Master__c from Discount_LineItem__c where Discount_Master__c In: allDiscountMasterIds order by CreatedDate desc];
                     System.debug('discountLineItems==>'+discountLineItems);
                     return discountLineItems;
                 }
@@ -422,7 +424,7 @@ public without Sharing  class CostSheetGenerationController {
     public static List<Pricing_Element__c> getPricingElements(String costSheetId){
         try{
             System.debug('costSheetId==>'+costSheetId);
-            List<Pricing_Element__c> getAllPricingAssociations = [select id,Name,Amount__c,Cost_Sheet__c,PE_Type__c,Quantity__c,Rate__c,Final_Tax_Amount__c,Unit__c,Pricing_Element_Master__c,Pricing_Element_Master__r.Name,Cost_Sheet__r.Name,Discount_Amount__c,Discount__c  from Pricing_Element__c where Cost_Sheet__c =: costSheetId];
+            List<Pricing_Element__c> getAllPricingAssociations = [select id,Name, Amount__c,Cost_Sheet__c,PE_Type__c,Quantity__c,Rate__c,Final_Tax_Amount__c,Unit__c,Pricing_Element_Master__c,Pricing_Element_Master__r.Name,Cost_Sheet__r.Name,Discount_Amount__c,Discount__c, Cost_Sheet__r.Unit__r.Super_Built_Up_Area_sq_ft__c  from Pricing_Element__c where Cost_Sheet__c =: costSheetId];
             System.debug('getAllPricingAssociations==>'+getAllPricingAssociations);
             return getAllPricingAssociations;
         }catch(Exception e){
@@ -550,8 +552,6 @@ public without Sharing  class CostSheetGenerationController {
             return null;
         }
     }
-
-
  
     public static Decimal getDecimalValue(Object value) {
         try {
@@ -568,7 +568,6 @@ public without Sharing  class CostSheetGenerationController {
         return 0; // Default fallback value
     }
 
-
     public static Integer getIntegerValue(Object value) {
         try {
             if (value == null) {
@@ -583,9 +582,6 @@ public without Sharing  class CostSheetGenerationController {
         }
         return 1; // Default fallback value
     }
-
-
-
 
    @AuraEnabled
     public static String updatePricingElements(List<Pricing_Element__c> pricingElements) {
@@ -606,6 +602,7 @@ public without Sharing  class CostSheetGenerationController {
     @AuraEnabled 
     public static void submitCostSheetForApproval(String data, String costSheetId){
         try{
+            createPaymentSchedule(costSheetId);
             List<Object> discountList = (List<Object>) JSON.deserializeUntyped(data);
             Map<String, String> discountByPricingMap = new Map<String, String>();
     
@@ -668,6 +665,91 @@ public without Sharing  class CostSheetGenerationController {
         }catch(Exception e){
             system.debug('Error ==> ' + e.getMessage());
             system.debug('Error in line ==> ' + e.getLineNumber());
+        }
+    }
+
+    @AuraEnabled
+    public static void createPaymentSchedule(Id costSheetId) {
+        System.debug('Processing Cost Sheet ID: ' + costSheetId);
+        Id selectedCostSheetTempId;
+        
+        try {
+            if(costSheetId != null){
+                Cost_Sheet__c getCostSheet = [select id,Opportunity__c,Name,Cost_Scheme_Linking__c,finalize_CostSheet__c,Total_Pricing_Value__c, Total_Pricing_Value_Excluding_Tax__c, Total_Tax_Value__c,Cost_Scheme_Linking__r.Cost_Sheet_Template__c from Cost_Sheet__c Where Id =:costSheetId Limit 1];
+                
+                selectedCostSheetTempId = getCostSheet?.Cost_Scheme_Linking__r?.Cost_Sheet_Template__c != null ? getCostSheet.Cost_Scheme_Linking__r.Cost_Sheet_Template__c : '';
+                
+                Cost_Scheme_Linking__c getSchemeLinking = [select id,Payment_Scheme__c,Cost_Sheet_Template__c,Cost_Sheet_Template__r.Amount__c,Cost_Sheet_Template__r.Tax_Amount__c  from Cost_Scheme_Linking__c Where id =:getCostSheet.Cost_Scheme_Linking__c Limit 1];
+                System.debug('Scheme Liking: ' + getSchemeLinking);
+                
+                List<Payment_Scheme_Installment__c> getPaymetSchemeRecords = [select id,Payment_Scheme__c,Payment_Scheme__r.Name,Installment__c,Name,Payment_Schedule_Master__c,Payment_Schedule_Master__r.Name,Display_Order__c,Payment_Schedule_Master__r.Installment_Code__c, Payment_Schedule_Master__r.Installment_Sequence__c  from Payment_Scheme_Installment__c Where Payment_Scheme__c  =:getSchemeLinking.Payment_Scheme__c];
+                System.debug('getPaymetSchemeRecords size: ' + getPaymetSchemeRecords.size());
+                Decimal smallDisplayNum =  10000;
+                for(Payment_Scheme_Installment__c psi : getPaymetSchemeRecords){
+                    if(psi.Display_Order__c  < smallDisplayNum){
+                        smallDisplayNum = psi.Display_Order__c;
+                    }
+                }
+                Decimal totalAgreementValue = 0;
+                Decimal tokenAmount = 0;
+                //List<Payment_Schedule__c> allPaymentSchedules = new List<Payment_Schedule__c>();
+                List<Cost_Sheet_Payment_Schedule__c> allPaymentSchedules = new List<Cost_Sheet_Payment_Schedule__c>();
+                
+                for(Payment_Scheme_Installment__c psi : getPaymetSchemeRecords){
+                    Cost_Sheet_Payment_Schedule__c ps = new Cost_Sheet_Payment_Schedule__c();
+                    Decimal rawAgreement = (getCostSheet.Total_Pricing_Value_Excluding_Tax__c / 100) * psi.Installment__c;
+                    Decimal rawTax = (getCostSheet.Total_Tax_Value__c / 100) * psi.Installment__c;
+
+                    ps.Opportunity__c = getCostSheet.Opportunity__c;
+                    ps.Cost_Sheet__c = costSheetId;
+                    ps.Installment__c = psi.Installment__c;
+                    // ps.Type__c = psi.Type__c;
+                    //ps.Type__c = 'Agreement';
+                    // ps.Agreement_Value__c = (getCostSheet.Total_Pricing_Value_Excluding_Tax__c / 100) * psi.Installment__c;
+                    // ps.Tax_Amount__c = (getCostSheet.Total_Tax_Value__c / 100) * psi.Installment__c;
+                    ps.Agreement_Value__c = Math.ceil(rawAgreement);
+                    ps.Tax_Amount__c = Math.ceil(rawTax);
+                    
+                    ps.Diff_Agreement_Value__c = ps.Agreement_Value__c - rawAgreement;
+                    ps.Diff_Tax_Amount__c = ps.Tax_Amount__c - rawTax;
+                    ps.Other_Charges__c = 0;
+                    ps.Other_Tax_Amount__c = 0;
+                    //ps.Installment_Sequence__c =  psi.Payment_Schedule_Master__r.Installment_Sequence__c;
+                    ps.Installment_Sequence__c =  psi.Display_Order__c;
+                    //ps.Description__c = psi.Payment_Schedule_Master__r.Description__c != null ? psi.Payment_Schedule_Master__r.Description__c : null;
+                    if (smallDisplayNum == psi.Display_Order__c) {
+                        
+                    } else {
+                        Date nextMonth = Date.today().addMonths(1);
+                        Integer lastDayOfNextMonth = Date.daysInMonth(nextMonth.year(), nextMonth.month());
+                        Date nextMonthLastDate = Date.newInstance(nextMonth.year(), nextMonth.month(), lastDayOfNextMonth);
+                    }
+                    ps.Name = psi.Payment_Schedule_Master__r.Name;
+                    if(ps.Name == 'Token Advance (TA) – Rs.3,12,000/'){
+                        tokenAmount = ps.Agreement_Value__c;
+                    }
+                    allPaymentSchedules.add(ps);
+                }
+                
+                List<Pricing_Element__c> ammentiesPricingElements = [select Id,Cost_Sheet__c,Pricing_Element_Master__c,Pricing_Element_Master__r.Name,Type__c,Quantity__c,Amount__c,Actual_Amount__c,Total_Amount_Excluding_Tax__c,Final_Tax_Amount__c, Sequence__c  from Pricing_Element__c Where Cost_Sheet__c =: costSheetId and Type__c ='Ammenities'];
+                for(Pricing_Element__c pe : ammentiesPricingElements){
+                    Cost_Sheet_Payment_Schedule__c ps =  new Cost_Sheet_Payment_Schedule__c();
+                    ps.Name = pe.Pricing_Element_Master__r.Name;
+                    //ps.Type__c =  pe.Type__c;
+                    ps.Cost_Sheet__c = costSheetId;
+
+                    ps.Agreement_Value__c = pe.Total_Amount_Excluding_Tax__c;
+                    ps.Tax_Amount__c = pe.Final_Tax_Amount__c;
+                    //ps.Description__c = pe.Description__c;
+                    ps.Installment_Sequence__c = pe.Sequence__c;
+                    ps.Opportunity__c = getCostSheet.Opportunity__c;
+                    allPaymentSchedules.add(ps);
+
+                }
+                insert allPaymentSchedules;
+            }
+        } catch (Exception e) {
+            System.debug(' Error ===> ' + e.getLineNumber() + ' ---> ' + e.getMessage());
         }
     }
 }

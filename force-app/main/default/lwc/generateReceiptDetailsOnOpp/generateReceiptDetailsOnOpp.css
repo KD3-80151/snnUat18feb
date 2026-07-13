@@ -15,3 +15,39 @@
 .custom-inputrecp{
     font-weight: bold;
 }
+
+.against-debit-help {
+    margin-top: 0.35rem;
+    color: #5c4400;
+    font-size: 0.85rem;
+}
+
+.debit-schedule-modal {
+    z-index: 10000;
+}
+
+.debit-schedule-modal__container {
+    max-width: 42rem;
+    width: 90%;
+}
+
+.debit-schedule-modal__title {
+    color: #5c4400;
+    font-weight: 700;
+    text-align: center;
+}
+
+.debit-schedule-modal__content {
+    background: #fffdf8;
+}
+
+.debit-schedule-modal__subtitle {
+    margin-bottom: 0.75rem;
+    color: #5f5f5f;
+    font-size: 0.9rem;
+}
+
+.debit-schedule-backdrop {
+    opacity: 0.55;
+    background: #000;
+}

@@ -6,7 +6,7 @@
         <name>Assign_the_Due_Amount</name>
         <label>Assign the Due Amount</label>
         <locationX>138</locationX>
-        <locationY>1787</locationY>
+        <locationY>1379</locationY>
         <assignmentItems>
             <assignToReference>newPaymentSchRec.Total_Received_Amount__c</assignToReference>
             <operator>Assign</operator>
@@ -40,40 +40,10 @@
         </connector>
     </assignments>
     <assignments>
-        <name>Assign_Zero_Amount_To_PaymentSchedule</name>
-        <label>Assign_Zero_Amount_To_PaymentSchedule</label>
-        <locationX>138</locationX>
-        <locationY>1271</locationY>
-        <assignmentItems>
-            <assignToReference>oldPaymentSchRec.Total_Received_Amount__c</assignToReference>
-            <operator>Assign</operator>
-            <value>
-                <numberValue>0.0</numberValue>
-            </value>
-        </assignmentItems>
-        <assignmentItems>
-            <assignToReference>oldPaymentSchRec.Id</assignToReference>
-            <operator>Assign</operator>
-            <value>
-                <elementReference>Loop_on_Payment_Schedules.Id</elementReference>
-            </value>
-        </assignmentItems>
-        <assignmentItems>
-            <assignToReference>oldPaymentSchCollection</assignToReference>
-            <operator>Add</operator>
-            <value>
-                <elementReference>oldPaymentSchRec</elementReference>
-            </value>
-        </assignmentItems>
-        <connector>
-            <targetReference>Loop_on_Payment_Schedules</targetReference>
-        </connector>
-    </assignments>
-    <assignments>
         <name>Copy_1_of_Assign_the_Due_Amount</name>
         <label>Copy 1 of Assign the Due Amount</label>
         <locationX>402</locationX>
-        <locationY>1787</locationY>
+        <locationY>1379</locationY>
         <assignmentItems>
             <assignToReference>newPaymentSchRec.Total_Received_Amount__c</assignToReference>
             <operator>Assign</operator>
@@ -146,7 +116,7 @@
     <decisions>
         <name>Check_Record_Type</name>
         <label>Check Record Type</label>
-        <locationX>644</locationX>
+        <locationX>809</locationX>
         <locationY>323</locationY>
         <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
         <rules>
@@ -183,7 +153,7 @@
     <decisions>
         <name>Check_Unit_is_Present_or_Not</name>
         <label>Check Unit is Present or Not</label>
-        <locationX>710</locationX>
+        <locationX>974</locationX>
         <locationY>431</locationY>
         <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
         <rules>
@@ -197,7 +167,7 @@
                 </rightValue>
             </conditions>
             <connector>
-                <targetReference>Update_Unit_Record</targetReference>
+                <targetReference>Copy_1_of_Create_Task_Record</targetReference>
             </connector>
             <label>Unit is Available</label>
         </rules>
@@ -205,8 +175,8 @@
     <decisions>
         <name>Copy_1_of_Check_Unit_is_Present_or_Not</name>
         <label>Copy 1 of Check Unit is Present or Not</label>
-        <locationX>182</locationX>
-        <locationY>2147</locationY>
+        <locationX>446</locationX>
+        <locationY>539</locationY>
         <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
         <rules>
             <name>Copy_1_of_Unit_is_Available</name>
@@ -220,13 +190,13 @@
             </conditions>
             <conditions>
                 <leftValueReference>$Record.Approval_Status__c</leftValueReference>
-                <operator>IsChanged</operator>
+                <operator>EqualTo</operator>
                 <rightValue>
-                    <booleanValue>true</booleanValue>
+                    <stringValue>Approved</stringValue>
                 </rightValue>
             </conditions>
             <connector>
-                <targetReference>Copy_1_of_Update_Unit_Record</targetReference>
+                <targetReference>Create_Task_Record</targetReference>
             </connector>
             <label>Copy 1 of Unit is Available</label>
         </rules>
@@ -234,7 +204,7 @@
     <decisions>
         <name>Decision_on_To_Opportunity_Tag</name>
         <label>Decision on To Opportunity Tag</label>
-        <locationX>182</locationX>
+        <locationX>248</locationX>
         <locationY>431</locationY>
         <defaultConnector>
             <targetReference>Copy_1_of_Check_Unit_is_Present_or_Not</targetReference>
@@ -267,7 +237,7 @@
         <name>Total_Amount_Check</name>
         <label>Total Amount Check</label>
         <locationX>402</locationX>
-        <locationY>1679</locationY>
+        <locationY>1271</locationY>
         <defaultConnector>
             <targetReference>Lopp_On_New_Payment_Schedule</targetReference>
         </defaultConnector>
@@ -321,20 +291,6 @@
     <interviewLabel>Case Updation Flow {!$Flow.CurrentDateTime}</interviewLabel>
     <label>Case Updation Flow</label>
     <loops>
-        <name>Loop_on_Payment_Schedules</name>
-        <label>Loop on Payment Schedules</label>
-        <locationX>50</locationX>
-        <locationY>1163</locationY>
-        <collectionReference>Get_all_Payment_Schedule_from_Opportunity</collectionReference>
-        <iterationOrder>Asc</iterationOrder>
-        <nextValueConnector>
-            <targetReference>Assign_Zero_Amount_To_PaymentSchedule</targetReference>
-        </nextValueConnector>
-        <noMoreValuesConnector>
-            <targetReference>Get_Payment_Schedule_From_Opportunity_v1</targetReference>
-        </noMoreValuesConnector>
-    </loops>
-    <loops>
         <name>Loop_on_Receipts</name>
         <label>Loop on Receipts</label>
         <locationX>50</locationX>
@@ -352,14 +308,14 @@
         <name>Lopp_On_New_Payment_Schedule</name>
         <label>Lopp On New Payment Schedule</label>
         <locationX>50</locationX>
-        <locationY>1571</locationY>
+        <locationY>1163</locationY>
         <collectionReference>Get_Payment_Schedule_From_Opportunity_v1</collectionReference>
         <iterationOrder>Asc</iterationOrder>
         <nextValueConnector>
             <targetReference>Total_Amount_Check</targetReference>
         </nextValueConnector>
         <noMoreValuesConnector>
-            <targetReference>Copy_1_of_Check_Unit_is_Present_or_Not</targetReference>
+            <targetReference>Update_New_Opp_Payment_Schedules</targetReference>
         </noMoreValuesConnector>
     </loops>
     <processMetadataValues>
@@ -384,8 +340,8 @@
     <recordCreates>
         <name>Copy_1_of_Create_Task_Record</name>
         <label>Copy 1 of Create Task Record</label>
-        <locationX>578</locationX>
-        <locationY>647</locationY>
+        <locationX>842</locationX>
+        <locationY>539</locationY>
         <inputAssignments>
             <field>OwnerId</field>
             <value>
@@ -416,8 +372,8 @@
     <recordCreates>
         <name>Create_Task_Record</name>
         <label>Create Task Record</label>
-        <locationX>50</locationX>
-        <locationY>2363</locationY>
+        <locationX>314</locationX>
+        <locationY>647</locationY>
         <inputAssignments>
             <field>OwnerId</field>
             <value>
@@ -446,27 +402,6 @@
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </recordCreates>
     <recordLookups>
-        <name>Get_all_Payment_Schedule_from_Opportunity</name>
-        <label>Get all Payment Schedule from Opportunity</label>
-        <locationX>50</locationX>
-        <locationY>1055</locationY>
-        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
-        <connector>
-            <targetReference>Loop_on_Payment_Schedules</targetReference>
-        </connector>
-        <filterLogic>and</filterLogic>
-        <filters>
-            <field>Opportunity__c</field>
-            <operator>EqualTo</operator>
-            <value>
-                <elementReference>$Record.Opportunity__c</elementReference>
-            </value>
-        </filters>
-        <getFirstRecordOnly>false</getFirstRecordOnly>
-        <object>Payment_Schedule__c</object>
-        <storeOutputAutomatically>true</storeOutputAutomatically>
-    </recordLookups>
-    <recordLookups>
         <name>Get_all_Receipts_from_Opportunity</name>
         <label>Get all Receipts from Opportunity</label>
         <locationX>50</locationX>
@@ -491,7 +426,7 @@
         <name>Get_Payment_Schedule_From_Opportunity_v1</name>
         <label>Get Payment Schedule From New Opportunity v1</label>
         <locationX>50</locationX>
-        <locationY>1463</locationY>
+        <locationY>1055</locationY>
         <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
         <connector>
             <targetReference>Lopp_On_New_Payment_Schedule</targetReference>
@@ -511,28 +446,11 @@
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </recordLookups>
     <recordUpdates>
-        <name>Copy_1_of_Update_Unit_Record</name>
-        <label>Copy 1 of Update Unit Record</label>
+        <name>Update_New_Opp_Payment_Schedules</name>
+        <label>Update New Opportunity Payment Schedules</label>
         <locationX>50</locationX>
-        <locationY>2255</locationY>
-        <connector>
-            <targetReference>Create_Task_Record</targetReference>
-        </connector>
-        <filterLogic>and</filterLogic>
-        <filters>
-            <field>Id</field>
-            <operator>EqualTo</operator>
-            <value>
-                <elementReference>$Record.Opportunity__r.Unit__c</elementReference>
-            </value>
-        </filters>
-        <inputAssignments>
-            <field>Status__c</field>
-            <value>
-                <stringValue>For Sale</stringValue>
-            </value>
-        </inputAssignments>
-        <object>Unit__c</object>
+        <locationY>1655</locationY>
+        <inputReference>newPaymentSchCollection</inputReference>
     </recordUpdates>
     <recordUpdates>
         <name>update_new_Opportunity_on_Record</name>
@@ -540,36 +458,12 @@
         <locationX>50</locationX>
         <locationY>947</locationY>
         <connector>
-            <targetReference>Get_all_Payment_Schedule_from_Opportunity</targetReference>
+            <targetReference>Get_Payment_Schedule_From_Opportunity_v1</targetReference>
         </connector>
         <inputReference>updatedOpp</inputReference>
     </recordUpdates>
-    <recordUpdates>
-        <name>Update_Unit_Record</name>
-        <label>Update Unit Record</label>
-        <locationX>578</locationX>
-        <locationY>539</locationY>
-        <connector>
-            <targetReference>Copy_1_of_Create_Task_Record</targetReference>
-        </connector>
-        <filterLogic>and</filterLogic>
-        <filters>
-            <field>Id</field>
-            <operator>EqualTo</operator>
-            <value>
-                <elementReference>$Record.Opportunity__r.Unit__c</elementReference>
-            </value>
-        </filters>
-        <inputAssignments>
-            <field>Status__c</field>
-            <value>
-                <stringValue>For Sale</stringValue>
-            </value>
-        </inputAssignments>
-        <object>Unit__c</object>
-    </recordUpdates>
     <start>
-        <locationX>518</locationX>
+        <locationX>683</locationX>
         <locationY>0</locationY>
         <connector>
             <targetReference>Check_Record_Type</targetReference>
@@ -625,36 +519,12 @@
         <objectType>Payment_Schedule__c</objectType>
     </variables>
     <variables>
-        <name>oldPaymentSchCollection</name>
-        <dataType>SObject</dataType>
-        <isCollection>true</isCollection>
-        <isInput>false</isInput>
-        <isOutput>false</isOutput>
-        <objectType>Payment_Schedule__c</objectType>
-    </variables>
-    <variables>
-        <name>oldPaymentSchRec</name>
-        <dataType>SObject</dataType>
-        <isCollection>false</isCollection>
-        <isInput>false</isInput>
-        <isOutput>false</isOutput>
-        <objectType>Payment_Schedule__c</objectType>
-    </variables>
-    <variables>
         <name>updatedOpp</name>
         <dataType>SObject</dataType>
         <isCollection>true</isCollection>
         <isInput>true</isInput>
         <isOutput>true</isOutput>
         <objectType>Receipt__c</objectType>
-    </variables>
-    <variables>
-        <name>var_PaymentSchedulesToUpdate</name>
-        <dataType>SObject</dataType>
-        <isCollection>true</isCollection>
-        <isInput>false</isInput>
-        <isOutput>false</isOutput>
-        <objectType>Payment_Schedule__c</objectType>
     </variables>
     <variables>
         <name>var_TotalReceiptAmount</name>

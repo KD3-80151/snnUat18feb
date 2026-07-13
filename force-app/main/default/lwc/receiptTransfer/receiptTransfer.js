@@ -2,7 +2,7 @@ import { LightningElement, track, wire } from 'lwc';
 import fetchProjectDetails from '@salesforce/apex/receiptTransferController.fetchProjectDetails';
 import fetchTowerDetails from '@salesforce/apex/receiptTransferController.fetchTowerDetails';
 import fetchAccDetails from '@salesforce/apex/receiptTransferController.fetchAccDetails';
-import fetchOpportunityDetails from '@salesforce/apex/receiptTransferController.fetchOpportunityDetails';
+import fetchOpportunityByAccount from '@salesforce/apex/receiptTransferController.fetchOpportunityByAccount';
 import fetchOppDetails from '@salesforce/apex/receiptTransferController.fetchOppDetails';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import createTransferLog from '@salesforce/apex/receiptTransferController.createTransferLog';
@@ -185,9 +185,11 @@ export default class ReceiptTransfer extends LightningElement {
             ? 'fetchBlockDetails'
             : name.includes('Block')
                 ? 'fetchAccountDetails'
-                : name.includes('Opportunity')
-                    ? 'fetchOpportunityDetails'
-                    : `handle${name}`;
+                : name.includes('Client')
+                    ? 'fetchOpportunityByClient'
+                    : name.includes('Opportunity')
+                        ? 'fetchOpportunityDetails'
+                        : `handle${name}`;
            // const commonFunction = name.includes('Project') ? 'fetchBlockDetails' : name.includes('Block') ? 'fetchAccountDetails' : `handle${name}`;
             this[commonFunction]?.(name, value);
         }
@@ -203,23 +205,44 @@ export default class ReceiptTransfer extends LightningElement {
     }
 
     fetchAccountDetails(name, blockId) {
-        const finalName = name == 'From_Block__c' ? 'fromClientOptions' : 'toClientOptions';
-        fetchAccDetails({ blockId: blockId })
-        .then(data => {
-            this[finalName] = data != null ? data.map(acc => ({ label: acc.Name, value: acc.Id })) : [];
-            
-        })
+        const isFrom = name === 'From_Block__c';
+        const clientField = isFrom ? 'fromClientOptions' : 'toClientOptions';
+        const oppField    = isFrom ? 'fromOpportunityOptions' : 'toOpportunityOptions';
 
-        const finalName1 = name.includes('From_Block__c') ? 'fromOpportunityOptions' : 'toOpportunityOptions';
-         fetchOpportunityDetails({ blockId: blockId })
-        .then(data => {
-            this[finalName1] = data != null ? data.map(acc => ({ label: acc.Name, value: acc.Id })) : [];
-        })
+        // Reset dependent dropdowns when block changes
+        this[oppField] = [];
+        if (isFrom) {
+            this.transferLogDetails.From_Client__c = null;
+            this.transferLogDetails.From_Opportunity__c = null;
+        } else {
+            this.transferLogDetails.To_Client__c = null;
+            this.transferLogDetails.To_Opportunity__c = null;
+        }
+
+        fetchAccDetails({ blockId: blockId })
+            .then(data => {
+                this[clientField] = data != null ? data.map(acc => ({ label: acc.Name, value: acc.Id })) : [];
+            });
     }
 
-    fetchOpportunityDetails(name,blockId){
-        debugger;
-         
+    fetchOpportunityByClient(name, accountId) {
+        const isFrom = name === 'From_Client__c';
+        const oppField = isFrom ? 'fromOpportunityOptions' : 'toOpportunityOptions';
+
+        // Reset opportunity selection when client changes
+        if (isFrom) {
+            this.transferLogDetails.From_Opportunity__c = null;
+        } else {
+            this.transferLogDetails.To_Opportunity__c = null;
+        }
+
+        fetchOpportunityByAccount({ accountId: accountId })
+            .then(data => {
+                this[oppField] = data != null ? data.map(opp => ({ label: opp.Name, value: opp.Id })) : [];
+            })
+            .catch(error => {
+                this.showToast('Error', error.body.message, 'error');
+            });
     }
 
     handleClear() {

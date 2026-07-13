@@ -24,6 +24,23 @@
         <offset>0</offset>
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </actionCalls>
+    <actionCalls>
+        <name>Update_Both_From_and_To_Payment_Schedules</name>
+        <label>Update Both From and To Payment Schedules</label>
+        <locationX>402</locationX>
+        <locationY>1055</locationY>
+        <actionName>ReceiptTransferPaymentScheduleInvoker</actionName>
+        <actionType>apex</actionType>
+        <flowTransactionModel>Automatic</flowTransactionModel>
+        <inputParameters>
+            <name>transferLogId</name>
+            <value>
+                <elementReference>$Record.Id</elementReference>
+            </value>
+        </inputParameters>
+        <nameSegment>ReceiptTransferPaymentScheduleInvoker</nameSegment>
+        <offset>0</offset>
+    </actionCalls>
     <apiVersion>63.0</apiVersion>
     <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
     <assignments>
@@ -176,6 +193,9 @@
         <label>Update receipt Collection</label>
         <locationX>402</locationX>
         <locationY>947</locationY>
+        <connector>
+            <targetReference>Update_Both_From_and_To_Payment_Schedules</targetReference>
+        </connector>
         <inputReference>receiptCollection</inputReference>
     </recordUpdates>
     <start>

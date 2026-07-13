@@ -227,10 +227,27 @@
             <targetReference>Main_Decision</targetReference>
         </connector>
     </assignments>
+    <assignments>
+        <name>mdv_NextFollowUpFalse</name>
+        <label>mdv_NextFollowUpFalse</label>
+        <locationX>1370</locationX>
+        <locationY>647</locationY>
+        <assignmentItems>
+            <assignToReference>mdv_NextFollowUp</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <booleanValue>false</booleanValue>
+            </value>
+        </assignmentItems>
+        <connector>
+            <isGoTo>true</isGoTo>
+            <targetReference>Main_Decision</targetReference>
+        </connector>
+    </assignments>
     <decisions>
         <name>Main_Decision</name>
         <label>Main Decision</label>
-        <locationX>842</locationX>
+        <locationX>974</locationX>
         <locationY>431</locationY>
         <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
         <rules>
@@ -430,10 +447,67 @@
                     <stringValue>Assigned</stringValue>
                 </rightValue>
             </conditions>
+            <conditions>
+                <leftValueReference>mdv_NextFollowUp</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <booleanValue>true</booleanValue>
+                </rightValue>
+            </conditions>
             <connector>
                 <targetReference>Create_Follow_Up_Task1</targetReference>
             </connector>
             <label>Create follow up task</label>
+        </rules>
+        <rules>
+            <name>Update_Stage_to_Qualified</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.Budget_In_Lakhs__c</leftValueReference>
+                <operator>IsBlank</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.Next_Follow_Up_Date_Time__c</leftValueReference>
+                <operator>IsBlank</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.Status</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>Contacted</stringValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.Customer_Response__c</leftValueReference>
+                <operator>IsBlank</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.Region__c</leftValueReference>
+                <operator>IsBlank</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.Interested_Unit__c</leftValueReference>
+                <operator>IsBlank</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Update_Leads_To_Qualified</targetReference>
+            </connector>
+            <label>Update Stage to Qualified</label>
         </rules>
     </decisions>
     <environments>Default</environments>
@@ -530,6 +604,9 @@
         <label>Create Follow Up Task</label>
         <locationX>1370</locationX>
         <locationY>539</locationY>
+        <connector>
+            <targetReference>mdv_NextFollowUpFalse</targetReference>
+        </connector>
         <inputAssignments>
             <field>Subject</field>
             <value>
@@ -653,6 +730,25 @@
         <object>Account</object>
     </recordUpdates>
     <recordUpdates>
+        <name>Update_Leads_To_Qualified</name>
+        <label>Update Leads To Qualified</label>
+        <locationX>1634</locationX>
+        <locationY>539</locationY>
+        <inputAssignments>
+            <field>Is_Qualified__c</field>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Status</field>
+            <value>
+                <stringValue>Qualified</stringValue>
+            </value>
+        </inputAssignments>
+        <inputReference>$Record</inputReference>
+    </recordUpdates>
+    <recordUpdates>
         <name>Update_Opportunity</name>
         <label>Update Opportunity</label>
         <locationX>578</locationX>
@@ -679,7 +775,7 @@
     <recordUpdates>
         <name>Update_Qualified_date_time</name>
         <label>Update Qualified date time</label>
-        <locationX>842</locationX>
+        <locationX>974</locationX>
         <locationY>323</locationY>
         <connector>
             <targetReference>Main_Decision</targetReference>
@@ -730,7 +826,7 @@
         <inputReference>$Record</inputReference>
     </recordUpdates>
     <start>
-        <locationX>716</locationX>
+        <locationX>848</locationX>
         <locationY>0</locationY>
         <connector>
             <targetReference>Update_Qualified_date_time</targetReference>
@@ -740,6 +836,16 @@
         <triggerType>RecordAfterSave</triggerType>
     </start>
     <status>Active</status>
+    <variables>
+        <name>mdv_NextFollowUp</name>
+        <dataType>Boolean</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <value>
+            <booleanValue>true</booleanValue>
+        </value>
+    </variables>
     <variables>
         <name>mdv_SalesTeamMember</name>
         <dataType>Boolean</dataType>

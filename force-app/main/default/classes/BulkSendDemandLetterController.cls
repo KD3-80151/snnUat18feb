@@ -27,8 +27,7 @@ public without Sharing  class BulkSendDemandLetterController {
         
         List<String> installmentNameList = (List<String>) JSON.deserialize(installmentName, List<String>.class);
         List<Opportunity> opportunities = [
-       SELECT Id, Name, Project__c, Unit__r.Floor__r.Blocks__c, Unit__r.Name,
-       Account.Id, Account.Name,  
+       SELECT Id, Name, Project__c, Unit__r.Floor__r.Blocks__c, Unit__r.Name, Unit__r.Unit_Name__c, Account.Id, Account.Name,  
        (SELECT Id, Name, Agreement_Value__c,Total_Due_Amount__c, Tax_Amount__c FROM Payment_Schedules__r WHERE Demand_Letter_Sent__c = false AND Due_Date__c = :Date.today().addDays(15))
        FROM Opportunity WHERE Project__c = :projectId AND Unit__r.Floor__r.Blocks__c = :tower];
         system.debug('opportunities === ' + opportunities);
@@ -101,7 +100,7 @@ public without Sharing  class BulkSendDemandLetterController {
                         if(ps.Total_Due_Amount__c > 0){
                             
                             opportunityMap.put('Id', opp.Id);
-                            opportunityMap.put('UnitName', opp.Unit__r.Name);
+                            opportunityMap.put('UnitName', opp.Unit__r.Unit_Name__c);
                             opportunityMap.put('InstallmentName', ps.Name);
                             opportunityMap.put('InstallmentId', ps.Id);
                             opportunityMap.put('InstallmentAgreementAmount', ps.Agreement_Value__c);
@@ -148,10 +147,13 @@ public without Sharing  class BulkSendDemandLetterController {
             if(oppToPaymentsMap.size() > 0){
                 System.debug('inside oppMap');
                 Map<String, List<String>> oppIdByContentVersionIds = new Map<String, List<String>>();
-                System.enqueueJob(new QueueableToGenerateDemandLetter(oppToPaymentsMap, oppIdByContentVersionIds));
+                Set<Id> processedPaymentScheduleIds = new Set<Id>();
+                System.enqueueJob(new QueueableToGenerateDemandLetter(oppToPaymentsMap, oppIdByContentVersionIds, processedPaymentScheduleIds));
             }
             
         }
         
     }
+    
+
 }

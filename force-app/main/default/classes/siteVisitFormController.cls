@@ -28,13 +28,7 @@ public without sharing class siteVisitFormController {
     @RemoteAction
     public static fetchDataWrapper fetchDataOnLoad(){
         try{
-            List<User> salesUserList = [
-                SELECT Id, Name, Profile.Name, IsActive
-                FROM User
-                WHERE IsActive = true
-                AND Profile.Name IN ('Sales Executive', 'Sales Manager')
-                ORDER BY Profile.Name, Name
-            ];
+            List<User> salesUserList = [SELECT Id, Name, Profile.Name FROM User WHERE IsActive = true AND Profile.Name IN ('Sales Executive', 'Sales Manager') ORDER BY Profile.Name];
             System.debug('salesUserList >>'+salesUserList);
             
             List<Project__c> projectList = [SELECT Id,Name FROM Project__c];
@@ -206,7 +200,7 @@ public without sharing class siteVisitFormController {
                 return 'We already have this Lead record.';
             }else{
                 leadRecord.Company = leadRecord.LastName;
-                leadRecord.By_Pass_Validations__c = true;
+                // leadRecord.By_Pass_Validations__c = true;
                 leadRecord.Is_User_Assigned__c = true;
                 leadRecord.External_Lead__c = true;
                 leadRecord.Sales_Person_on_Queue__c = false;
@@ -230,6 +224,7 @@ public without sharing class siteVisitFormController {
     }
     
     public static Id assignToSalesMember(String leadId, String type) {
+        system.debug('type:::' + type);
         System.debug('Second Time Calling..');
         try {
             List<Lead> lead = [SELECT Id, Project__c FROM Lead WHERE Id =: leadId Limit 1];
@@ -280,14 +275,13 @@ public without sharing class siteVisitFormController {
             return null;
         }
     }
-    
+
     @RemoteAction
-    public static string insertVisitRecord(Visit__c visitRecord, string leadId, string oppId, string salesTeamMemberId){
+    public static string insertVisitRecord(Visit__c visitRecord, string leadId, string oppId, String salesTeamMemberId){
         try{
             System.debug('visitRecord ===> '+visitRecord);
             System.debug('leadId===>'+leadId);
             System.debug('oppId===>'+oppId);
-            System.debug('salesTeamMemberId===>'+salesTeamMemberId);
             List<RecordType> custAccType = [
                 SELECT Id 
                 FROM RecordType 
@@ -299,7 +293,7 @@ public without sharing class siteVisitFormController {
             if((leadId != null || leadId != '') && (oppId == null || oppId == '')){
                 System.debug('one Time site Visit...');
                 if(leadList[0].Sales_Team_Member__c == null){
-                    assignToSalesMember(leadId,'Sales(GRE)');
+                    assignToSalesMember(leadId,'Sales');
                 }
                 
                 Database.LeadConvert lc = new database.LeadConvert();
@@ -326,15 +320,14 @@ public without sharing class siteVisitFormController {
                     update convAcc;
                 }
                 if(updatedLead != null && updatedLead.ConvertedOpportunityId != null){
-                    Opportunity newOpp = [SELECT Id, Name, Channel_Partner__c, OwnerId, Email__c, Account.Name, Account.Phone, Phone__c,StageName,CloseDate,Amount,LeadSource,CreatedDate,Owner.Name, Sales_Team_Member__c FROM Opportunity WHERE Id =: updatedLead.ConvertedOpportunityId];
+                    Opportunity newOpp = [SELECT Id, Name, Channel_Partner__c, OwnerId, Email__c, Account.Name, Account.Phone, Phone__c,StageName,CloseDate,Amount,LeadSource,CreatedDate,Owner.Name FROM Opportunity WHERE Id =: updatedLead.ConvertedOpportunityId];
                     visitRecord.Opportunity__c = updatedLead.ConvertedOpportunityId;
                     visitRecord.Channel_Partner__c = newOpp.Channel_Partner__c;
                     visitRecord.Contact__c = updatedLead.ConvertedContactId;
                     newOpp.OwnerId = updatedLead.OwnerId;
-                    if(!String.isBlank(salesTeamMemberId)){
+                    if (!String.isBlank(salesTeamMemberId)) {
                         newOpp.Sales_Team_Member__c = salesTeamMemberId;
                     }
-                    
                     update newOpp;
                     System.debug('New Opportunity Owner updated: ' + newOpp.OwnerId);
                     // LeadHandler.copyNotesToOpportunity(new List<Lead>{updatedLead});
@@ -507,15 +500,13 @@ public without sharing class siteVisitFormController {
             }
             else if(oppId != null && oppId != '' && (leadId == null || leadId == '')){
                 System.debug('second visit..');
-                Opportunity Opp = [SELECT Id, Name, Channel_Partner__c, Sales_Team_Member__c FROM Opportunity WHERE Id =: oppId];
+                Opportunity Opp = [SELECT Id, Name, Channel_Partner__c FROM Opportunity WHERE Id =: oppId];
                 visitRecord.Channel_Partner__c = Opp.Channel_Partner__c;
                 visitRecord.Opportunity__c = oppId;
-                if(!String.isBlank(salesTeamMemberId)){
+                if (!String.isBlank(salesTeamMemberId)) {
                     Opp.Sales_Team_Member__c = salesTeamMemberId;
                     update Opp;
                 }
-                
-                //
             }
             // System.debug(' --- location:'+location);
             
@@ -699,10 +690,6 @@ public without sharing class siteVisitFormController {
         }catch(Exception e){
             return e.getMessage()+e.getLineNumber();
         }
-    }
-
-    public static string insertVisitRecord(Visit__c visitRecord, string leadId, string oppId){
-        return insertVisitRecord(visitRecord, leadId, oppId, null);
     }
     
     @RemoteAction

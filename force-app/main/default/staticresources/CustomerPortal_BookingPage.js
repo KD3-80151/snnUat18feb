@@ -102,82 +102,82 @@ angular
 
         $scope.showPaymentPlanPage = function (value) {
 
-            $scope.bookingPage = false;
+                $scope.bookingPage = false;
 
-            $scope.totalAmount = 0;
-            $scope.totalAmountStr = '';
+                $scope.totalAmount = 0;
+                $scope.totalAmountStr = '';
 
-            $scope.amountPaid = 0;
-            $scope.amountPaidStr = '';
+                $scope.amountPaid = 0;
+                $scope.amountPaidStr = '';
 
-            $scope.amountDue = 0;
-            $scope.amountDueStr = '';
+                $scope.amountDue = 0;
+                $scope.amountDueStr = '';
 
-            CustomerPortalController.fetchPaymentSchedules(value.Id, function (result, event) {
+                CustomerPortalController.fetchPaymentSchedules(value.Id, function (result, event) {
 
-                if (event.status && result) {
+                    if (event.status && result) {
 
-                    for (var i = 0; i < result.length; i++) {
+                        for (var i = 0; i < result.length; i++) {
 
-                        result[i].Due_Date__c = (
-                            result[i].Due_Date__c
-                            ? new Date(result[i].Due_Date__c).toLocaleDateString('en-GB', {
-                                day: '2-digit',
-                                month: 'short',
-                                year: 'numeric'
-                            })
-                            : 'Not mentioned'
-                        );
+                            result[i].Due_Date__c = (
+                                result[i].Due_Date__c
+                                ? new Date(result[i].Due_Date__c).toLocaleDateString('en-GB', {
+                                    day: '2-digit',
+                                    month: 'short',
+                                    year: 'numeric'
+                                })
+                                : 'Not mentioned'
+                            );
 
-                        result[i].Pay_Date__c = (
-                            result[i].Pay_Date__c
-                            ? new Date(result[i].Pay_Date__c).toLocaleDateString('en-GB', {
-                                day: '2-digit',
-                                month: 'short',
-                                year: 'numeric'
-                            })
-                            : 'Not mentioned'
-                        );
+                            result[i].Pay_Date__c = (
+                                result[i].Pay_Date__c
+                                ? new Date(result[i].Pay_Date__c).toLocaleDateString('en-GB', {
+                                    day: '2-digit',
+                                    month: 'short',
+                                    year: 'numeric'
+                                })
+                                : 'Not mentioned'
+                            );
 
-                        result[i].Agreement_Value__c =
-                            result[i].Agreement_Value__c
-                            ? $scope.formatCurrency(result[i].Agreement_Value__c)
-                            : '₹0';
+                            result[i].Agreement_Value__c =
+                                result[i].Agreement_Value__c
+                                ? $scope.formatCurrency(result[i].Agreement_Value__c)
+                                : '₹0';
 
-                        result[i].Total_Due_Amount__c =
-                            $scope.formatCurrency(result[i].Total_Due_Amount__c);
+                            result[i].Total_Due_Amount__c =
+                                $scope.formatCurrency(result[i].Total_Due_Amount__c);
+                        }
+
+                        // Taking values from Opportunity
+                        if (result.length > 0 && result[0].Opportunity__r) {
+
+                            $scope.totalAmount =
+                                result[0].Opportunity__r.Total_Outstanding_Amount__c || 0;
+
+                            $scope.amountPaid =
+                                result[0].Opportunity__r.Total_Amount_Collected__c || 0;
+
+                            $scope.amountDue =
+                                $scope.totalAmount - $scope.amountPaid;
+                        }
+
+                        $scope.totalAmountStr = $scope.formatCurrency($scope.totalAmount);
+                        $scope.amountPaidStr = $scope.formatCurrency($scope.amountPaid);
+                        $scope.amountDueStr = $scope.formatCurrency($scope.amountDue);
+
+                        $scope.psData = $rootScope.replaceAMPinArr(result);
+
+                        $scope.totalPsItems = $scope.psData.length;
+                        $scope.totalPsPages = Math.ceil($scope.totalPsItems / $scope.itemsPerPage);
+
+                        $scope.paymentPlan = true;
+
+                        $scope.updatePaginatedRecords();
                     }
 
-                    // Taking values from Opportunity
-                    if (result.length > 0 && result[0].Opportunity__r) {
-
-                        $scope.totalAmount =
-                            result[0].Opportunity__r.Total_Outstanding_Amount__c || 0;
-
-                        $scope.amountPaid =
-                            result[0].Opportunity__r.Total_Amount_Collected__c || 0;
-
-                        $scope.amountDue =
-                            $scope.totalAmount - $scope.amountPaid;
-                    }
-
-                    $scope.totalAmountStr = $scope.formatCurrency($scope.totalAmount);
-                    $scope.amountPaidStr = $scope.formatCurrency($scope.amountPaid);
-                    $scope.amountDueStr = $scope.formatCurrency($scope.amountDue);
-
-                    $scope.psData = $rootScope.replaceAMPinArr(result);
-
-                    $scope.totalPsItems = $scope.psData.length;
-                    $scope.totalPsPages = Math.ceil($scope.totalPsItems / $scope.itemsPerPage);
-
-                    $scope.paymentPlan = true;
-
-                    $scope.updatePaginatedRecords();
-                }
-
-                $scope.$apply();
-            });
-        }
+                    $scope.$apply();
+                });
+            }
 
         $scope.fetchBookingData = function () {
             debugger;

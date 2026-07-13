@@ -15,6 +15,7 @@ private class QueueableToGenerateDemandLetterTest {
         );
         insert testOpportunity;
         
+        
         Document__c doc = new Document__c();
         doc.Name='Demand Letter';
         doc.Opportunity__c = testOpportunity.Id;
@@ -61,8 +62,13 @@ private class QueueableToGenerateDemandLetterTest {
         oppToPaymentsMap.put(testOpportunity.Id, new List<Payment_Schedule__c>{ paymentSchedule });
         oppToPaymentsMap.put(testOpportunity.Id, new List<Payment_Schedule__c>{ paymentSchedule1 });
         
+        
         Map<String, List<String>> oppIdByContentVersionIds = new Map<String, List<String>>();
         oppIdByContentVersionIds.put(testOpportunity.Id, new List<String>{ cv.Id });
+        
+        Set<Id> processedPaymentScheduleIds = new  Set<Id>();
+        
+        processedPaymentScheduleIds.add(paymentSchedule1.Id);
         
         String digiDocId = 'mockDigioDocId';
         String fileName = 'TestFile.pdf';
@@ -72,7 +78,7 @@ private class QueueableToGenerateDemandLetterTest {
         Test.startTest();
         Map<String, List<String>> result = QueueableToGenerateDemandLetter.downloadDocument123(digiDocId, fileName, parentFolderId, docId, oppIdBycontentVersionIds);
         Test.setMock(HttpCalloutMock.class, new MultiMockHttpResponseGenerator());
-        QueueableToGenerateDemandLetter queueableJob = new QueueableToGenerateDemandLetter(oppToPaymentsMap, oppIdByContentVersionIds);
+        QueueableToGenerateDemandLetter queueableJob = new QueueableToGenerateDemandLetter(oppToPaymentsMap, oppIdByContentVersionIds, processedPaymentScheduleIds);
         System.enqueueJob(queueableJob);
         Test.stopTest();
     }
@@ -312,7 +318,8 @@ Test.stopTest();
             VersionData = Blob.valueOf('Test content')
         );
         insert contentVersion;
-        
+        Set<Id> processedPaymentScheduleIds = new  Set<Id>();
+        processedPaymentScheduleIds.add(paymentSchedule1.Id);
         // Create Map inputs for the Queueable class
         Map<Id, List<Payment_Schedule__c>> oppToPaymentsMap = new Map<Id, List<Payment_Schedule__c>>();
         oppToPaymentsMap.put(opp.Id, new List<Payment_Schedule__c>{paymentSchedule1, paymentSchedule2});
@@ -321,7 +328,7 @@ Test.stopTest();
         oppIdByContentVersionIds.put(opp.Id, new List<String>{contentVersion.Id});
         
         // Instantiate the Queueable class
-        QueueableToGenerateDemandLetter queueableJob = new QueueableToGenerateDemandLetter(oppToPaymentsMap, oppIdByContentVersionIds);
+        QueueableToGenerateDemandLetter queueableJob = new QueueableToGenerateDemandLetter(oppToPaymentsMap, oppIdByContentVersionIds, processedPaymentScheduleIds);
         
         // Execute the Queueable job
         Test.startTest();
@@ -373,14 +380,17 @@ Test.stopTest();
         
         Test.setMock(HttpCalloutMock.class, new MultiMockHttpResponseGenerator());
         
+        
         Map<Id, List<Payment_Schedule__c>> oppMap = new Map<Id, List<Payment_Schedule__c>>{
             testOpportunity.Id => new List<Payment_Schedule__c>{ ps }
         };
             
+            Set<Id> processedPaymentScheduleIds = new  Set<Id>();
+        processedPaymentScheduleIds.add(ps.Id);
             Map<String, List<String>> oppIdByContentVersionIds = new Map<String, List<String>>();
         
         Test.startTest();
-        System.enqueueJob(new QueueableToGenerateDemandLetter(oppMap, oppIdByContentVersionIds));
+        System.enqueueJob(new QueueableToGenerateDemandLetter(oppMap, oppIdByContentVersionIds, processedPaymentScheduleIds));
         Test.stopTest();
         
         System.assert(true, 'Job executed without exceptions');

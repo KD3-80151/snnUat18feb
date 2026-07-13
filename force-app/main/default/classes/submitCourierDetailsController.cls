@@ -56,17 +56,17 @@ public without sharing class submitCourierDetailsController {
                 emailBody = emailBody.replace('{!Opportunity.Company__c}', oppRec.Company__c != null ? oppRec.Company__c : '');
                 emailBody = emailBody.replace('{!Opportunity.Docket_Number__c}', oppRec.Docket_Number__C != null ? oppRec.Docket_Number__C : '');
 
-                // Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
-                // mail.setToAddresses(new String[] { oppRec.Email__c });
-                // mail.setSubject(subject);
-                // mail.setHtmlBody(emailBody);
-                // mail.setSaveAsActivity(false);
-                // mail.setWhatId(oppRec.Id);
-                // emailMessageList.add(mail);
+                Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
+                mail.setToAddresses(new String[] { oppRec.Email__c });
+                mail.setSubject(subject);
+                mail.setHtmlBody(emailBody);
+                mail.setSaveAsActivity(false);
+                mail.setWhatId(oppRec.Id);
+                emailMessageList.add(mail);
 
-                // if(!emailMessageList.isEmpty()){
-                // Messaging.sendEmail(emailMessageList);
-                // }
+                if(!emailMessageList.isEmpty()){
+                Messaging.sendEmail(emailMessageList);
+                }
                 System.debug('Email sent successfully to ' + oppRec.Email__c);
             }
             

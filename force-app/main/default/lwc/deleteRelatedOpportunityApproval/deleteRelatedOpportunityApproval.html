@@ -1,0 +1,31 @@
+<template>
+    <lightning-card>
+        <div class="slds-p-around_medium">
+            <template if:true={isLoading}>
+                <lightning-spinner alternative-text="Submitting approval" size="small"></lightning-spinner>
+            </template>
+
+            <p class="slds-text-body_regular">
+                Submit this Opportunity for delete related records approval.
+            </p>
+        </div>
+
+        <footer class="slds-card__footer slds-grid slds-grid_align-end slds-gutters_x-small">
+            <div class="slds-col">
+                <lightning-button
+                    label="Cancel"
+                    onclick={closeAction}
+                    disabled={isLoading}>
+                </lightning-button>
+            </div>
+            <div class="slds-col">
+                <lightning-button
+                    variant="brand"
+                    label="Submit"
+                    onclick={handleSubmit}
+                    disabled={isLoading}>
+                </lightning-button>
+            </div>
+        </footer>
+    </lightning-card>
+</template>

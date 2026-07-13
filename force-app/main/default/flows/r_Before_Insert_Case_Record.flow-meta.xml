@@ -3,6 +3,39 @@
     <apiVersion>64.0</apiVersion>
     <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
     <customErrors>
+        <name>Cancellation_Charges_Required</name>
+        <label>Cancellation Charges Required</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <customErrorMessages>
+            <errorMessage>Please Fill the Cancellation Charges</errorMessage>
+            <fieldSelection>Cancellation_Charges__c</fieldSelection>
+            <isFieldError>true</isFieldError>
+        </customErrorMessages>
+    </customErrors>
+    <customErrors>
+        <name>Cancellation_Date_Required</name>
+        <label>Cancellation Date Required</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <customErrorMessages>
+            <errorMessage>Please Fill the Cancellation Date</errorMessage>
+            <fieldSelection>Cancellation_Date__c</fieldSelection>
+            <isFieldError>true</isFieldError>
+        </customErrorMessages>
+    </customErrors>
+    <customErrors>
+        <name>Reason_For_Cancellation_Required</name>
+        <label>Reason For Cancellation Required</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <customErrorMessages>
+            <errorMessage>Please Fill Reason For Cancellation</errorMessage>
+            <fieldSelection>Reason_for_Cancellation__c</fieldSelection>
+            <isFieldError>true</isFieldError>
+        </customErrorMessages>
+    </customErrors>
+    <customErrors>
         <name>To_Unit_Custom_Message</name>
         <label>To Unit Custom Message</label>
         <locationX>0</locationX>
@@ -12,6 +45,58 @@
             <isFieldError>false</isFieldError>
         </customErrorMessages>
     </customErrors>
+    <decisions>
+        <name>Check_Cancellation_Required_Details</name>
+        <label>Check Cancellation Required Details</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
+        <rules>
+            <name>Cancellation_Charges</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.Cancellation_Charges__c</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>true</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Cancellation_Charges_Required</targetReference>
+            </connector>
+            <label>Cancellation Charges</label>
+        </rules>
+        <rules>
+            <name>Cancellation_Date</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.Cancellation_Date__c</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>true</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Cancellation_Date_Required</targetReference>
+            </connector>
+            <label>Cancellation Date</label>
+        </rules>
+        <rules>
+            <name>Reason_For_Cancellation</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.Reason_for_Cancellation__c</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>true</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Reason_For_Cancellation_Required</targetReference>
+            </connector>
+            <label>Reason For Cancellation</label>
+        </rules>
+    </decisions>
     <decisions>
         <name>Check_Record_Type</name>
         <label>Check Record Type</label>
@@ -32,6 +117,21 @@
                 <targetReference>Check_To_Opportunity</targetReference>
             </connector>
             <label>Unit Transfer Record Type</label>
+        </rules>
+        <rules>
+            <name>Unit_Cancellation</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.RecordType.Name</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>Unit Cancellation</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Check_Cancellation_Required_Details</targetReference>
+            </connector>
+            <label>Unit Cancellation</label>
         </rules>
     </decisions>
     <decisions>
