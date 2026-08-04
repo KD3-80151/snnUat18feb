@@ -799,16 +799,16 @@ public without Sharing class digioRepository {
     public static docwrpperClass generateDemandLetterDLAndSOA(String oppId) {
         try {
             docwrpperClass demandLetterResult       = generateDemandLetter(oppId);
-            docwrpperClass statementOfAccountResult = generateStatementOfAccounts(oppId);
-            
+            // docwrpperClass statementOfAccountResult = generateStatementOfAccounts(oppId);
+
             docwrpperClass combinedResult   = new docwrpperClass();
             combinedResult.subDocUrl        = demandLetterResult.subDocUrl;
             combinedResult.digiDocId        = demandLetterResult.digiDocId;
-            combinedResult.soaSubDocUrl     = statementOfAccountResult.subDocUrl;
-            combinedResult.soaDigiDocId     = statementOfAccountResult.digiDocId;
-            
+            // combinedResult.soaSubDocUrl     = statementOfAccountResult.subDocUrl;
+            // combinedResult.soaDigiDocId     = statementOfAccountResult.digiDocId;
+
             return combinedResult;
-            
+
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
@@ -852,7 +852,7 @@ public without Sharing class digioRepository {
             System.debug('coApplicantNames==>'+coApplicantNames);
             Digio_Integration__c customData = Digio_Integration__c.getValues('Digio');
             
-            List<Receipt__c > receiptsRelatedToOpp = [select id,Name,Receipt_Date__c,Mode_Of_Payment__c, UPI_Provider__c, Paid_Date__c, Cheque_Number__c,Cheque_Date__c,Drawn_on_Bank__c,Amount__c,Opportunity__c,DD_Number__c,DD_Date__c,Transaction_Reference_Number__c, Type__c, Description__c, Reference_Number__c, Fund_Date__c,
+            List<Receipt__c > receiptsRelatedToOpp = [select id,Name,Receipt_Date__c,Mode_Of_Payment__c, UPI_Provider__c, Paid_Date__c, Cheque_Number__c,Cheque_Date__c,Drawn_on_Bank__c,Amount__c,Opportunity__c,DD_Number__c,DD_Date__c,Transaction_Reference_Number__c, Type__c, Description__c, Pricing_Element_Master__r.Name, Reference_Number__c, Fund_Date__c,
                                                       Fund_Transfer_Date__c,JV_Date__c, Total_GST__c, Amount_Paid_Excluding_TAX__c,JV_Reference_Number__c, Challan_Date__c, Bank__c, TDS_Amount__c, CIN__c, Receipt_Number__c, Credit_Debit_SGST__c, Credit_Debit_CGST__c  from Receipt__c where Opportunity__c =: oppId and Approval_Status__c = 'Approved'];
             System.debug('receiptsRelatedToOpp==>'+receiptsRelatedToOpp + 'size==>'+receiptsRelatedToOpp.size());
             Boolean hasCreditDebit = false;
@@ -1028,7 +1028,7 @@ public without Sharing class digioRepository {
                         DigioWrapperClass.statementOfReceiptCreditDebit receiptsCD  = new DigioWrapperClass.statementOfReceiptCreditDebit();
                         receiptsCD.receiptNoCD                                      = receipt.Receipt_Number__c != null ? receipt.Receipt_Number__c : '';
                         receiptsCD.receiptTypeCD                                    = receipt.Type__c != null ? receipt.Type__c : '';
-                        receiptsCD.receiptDescCD                                    = receipt.Description__c != null ? receipt.Description__c : '';
+                        receiptsCD.receiptDescCD                                    = receipt.Pricing_Element_Master__r.Name != null ? receipt.Pricing_Element_Master__r.Name : '';
                         receiptsCD.receiptAmountCD                                  = receipt.Amount__c != null ? receipt.Amount__c : 0;
                         receiptsCD.receiptTaxCD                                     = (receipt.Credit_Debit_CGST__c != null && receipt.Credit_Debit_SGST__c != null) ? receipt.Credit_Debit_CGST__c + receipt.Credit_Debit_SGST__c : 0;
                         receiptsCD.receiptTotalAmountCD                             = receipt.Amount__c != null && receipt.Credit_Debit_CGST__c != null && receipt.Credit_Debit_SGST__c != null ? receipt.Amount__c + receipt.Credit_Debit_CGST__c + receipt.Credit_Debit_SGST__c : 0;
@@ -1170,7 +1170,7 @@ public without Sharing class digioRepository {
             
             DigioWrapperClass.demandLetterTemplateValuesList tempList = new DigioWrapperClass.demandLetterTemplateValuesList();
             
-            List<Receipt__c> cdReceipts = [SELECT Id, Type__c, Description__c, Amount__c, Credit_Debit_CGST__c, Credit_Debit_SGST__c, Amount_Paid_Excluding_TAX__c FROM Receipt__c WHERE Opportunity__c = :oppRecord.Id
+            List<Receipt__c> cdReceipts = [SELECT Id, Type__c, Description__c, Pricing_Element_Master__c, Pricing_Element_Master__r.Name, Amount__c, Credit_Debit_CGST__c, Credit_Debit_SGST__c, Amount_Paid_Excluding_TAX__c FROM Receipt__c WHERE Opportunity__c = :oppRecord.Id
                                            AND Type__c IN ('Credit', 'Debit') AND Approval_Status__c = 'Approved' ORDER BY CreatedDate ASC];
             Boolean hasCreditDebit = (cdReceipts != null && !cdReceipts.isEmpty());
             
@@ -1225,7 +1225,7 @@ public without Sharing class digioRepository {
             
             tempList.template_values = templateVariables;
             
-            List<Receipt__c> taxInvoiceReceipts = [SELECT Id, Type__c, Description__c, Amount__c, Credit_Debit_SGST__c, Credit_Debit_CGST__c FROM Receipt__c WHERE Opportunity__c = :oppRecord.Id AND Type__c = 'Tax Invoice' AND Approval_Status__c = 'Approved' ORDER BY CreatedDate ASC
+            List<Receipt__c> taxInvoiceReceipts = [SELECT Id, Type__c, Description__c, Pricing_Element_Master__c, Pricing_Element_Master__r.Name, Amount__c, Credit_Debit_SGST__c, Credit_Debit_CGST__c FROM Receipt__c WHERE Opportunity__c = :oppRecord.Id AND Type__c = 'Tax Invoice' AND Approval_Status__c = 'Approved' ORDER BY CreatedDate ASC
                                                   ];
             
             List<Payment_Schedule__c> PaymentScheduleRecords = [
@@ -1296,7 +1296,7 @@ public without Sharing class digioRepository {
                 for(Receipt__c r : cdReceipts){
                     DigioWrapperClass.creditDebitTableRow cdr = new DigioWrapperClass.creditDebitTableRow();
                     cdr.ReceiptType = (String)r.Type__c;
-                    cdr.Description = (String)r.Description__c;
+                    cdr.Description = (String)r.Pricing_Element_Master__r.Name;
                     cdr.Amount = (r.Amount__c != null) ? r.Amount__c : 0;
                     cdr.Tax = (r.Credit_Debit_CGST__c != null && r.Credit_Debit_SGST__c != null) ? r.Credit_Debit_CGST__c + r.Credit_Debit_SGST__c : 0;
                     cdr.Total = (r.Amount__c != null ? r.Amount__c : 0) + cdr.Tax;
@@ -1386,13 +1386,24 @@ public without Sharing class digioRepository {
 
     //generate costSheet
     @AuraEnabled
-    public static  docwrpperClass generateCostSheetDocument(String costSheetId){
+    public static  docwrpperClass generateCostSheetDocument(String recordId, String selectedCostSheet){
         try{
+            String costSheetId = String.isNotBlank(selectedCostSheet) ? selectedCostSheet : null;
+            if(costSheetId == null && recordId != null){
+                List<Cost_Sheet__c> finalizedCostSheetList = [
+                    SELECT Id FROM Cost_Sheet__c
+                    WHERE Opportunity__c =: recordId AND finalize_CostSheet__c = true
+                    ORDER BY CreatedDate DESC LIMIT 1
+                ];
+                if(!finalizedCostSheetList.isEmpty()){
+                    costSheetId = finalizedCostSheetList[0].Id;
+                }
+            }
             System.debug('costSheetId==>'+costSheetId);
             if(costSheetId != null){
-                List<Cost_Sheet__c> selectedCostSheet = [select id,Name,Opportunity__r.Project__r.Name, Opportunity__r.Unit__r.Unit_Name__c, Opportunity__r.Name,Opportunity__c,Unit__r.Unit_Type__c,Unit__r.Floor__r.Floor_No__c,Unit__r.Super_Built_Up_Area_sq_ft__c,Unit__r.Total__c,Total_Pricing_Value__c,Cost_Scheme_Linking__c,Unit__r.Unit_Name__c,Unit__r.Base_Price_per_sqft__c, Unit__r.Terrace_Area__c, Opportunity__r.Project__r.Company__r.Name from Cost_Sheet__c where id=:costSheetId Limit 1];
+                List<Cost_Sheet__c> selectedCostSheetList = [select id,Name,Opportunity__r.Project__r.Name, Opportunity__r.Unit__r.Unit_Name__c, Opportunity__r.Name,Opportunity__c,Unit__r.Unit_Type__c,Unit__r.Floor__r.Floor_No__c,Unit__r.Super_Built_Up_Area_sq_ft__c,Unit__r.Total__c,Total_Pricing_Value__c,Cost_Scheme_Linking__c,Unit__r.Unit_Name__c,Unit__r.Base_Price_per_sqft__c, Unit__r.Terrace_Area__c, Opportunity__r.Project__r.Company__r.Name from Cost_Sheet__c where id=:costSheetId Limit 1];
                 List<Opportunity>  oppRecord  = [SELECT Id,SGST_Tax_Amount__c,CGST_Tax_Amount__c,Total_Outstanding_Amount__c ,Unit__r.Unit_Type__c,Unit__r.Floor__r.Floor_No__c,Unit__r.Super_Built_Up_Area_sq_ft__c,Unit__r.Floor__r.Blocks__r.Parking_Availability__c,Unit__r.Total__c,Opportunity_Unique_Id__c,Cost_Sheet_Template__c ,(SELECT Id,Document_Id__c from Documents__r where Name = 'Sales' LIMIT 1)
-                                                 From Opportunity WHERE Id =: selectedCostSheet[0].Opportunity__c LIMIT 1];
+                                                 From Opportunity WHERE Id =: selectedCostSheetList[0].Opportunity__c LIMIT 1];
                 String parentFolderId;
                 String docId;
                 String subDocUrl = '';
@@ -1401,9 +1412,9 @@ public without Sharing class digioRepository {
                     parentFolderId = oppRecord[0].Documents__r[0].Document_Id__c;
                     docId = oppRecord[0].Documents__r[0].Id;
                 }
-                
+
                 Digio_Integration__c customData = Digio_Integration__c.getValues('Digio');
-                if(!oppRecord.isEmpty() && !selectedCostSheet.isEmpty() && customData.Authorization__c != null && customData.Endpoint_URL__c != null){
+                if(!oppRecord.isEmpty() && !selectedCostSheetList.isEmpty() && customData.Authorization__c != null && customData.Endpoint_URL__c != null){
                     String endpoint = customData.Endpoint_URL__c + '/v2/client/template/multi_templates/create_sign_request';
                     DigioWrapperClass.costSheetTemplate generateDoc = new DigioWrapperClass.costSheetTemplate();
                     Datetime now = System.now();
@@ -1421,15 +1432,15 @@ public without Sharing class digioRepository {
                     tempList.template_key = customData.Cost_Sheet_Template_Key__c;
                     
                     DigioWrapperClass.costSheetTemplateValues costSheetTable = new DigioWrapperClass.costSheetTemplateValues();
-                    costSheetTable.typeOfUnit       = selectedCostSheet[0].Opportunity__r.Unit__r.Unit_Name__c != null ?  selectedCostSheet[0].Opportunity__r.Unit__r.Unit_Name__c : '';
-                    costSheetTable.projectName      = selectedCostSheet[0].Opportunity__r.Project__r.Name != null ?  selectedCostSheet[0].Opportunity__r.Project__r.Name : '';
-                    costSheetTable.floorNumber      = selectedCostSheet[0].Unit__r.Floor__r.Floor_No__c != null ? (Integer) selectedCostSheet[0].Unit__r.Floor__r.Floor_No__c : null;
-                    costSheetTable.superBuiltupArea = selectedCostSheet[0].Unit__r.Super_Built_Up_Area_sq_ft__c != null ?  selectedCostSheet[0].Unit__r.Super_Built_Up_Area_sq_ft__c : 0;
-                    costSheetTable.basicPrice       = selectedCostSheet[0].Unit__r.Base_Price_per_sqft__c != null ? (Integer) selectedCostSheet[0].Unit__r.Base_Price_per_sqft__c : 0;
-                    costSheetTable.terraceArea      = selectedCostSheet[0].Unit__r.Terrace_Area__c != null ? (String) selectedCostSheet[0].Unit__r.Terrace_Area__c : '';
-                    costSheetTable.companyName      = selectedCostSheet[0].Opportunity__r.Project__r.Name != null ? selectedCostSheet[0].Opportunity__r.Project__r.Name : '';
-                    Integer unitTotal = selectedCostSheet[0].Unit__r.Total__c != null ?  (Integer) selectedCostSheet[0].Unit__r.Total__c : 0;
-                    Decimal totalAmount = selectedCostSheet[0].Total_Pricing_Value__c != null ? selectedCostSheet[0].Total_Pricing_Value__c : 0;
+                    costSheetTable.typeOfUnit       = selectedCostSheetList[0].Opportunity__r.Unit__r.Unit_Name__c != null ?  selectedCostSheetList[0].Opportunity__r.Unit__r.Unit_Name__c : '';
+                    costSheetTable.projectName      = selectedCostSheetList[0].Opportunity__r.Project__r.Name != null ?  selectedCostSheetList[0].Opportunity__r.Project__r.Name : '';
+                    costSheetTable.floorNumber      = selectedCostSheetList[0].Unit__r.Floor__r.Floor_No__c != null ? (Integer) selectedCostSheetList[0].Unit__r.Floor__r.Floor_No__c : null;
+                    costSheetTable.superBuiltupArea = selectedCostSheetList[0].Unit__r.Super_Built_Up_Area_sq_ft__c != null ?  selectedCostSheetList[0].Unit__r.Super_Built_Up_Area_sq_ft__c : 0;
+                    costSheetTable.basicPrice       = selectedCostSheetList[0].Unit__r.Base_Price_per_sqft__c != null ? (Integer) selectedCostSheetList[0].Unit__r.Base_Price_per_sqft__c : 0;
+                    costSheetTable.terraceArea      = selectedCostSheetList[0].Unit__r.Terrace_Area__c != null ? (String) selectedCostSheetList[0].Unit__r.Terrace_Area__c : '';
+                    costSheetTable.companyName      = selectedCostSheetList[0].Opportunity__r.Project__r.Name != null ? selectedCostSheetList[0].Opportunity__r.Project__r.Name : '';
+                    Integer unitTotal = selectedCostSheetList[0].Unit__r.Total__c != null ?  (Integer) selectedCostSheetList[0].Unit__r.Total__c : 0;
+                    Decimal totalAmount = selectedCostSheetList[0].Total_Pricing_Value__c != null ? selectedCostSheetList[0].Total_Pricing_Value__c : 0;
                     SNN_JP_Nagar_Details__c addressDetail = [SELECT Name,JP_Nagar_Address__c FROM SNN_JP_Nagar_Details__c Where Name =:'JP Nagar Address'  LIMIT 1];
                     if (addressDetail != null) {
                         costSheetTable.addressDetail = addressDetail.JP_Nagar_Address__c;
@@ -1437,9 +1448,9 @@ public without Sharing class digioRepository {
                     DigioWrapperClass.costSheetPaymentTable tableValues = new DigioWrapperClass.costSheetPaymentTable();
                     list<DigioWrapperClass.costSheetAssociationTable> costPaymentAssociationList = new List<DigioWrapperClass.costSheetAssociationTable>();
                     decimal basicPriceValueNew = 0;
-                    if(selectedCostSheet[0].Id != null){
+                    if(selectedCostSheetList[0].Id != null){
                         costSheetTable.apartmentPrice = 0;
-                        List<Pricing_Element__c> costAssociations = [select id,Pricing_Element_Master__c,Amount__c,Pricing_Element_Master__r.Name,Cost_Sheet__c,Actual_Amount__c,Total_Amount_Excluding_Tax__c, Rate__c from Pricing_Element__c where Cost_Sheet__c =: selectedCostSheet[0].Id];
+                        List<Pricing_Element__c> costAssociations = [select id,Pricing_Element_Master__c,Amount__c,Pricing_Element_Master__r.Name,Cost_Sheet__c,Actual_Amount__c,Total_Amount_Excluding_Tax__c, Rate__c from Pricing_Element__c where Cost_Sheet__c =: selectedCostSheetList[0].Id];
                         for(Pricing_Element__c ca : costAssociations){
                             DigioWrapperClass.costSheetAssociationTable costSheetPaymentTable = new DigioWrapperClass.costSheetAssociationTable();
                             costSheetPaymentTable.floorRise         = ca.Pricing_Element_Master__r.Name != null ? String.valueOf(ca.Pricing_Element_Master__r.Name) : '';
@@ -1470,7 +1481,7 @@ public without Sharing class digioRepository {
                     tempList.template_table_values = tableValues;
                     
                     list<DigioWrapperClass.costSheetTable> paymentScheduleList = new List<DigioWrapperClass.costSheetTable>();
-                    List<Payment_Schedule__c > paymentSclList = [select Id,Agreement_Value__c,Installment__c,Name,Due_Date__c FROM Payment_Schedule__c Where Opportunity__c  =: selectedCostSheet[0].Opportunity__c];
+                    List<Payment_Schedule__c > paymentSclList = [select Id,Agreement_Value__c,Installment__c,Name,Due_Date__c FROM Payment_Schedule__c Where Opportunity__c  =: selectedCostSheetList[0].Opportunity__c];
                     System.debug('paymentSclList==>'+paymentSclList.size());
                     Integer TotalAmountsvaluepayment = 0;
                     for(Payment_Schedule__c ps : paymentSclList){

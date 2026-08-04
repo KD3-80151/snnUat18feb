@@ -415,11 +415,7 @@ export default class CostSheetGeneration extends NavigationMixin(LightningElemen
 
     @track noParkingDetails = false;
 
-    @track availableOpenParking = 0;
-
-    @track availableDependantParking = 0;
-
-    @track availableIndependantParking = 0;
+    @track parkingSummary = [];
 
     getParkingDetails() {
         debugger;
@@ -428,14 +424,9 @@ export default class CostSheetGeneration extends NavigationMixin(LightningElemen
             .then(result => {
                 if (result && Array.isArray(result) && result.length > 0) {
                     this.parkingDetails = result;
-                    this.parkingDetails.forEach(item => {
 
-                        this.availableOpenParking = item.Parking_Type__c == 'Open' ? item.Available_Parking__c : this.availableOpenParking;
-
-                        this.availableDependantParking = item.Parking_Type__c == 'Dependent' ? item.Available_Parking__c : this.availableDependantParking;
-
-                        this.availableIndependantParking = item.Parking_Type__c == 'Independent' ? item.Available_Parking__c : this.availableIndependantParking;
-
+                    this.parkingSummary = result.map(item => {
+                        return { id: item.Id, name: item.Name, available: item.Available_Parking__c };
                     });
 
                     this.parkingType = result.map(item => {
@@ -586,13 +577,7 @@ export default class CostSheetGeneration extends NavigationMixin(LightningElemen
         debugger;
         const selectedTypes = this.rows.map(row => row.type);
 
-        const allOptions = [
-            { label: 'Open', value: 'Open' },
-            { label: 'Dependent', value: 'Dependent' },
-            { label: 'Independent', value: 'Independent' },
-        ];
-
-        this.availableParkingTypes = allOptions.filter(
+        this.availableParkingTypes = this.parkingType.filter(
             option => !selectedTypes.includes(option.value)
         );
         console.log('this.availableParkingTypes==>' + this.availableParkingTypes);
@@ -741,7 +726,7 @@ export default class CostSheetGeneration extends NavigationMixin(LightningElemen
         console.log('discountByPricingMap'+ this.discountByPricingMap);
         console.log('Pricing Elements to update:', JSON.stringify(this.pricingElements));
         this.isFianlSaveDisabled = true;
-
+        this.discountAdded = true;
         updatePricingElements({ pricingElements: this.pricingElements })
         .then(result => {
             if(this.discountAdded == true){
@@ -760,15 +745,18 @@ export default class CostSheetGeneration extends NavigationMixin(LightningElemen
         });
     }
 
-    submitForApproval(){
+    submitForApproval() {
         debugger;
-        submitCostSheetForApproval({ data : JSON.stringify(this.discountByPricingMap), costSheetId : this.newCostSheetId })
-        .then(result => {
+        console.log('Calling Apex with data:', JSON.stringify(this.discountByPricingMap));
+        console.log('Cost Sheet Id:', this.newCostSheetId);
+        submitCostSheetForApproval({ data: JSON.stringify(this.discountByPricingMap), costSheetId: this.newCostSheetId })
+            .then(result => {
+                console.log('Apex call success', result);
+            })
+            .catch(error => {
+                console.error('Apex call failed', error);
+            });
 
-        })
-        .catch(error => {
-
-        });
     }
 
     showToast(title, message, variant) {

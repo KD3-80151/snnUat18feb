@@ -81,6 +81,20 @@ public without sharing class receiptTriggerHandler {
         Map<Id, Payment_Schedule__c> psToUpdateMap = new Map<Id, Payment_Schedule__c>();
         List<Tax_Invoice__c> taxInvoicesToInsert = new List<Tax_Invoice__c>();
 
+        Set<Id> peMasterIds = new Set<Id>();
+        for (List<Receipt__c> rcptList : oppToApprovedReceipts.values()) {
+            for (Receipt__c rcpt : rcptList) {
+                if (rcpt.Type__c == 'Debit' && rcpt.Pricing_Element_Master__c != null) {
+                    peMasterIds.add(rcpt.Pricing_Element_Master__c);
+                }
+            }
+        }
+        Map<Id, String> peMasterNameById = new Map<Id, String>();
+        if (!peMasterIds.isEmpty()) {
+            for (Pricing_Element_Master__c peMaster : [SELECT Id, Name FROM Pricing_Element_Master__c WHERE Id IN :peMasterIds]) {
+                peMasterNameById.put(peMaster.Id, peMaster.Name);
+            }
+        }
 
         for (Id oppId : oppToApprovedReceipts.keySet()) {
             List<Payment_Schedule__c> psList = oppToPaymentSchedules.get(oppId);
@@ -96,7 +110,9 @@ public without sharing class receiptTriggerHandler {
                     system.debug('enter debit');
                     Payment_Schedule__c debitPS = new Payment_Schedule__c();
                     debitPS.Opportunity__c = rcpt.Opportunity__c;
-                    debitPS.Name = 'Debit Note : ' + (rcpt.Description__c != null ? rcpt.Description__c : rcpt.Opportunity__c != null ? rcpt.Opportunity__r.Name : '');
+
+                    String peMasterName = peMasterNameById.get(rcpt.Pricing_Element_Master__c);
+                    debitPS.Name = 'Debit Note : ' + (String.isNotBlank(peMasterName) ? peMasterName : '');
                     debitPS.Agreement_Value__c = rcpt.Amount__c != null ? rcpt.Amount__c : 0;
                     debitPS.Tax_Amount__c = rcpt.Total_Credit_Debit_Gst__c != null ? rcpt.Total_Credit_Debit_Gst__c : 0;
                     // debitPS.Installment_Sequence__c = psList.size() + 1;

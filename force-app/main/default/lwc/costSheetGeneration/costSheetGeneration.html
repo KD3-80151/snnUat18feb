@@ -155,11 +155,9 @@
 
              <div style="margin-left: 20px;" class="slds-col slds-size_1-of-1 slds-large-size_2-of-4 slds-p-horizontal_small styled-container">
 
-                <div class="styled-text">Total Available Open Parking: <b>{availableOpenParking}</b></div>
-
-                <div class="styled-text">Total Available Dependant Parking: <b>{availableDependantParking}</b></div>
-
-                <div class="styled-text">Total Available Independant Parking: <b>{availableIndependantParking}</b></div>
+                <template for:each={parkingSummary} for:item="summary">
+                    <div key={summary.id} class="styled-text">Total Available {summary.name} Parking: <b>{summary.available}</b></div>
+                </template>
 
             </div>
 

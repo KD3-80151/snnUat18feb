@@ -4,10 +4,7 @@ public without sharing class QueueableToGenerateDemandLetter implements Queueabl
     private Map<String, List<String>> oppIdByContentVersionIds;
     private Set<Id> processedPaymentScheduleIds;
     
-    public QueueableToGenerateDemandLetter(Map<Id, List<Payment_Schedule__c>> oppToPaymentsMap,
-        Map<String, List<String>> oppIdByContentVersionIds,
-        Set<Id> processedPaymentScheduleIds
-    )
+    public QueueableToGenerateDemandLetter(Map<Id, List<Payment_Schedule__c>> oppToPaymentsMap, Map<String, List<String>> oppIdByContentVersionIds, Set<Id> processedPaymentScheduleIds)
     {
         System.debug('oppToPaymentsMap ==> ' + oppToPaymentsMap);
         this.oppToPaymentsMap = (oppToPaymentsMap != null) ? oppToPaymentsMap : new Map<Id, List<Payment_Schedule__c>>();
@@ -105,7 +102,7 @@ public without sharing class QueueableToGenerateDemandLetter implements Queueabl
                     System.debug('Opp record ==>'+oppRecord);
                     
                     List<Receipt__c> cdReceipts = [
-                        SELECT Id, Type__c, Description__c, Amount__c, Credit_Debit_CGST__c, Credit_Debit_SGST__c, Amount_Paid_Excluding_TAX__c FROM Receipt__c WHERE Opportunity__c = :oppRecord.Id AND Type__c IN ('Credit', 'Debit') AND Approval_Status__c = 'Approved' ORDER BY CreatedDate ASC];
+                        SELECT Id, Type__c, Description__c, Pricing_Element_Master__r.Name, Amount__c, Credit_Debit_CGST__c, Credit_Debit_SGST__c, Amount_Paid_Excluding_TAX__c FROM Receipt__c WHERE Opportunity__c = :oppRecord.Id AND Type__c IN ('Credit', 'Debit') AND Approval_Status__c = 'Approved' ORDER BY CreatedDate ASC];
                     Boolean hasCreditDebit = (cdReceipts != null && !cdReceipts.isEmpty());
                     System.debug('hasreditDebit::' + hasCreditDebit);
                     
@@ -233,7 +230,7 @@ public without sharing class QueueableToGenerateDemandLetter implements Queueabl
                                 for(Receipt__c r : cdReceipts){
                                     DigioWrapperClass.creditDebitTableRow cdr = new DigioWrapperClass.creditDebitTableRow();
                                     cdr.ReceiptType = (String)r.Type__c;
-                                    cdr.Description = (String)r.Description__c;
+                                    cdr.Description = (String)r.Pricing_Element_Master__r.Name;
                                     cdr.Amount = (r.Amount__c != null) ? r.Amount__c : 0;
                                     cdr.Tax = (r.Credit_Debit_CGST__c != null && r.Credit_Debit_SGST__c != null)
                                         ? r.Credit_Debit_CGST__c + r.Credit_Debit_SGST__c : 0;

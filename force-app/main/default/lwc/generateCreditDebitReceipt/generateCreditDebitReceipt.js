@@ -6,8 +6,9 @@ import checkDuplicate from '@salesforce/apex/GenerateReceiptDetailsOnOppControll
 import getPicklistValues from '@salesforce/apex/GenerateReceiptDetailsOnOppController.getPicklistValues';
 import getAccountValues from '@salesforce/apex/GenerateReceiptDetailsOnOppController.getAccountValues';
 import { CloseActionScreenEvent } from 'lightning/actions';
+import getPricingElements from '@salesforce/apex/GenerateReceiptDetailsOnOppController.getPricingElements'; 
 
-export default class GenerateReceiptDetailsOnOpp extends LightningElement {
+export default class GenerateCreditDebitReceipt extends LightningElement {
     @api recordId;
 
     @track receiptType;
@@ -16,6 +17,7 @@ export default class GenerateReceiptDetailsOnOpp extends LightningElement {
     @track amount;
     @track chequeNumber;
     @track chequeDate;
+    @track creditDebitDate;
     @track fundTransferDate;
     @track bankName;
     @track panNo;
@@ -41,6 +43,9 @@ export default class GenerateReceiptDetailsOnOpp extends LightningElement {
     @track accountOptions = [];
      @track selectedAccount;
 
+    @track pricingElementOptions =[];
+    @track selectPricingElemntId;
+
     isCheque = false;
     isEFT = false;
     isDD = false;
@@ -56,6 +61,7 @@ export default class GenerateReceiptDetailsOnOpp extends LightningElement {
                 this.recordId = this.getIdFromUrl(); 
         this.loadPicklistValues();
         this.fetchAccounts();
+        this.fetchPricingElements();
     }
 
 
@@ -137,6 +143,27 @@ export default class GenerateReceiptDetailsOnOpp extends LightningElement {
 
     }
 
+    fetchPricingElements(){
+        debugger;
+        if(!this.recordId) return;
+        getPricingElements({ oppId: this.recordId })
+            .then(result => {
+                    this.pricingElementOptions = result.map(pe => ({
+                        label: pe.label,
+                        value: pe.value
+                    }));
+                })
+                    .catch(error => 
+                    console.error('Error fetching pricing elements:', error));
+    }
+
+    handlePricingElementChange(event) {
+        debugger;
+        this.selectPricingElemntId = event.detail.value;
+        console.log('Selected Pricing Element:', this.selectPricingElemntId);
+    }
+
+
     handleAccountChange(event) {
         debugger;
         this.selectedAccount = event.detail.value;
@@ -193,6 +220,12 @@ export default class GenerateReceiptDetailsOnOpp extends LightningElement {
         });
     }
 
+    
+        @track selectedTaxMasterCgst;
+        @track selectedTaxMasterSgst;
+        @track description;
+        @track selectedPaymentScheduleId
+
     async handleSubmit() {
         debugger;
         console.log('Form Submit initiated');
@@ -203,6 +236,7 @@ export default class GenerateReceiptDetailsOnOpp extends LightningElement {
             amount: this.amount,
             chequeNumber: this.chequeNumber,
             chequeDate: this.chequeDate,
+            creditDebitDate: this.creditDebitDate,
             fundTransferDate: this.fundTransferDate,
             bankName: this.bankName,
             panNo : this.panNo,
@@ -222,65 +256,88 @@ export default class GenerateReceiptDetailsOnOpp extends LightningElement {
             modeOfPayment: this.modeOfPayment
         });
 
-        switch (this.modeOfPayment) {
-            case 'Cheque':
-                if (!this.amount || !this.chequeNumber || !this.chequeDate || !this.drawnOnBank) {
-                    isValid = false;
-                    errorMessage = 'Please fill all required fields for Cheque mode.';
-                }
-                if(this.chequeNumber.length != 6){
-                    isValid = false;
-                    errorMessage = 'Please enter valid Cheque Number of 6 digits.';
-                }
-                if(this.chequeNumber.length == 6){
-                    isValid = await this.checkDuplicateReceipt(this.recordId, 'Cheque', this.chequeNumber);
-                    if(isValid == false){
-                        errorMessage = 'Cheque Number already used. Please select another one.';
-                    }
-                }
-                break;
-            case 'EFT':
-                if (!this.amount || !this.fundTransferDate || !this.bankName || !this.transactionReferenceNo) {
-                    isValid = false;
-                    errorMessage = 'Please fill all required fields for EFT mode.';
-                }
-                break;
-            case 'DD':
-                if (!this.amount || !this.ddNumber || !this.ddDate || !this.drawnOnBank) {
-                    isValid = false;
-                    errorMessage = 'Please fill all required fields for DD mode.';
-                }
-                if(this.ddNumber.length != 6){
-                    isValid = false;
-                    errorMessage = 'Please enter valid DD Number of 6 digits.';
-                }
-                if( this.ddNumber.length == 6){
-                    isValid = await this.checkDuplicateReceipt(this.recordId, 'DD', this.ddNumber);
-                    if(isValid == false){
-                        errorMessage = 'DD Number already used. Please select another one.';
-                    }
-                }
-                break;
-            case 'UPI':
-                if (!this.amount || !this.referenceNo || !this.paidDate || !this.upiProvider) {
-                    isValid = false;
-                    errorMessage = 'Please fill all required fields for UPI mode.';
-                }
-                break;
-            case 'TDS':
-                if (!this.tdsAmount || !this.cin || !this.challanDate || !this.bsrCode || !this.bankName) {
-                    isValid = false;
-                    errorMessage = 'Please fill all required fields for TDS mode.';
-                }
-                break;
-            case 'JV':
-                if (!this.amount || !this.jvDate || !this.jvReferenceNumber) {
-                    isValid = false;
-                    errorMessage = 'Please fill all required fields for JV mode.';
-                }
-                break;
-            default:
-                break;
+        if(!this.receiptType){
+            isValid = false;
+            errorMessage = 'Please select a receipt type.';
+        }
+
+        if(!this.creditDebitDate){
+            isValid = false;
+            errorMessage = 'Please select a credit/debit date.';
+        }
+
+        if(!this.amount){
+            isValid = false;
+            errorMessage = 'Please enter an amount.';
+        }
+
+        // switch (this.modeOfPayment) {
+        //     case 'Cheque':
+        //         if (!this.amount || !this.chequeNumber || !this.chequeDate || !this.drawnOnBank) {
+        //             isValid = false;
+        //             errorMessage = 'Please fill all required fields for Cheque mode.';
+        //         }
+        //         if(this.chequeNumber.length != 6){
+        //             isValid = false;
+        //             errorMessage = 'Please enter valid Cheque Number of 6 digits.';
+        //         }
+        //         if(this.chequeNumber.length == 6){
+        //             isValid = await this.checkDuplicateReceipt(this.recordId, 'Cheque', this.chequeNumber);
+        //             if(isValid == false){
+        //                 errorMessage = 'Cheque Number already used. Please select another one.';
+        //             }
+        //         }
+        //         break;
+        //     case 'EFT':
+        //         if (!this.amount || !this.fundTransferDate || !this.bankName || !this.transactionReferenceNo) {
+        //             isValid = false;
+        //             errorMessage = 'Please fill all required fields for EFT mode.';
+        //         }
+        //         break;
+        //     case 'DD':
+        //         if (!this.amount || !this.ddNumber || !this.ddDate || !this.drawnOnBank) {
+        //             isValid = false;
+        //             errorMessage = 'Please fill all required fields for DD mode.';
+        //         }
+        //         if(this.ddNumber.length != 6){
+        //             isValid = false;
+        //             errorMessage = 'Please enter valid DD Number of 6 digits.';
+        //         }
+        //         if( this.ddNumber.length == 6){
+        //             isValid = await this.checkDuplicateReceipt(this.recordId, 'DD', this.ddNumber);
+        //             if(isValid == false){
+        //                 errorMessage = 'DD Number already used. Please select another one.';
+        //             }
+        //         }
+        //         break;
+        //     case 'UPI':
+        //         if (!this.amount || !this.referenceNo || !this.paidDate || !this.upiProvider) {
+        //             isValid = false;
+        //             errorMessage = 'Please fill all required fields for UPI mode.';
+        //         }
+        //         break;
+        //     case 'TDS':
+        //         if (!this.tdsAmount || !this.cin || !this.challanDate || !this.bsrCode || !this.bankName) {
+        //             isValid = false;
+        //             errorMessage = 'Please fill all required fields for TDS mode.';
+        //         }
+        //         break;
+        //     case 'JV':
+        //         if (!this.amount || !this.jvDate || !this.jvReferenceNumber) {
+        //             isValid = false;
+        //             errorMessage = 'Please fill all required fields for JV mode.';
+        //         }
+        //         break;
+        //     default:
+        //         break;
+        // }
+
+        const hasCgst = !!this.selectedTaxMasterCgst;
+        const hasSgst = !!this.selectedTaxMasterSgst;
+
+        if (hasCgst !== hasSgst) {
+            isValid = false;
+            errorMessage = 'Please select both Tax Master CGST and Tax Master SGST.';
         }
 
         if (!isValid) {
@@ -293,6 +350,8 @@ export default class GenerateReceiptDetailsOnOpp extends LightningElement {
             return;
         }
 
+
+
         const receiptData = {
             opportunityId: this.recordId,
             receiptType: this.receiptType,
@@ -301,6 +360,7 @@ export default class GenerateReceiptDetailsOnOpp extends LightningElement {
             amount: this.amount,
             chequeNumber: this.chequeNumber,
             chequeDate: this.chequeDate,
+            creditDebitDate: this.creditDebitDate,
             fundTransferDate: this.fundTransferDate,
             bankName: this.bankName,
             panNo : this.panNo,
@@ -316,7 +376,14 @@ export default class GenerateReceiptDetailsOnOpp extends LightningElement {
             bsrCode: this.bsrCode,
             drawnOnBank: this.drawnOnBank,
             jvDate: this.jvDate,
-            jvReferenceNumber: this.jvReferenceNumber
+            jvReferenceNumber: this.jvReferenceNumber,
+            pricingElementId: this.selectPricingElemntId,
+            paymentScheduleId: this.selectedPaymentScheduleId,
+            taxMasterCgst: this.selectedTaxMasterCgst,
+            taxMasterSgst: this.selectedTaxMasterSgst,
+            description: this.description,
+            hasCgst: this.hasCgst,
+            hasSgst: this.hasSgst
         };
 
         console.log('Submitting receipt data to Apex:', receiptData);
@@ -346,6 +413,47 @@ export default class GenerateReceiptDetailsOnOpp extends LightningElement {
             });
     }
 
+
+    get paymentScheduleFilter() {
+        debugger;
+        return {
+            criteria : [
+                {
+                    fieldPath: 'Opportunity__c',
+                    operator: 'eq',
+                    value: this.recordId
+                }
+            ]
+        };
+    }
+
+    handlePaymentScheduleChange(event) {
+        debugger;
+        this.selectedPaymentScheduleId = event.detail.recordId;
+        console.log('Selected Payment Schedule ID:', this.selectedPaymentScheduleId);
+    }
+
+    handleTaxMasterChangeCgst(event){
+        this.selectedTaxMasterCgst = event.detail.recordId;
+        console.log('Selected tax master cgst:', this.selectedTaxMasterCgst);
+    }
+    handleTaxMasterChangeSgst(event){
+        this.selectedTaxMasterSgst = event.detail.recordId;
+        console.log('Selected tax master sgst:', this.selectedTaxMasterSgst);
+    }
+
+    get taxMasterActiveFilter() {
+        return {
+            criteria: [
+                {
+                    fieldPath: 'Active__c',
+                    operator: 'eq',
+                    value: true
+                }
+            ]
+        };
+    }
+
     checkDuplicateReceipt(oppId, type, uniqueNumber){
         return new Promise((resolve, reject) => {
             if (uniqueNumber) {
@@ -372,6 +480,7 @@ export default class GenerateReceiptDetailsOnOpp extends LightningElement {
         this.amount = null;
         this.chequeNumber = '';
         this.chequeDate = null;
+        this.creditDebitDate = null;
         this.fundTransferDate = null;
         this.bankName = '';
         this.panNo ='';

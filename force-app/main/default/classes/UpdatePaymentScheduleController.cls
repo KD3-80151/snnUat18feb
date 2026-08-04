@@ -8,8 +8,7 @@ public withOut sharing class UpdatePaymentScheduleController {
         }
             
             return [SELECT Id, Name, Installment__c, Agreement_Value__c, Tax_Amount__c, Pay_Date__c, Due_Date__c 
-                    FROM Payment_Schedule__c 
-                    WHERE Opportunity__c = :opportunityId and Demand_Letter_Sent__c = false];
+                    FROM Payment_Schedule__c WHERE Opportunity__c = :opportunityId and Demand_Letter_Sent__c = false and Debit_Payment_Schedule__c = false];
         } 
 
     @AuraEnabled

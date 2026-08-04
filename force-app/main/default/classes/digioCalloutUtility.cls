@@ -232,15 +232,15 @@ public without sharing class digioCalloutUtility {
             attachments.add(primaryAttachment);
             
             // If sending Demand Letter, also attach latest Statement of Account
-            if (docName == 'DemandLetter') {
-                Messaging.EmailFileAttachment soaAttachment = getLatestStatementOfAccountAttachment(opportunityId);
-                if (soaAttachment != null) {
-                    attachments.add(soaAttachment);
-                    System.debug('Statement of Account attachment added.');
-                } else {
-                    System.debug('No latest Statement of Account attachment found to add.');
-                }
-            }
+            // if (docName == 'DemandLetter') {
+            //     Messaging.EmailFileAttachment soaAttachment = getLatestStatementOfAccountAttachment(opportunityId);
+            //     if (soaAttachment != null) {
+            //         attachments.add(soaAttachment);
+            //         System.debug('Statement of Account attachment added.');
+            //     } else {
+            //         System.debug('No latest Statement of Account attachment found to add.');
+            //     }
+            // }
             
             mailTemp.setFileAttachments(attachments);
             // Send the email

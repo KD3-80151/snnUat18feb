@@ -1,6 +1,6 @@
 <template>
     <lightning-card class="slds-p-horizontal_large">
-        <h1 class="center-title">Generate Credit/Debit Receipt Details</h1>
+        <h1 class="center-title">Generate Credit/Debit Note Details</h1>
 
         <div class="slds-grid slds-wrap slds-gutters slds-p-horizontal_large">
 
@@ -32,12 +32,12 @@
             </div>
 
             <!-- Receipt Date -->
-            <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
+            <!-- <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
                 <lightning-input type="date" label="Receipt Date" value={receiptDate} class="custom-input" name="receiptDate" onchange={handleInputChange} required ></lightning-input>
-            </div>
+            </div> -->
 
             <!-- Mode of Payment -->
-            <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
+            <!-- <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
                 <lightning-combobox
                     label="Mode of Payment"
                     value={modeOfPayment}
@@ -48,12 +48,65 @@
                     onchange={handleModeOfPaymentChange}
                     required>
                 </lightning-combobox>
+            </div> -->
+            <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
+                <lightning-input type="date" label="Credit/Debit Note Date" value={creditDebitDate} class="custom-input" name="creditDebitDate" onchange={handleInputChange} required></lightning-input>
+            </div>
+            <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
+                <lightning-input type="number" label="Amount" value={amount} class="custom-input" name="amount" onchange={handleInputChange} required></lightning-input>
+            </div>
+            <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
+                <lightning-combobox
+                    label="Pricing Element"
+                    value={selectPricingElemntId}
+                    placeholder="Select Pricing Element"
+                    options={pricingElementOptions}
+                    name="pricingElement"
+                    onchange={handlePricingElementChange}
+                    required
+                    >
+                </lightning-combobox>
+            </div>
+
+            <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
+                <lightning-record-picker
+                    label="Payment Schedule"
+                    object-api-name="Payment_Schedule__c"
+                    value={selectedPaymentScheduleId}
+                    filter={paymentScheduleFilter}
+                    onchange={handlePaymentScheduleChange}
+                    required
+                ></lightning-record-picker>
+            </div>
+
+            <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
+                <lightning-record-picker
+                    label="Tax Master Cgst"
+                    object-api-name="Tax_Master__c"
+                    value={selectedTaxMasterCgst}
+                    filter={taxMasterActiveFilter}
+                    onchange={handleTaxMasterChangeCgst}
+                ></lightning-record-picker>
+            </div>
+
+            <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
+                <lightning-record-picker
+                    label="Tax Master Sgst"
+                    object-api-name="Tax_Master__c"
+                    value={selectedTaxMasterSgst}
+                    filter={taxMasterActiveFilter}
+                    onchange={handleTaxMasterChangeSgst}
+                ></lightning-record-picker>
+            </div>
+
+            <div class="slds-col slds-size_1-of-1 slds-p-horizontal_large">
+                <lightning-input type="text" label="Description" value={description} class="custom-input" name="description" onchange={handleInputChange}></lightning-input>
             </div>
 
             <!-- Conditional Fields Based on Mode of Payment -->
 
             <!-- Cheque Mode -->
-            <template if:true={isCheque}>
+            <!-- <template if:true={isCheque}>
                 <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
                     <lightning-input type="number" label="Amount" value={amount} class="custom-input" name="amount" onchange={handleInputChange} required></lightning-input>
                 </div>
@@ -65,12 +118,11 @@
                 </div>
                 <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
                     <lightning-input type="text" label="Drawn on Bank" value={drawnOnBank} class="custom-input" name="drawnOnBank" onchange={handleInputChange} required></lightning-input>
-                    <!-- <lightning-combobox label="Drawn on Bank" value={drawnOnBank} options={bankOptions} class="custom-input" name="drawnOnBank" onchange={handleInputChange} required></lightning-combobox> -->
-                </div>
-            </template>
+                    </div>
+            </template> -->
 
             <!-- EFT Mode -->
-            <template if:true={isEFT}>
+            <!-- <template if:true={isEFT}>
                 <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
                     <lightning-input type="number" label="Amount" value={amount} class="custom-input" name="amount" onchange={handleInputChange} required></lightning-input>
                 </div>
@@ -83,10 +135,10 @@
                 <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
                     <lightning-input type="text" label="Transaction Reference No" value={transactionReferenceNo} class="custom-input" name="transactionReferenceNo" onchange={handleInputChange} required></lightning-input>
                 </div>
-            </template>
+            </template> -->
 
             <!-- DD Mode -->
-            <template if:true={isDD}>
+            <!-- <template if:true={isDD}>
                 <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
                     <lightning-input type="number" label="Amount" value={amount} class="custom-input" name="amount" onchange={handleInputChange} required></lightning-input>
                 </div>
@@ -98,12 +150,11 @@
                 </div>
                 <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
                     <lightning-input type="text" label="Drawn on Bank" value={drawnOnBank} class="custom-input" name="drawnOnBank" onchange={handleInputChange} required></lightning-input>
-                    <!-- <lightning-combobox label="Drawn on Bank" value={drawnOnBank} options={bankOptions} class="custom-input" name="drawnOnBank" onchange={handleInputChange} required></lightning-combobox> -->
                 </div>
-            </template>
+            </template> -->
 
             <!-- UPI Mode -->
-            <template if:true={isUPI}>
+            <!-- <template if:true={isUPI}>
                 <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
                     <lightning-input type="number" label="Amount" value={amount} class="custom-input" name="amount" onchange={handleInputChange} required></lightning-input>
                 </div>
@@ -116,10 +167,10 @@
                 <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
                     <lightning-combobox label="UPI Provider" value={upiProvider} options={upiProviderOptions} class="custom-input" name="upiProvider" onchange={handleInputChange} required></lightning-combobox>
                 </div>
-            </template>
+            </template> -->
 
             <!-- TDS Mode -->
-            <template if:true={isTDS}>
+            <!-- <template if:true={isTDS}>
                 <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
                     <lightning-input type="number" label="TDS Amount" value={tdsAmount} class="custom-input" name="tdsAmount" onchange={handleInputChange} required></lightning-input>
                 </div>
@@ -138,10 +189,10 @@
                 <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
                     <lightning-input type="text" label="PAN NO" value={panNo} class="custom-input" name="panNo" onchange={handleInputChange} required></lightning-input>
                 </div>
-            </template>
+            </template> -->
 
             <!-- JV Mode -->
-            <template if:true={isJV}>
+            <!-- <template if:true={isJV}>
                 <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
                     <lightning-input type="number" label="Amount" value={amount} class="custom-input" name="amount" onchange={handleInputChange} required></lightning-input>
                 </div>
@@ -151,7 +202,7 @@
                 <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
                     <lightning-input type="text" label="JV Reference Number" value={jvReferenceNumber} class="custom-input" name="jvReferenceNumber" onchange={handleInputChange} required></lightning-input>
                 </div>
-            </template>
+            </template> -->
         </div>
 
         <!-- Submit Button -->

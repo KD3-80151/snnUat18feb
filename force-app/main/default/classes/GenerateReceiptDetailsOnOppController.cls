@@ -69,16 +69,11 @@ public class GenerateReceiptDetailsOnOppController {
         try {
             list<PricingPaymentSchedWrapper> pEOptions = new list<PricingPaymentSchedWrapper>();
             if(oppId == null) return pEOptions;
-            List<Cost_Sheet__c> csList = [select Id from Cost_Sheet__c where Opportunity__c =: oppId and finalize_CostSheet__c = true limit 1];
-            if(csList.isEmpty()) return pEOptions;
 
-            Id finalizedCostSHeet = csList[0].Id;
-            System.debug('finalizedCostSHeet is '+finalizedCostSHeet);
-            list<Pricing_Element__c> pEmasterName = [select Id, Pricing_Element_Master__c, Pricing_Element_Master__r.Name from Pricing_Element__c where Cost_Sheet__c = :finalizedCostSHeet];
-            
-            for (Pricing_Element__c pe : pEmasterName) {
-                String masterLabelName = (pe.Pricing_Element_Master__r != null && String.isNotBlank(pe.Pricing_Element_Master__r.Name)) ? pe.Pricing_Element_Master__r.Name : '';
-                pEOptions.add(new PricingPaymentSchedWrapper(masterLabelName, pe.Id));
+            list<Pricing_Element_Master__c> peMasterList = [SELECT Id, Name FROM Pricing_Element_Master__c];
+
+            for (Pricing_Element_Master__c peMaster : peMasterList) {
+                pEOptions.add(new PricingPaymentSchedWrapper(peMaster.Name, peMaster.Id));
             }
             System.debug('pEOptions is '+pEOptions);
             System.debug('pEOptions is '+pEOptions.size());
@@ -234,7 +229,7 @@ public class GenerateReceiptDetailsOnOppController {
             receipt.JV_Reference_Number__c = receiptData.containsKey('jvReferenceNumber') && receiptData.get('jvReferenceNumber') != null ? (String) receiptData.get('jvReferenceNumber') : null;
 
             if(receiptData.containsKey('pricingElementId') && receiptData.get('pricingElementId') != null){
-                receipt.Pricing_Element__c = (String)receiptData.get('pricingElementId');
+                receipt.Pricing_Element_Master__c = (String)receiptData.get('pricingElementId');
             }
 
             if(receiptData.containsKey('paymentScheduleId') && receiptData.get('paymentScheduleId') != null){
