@@ -17,7 +17,7 @@ public without sharing class opportunityApprovalProcess {
                 System.debug('opp[0].Project__c==>'+opp[0].Project__c);
                 return 'No Project found on opp';
             }
-            List<Assignment_Group__c> assignGroup = [SELECT Id, Name, GRE_Last_allocated_Id__c FROM Assignment_Group__c WHERE Type__c = : 'CRM' AND Project__c =: opp[0].Project__c LIMIT 1];
+            List<Assignment_Group__c> assignGroup = [SELECT Id, Name, isActive__c,GRE_Last_allocated_Id__c FROM Assignment_Group__c WHERE Type__c = : 'CRM' AND isActive__c = True AND Project__c =: opp[0].Project__c LIMIT 1];
             if(assignGroup.isEmpty()){
                 return 'No CRM Assignment Group found for the given project';
             }

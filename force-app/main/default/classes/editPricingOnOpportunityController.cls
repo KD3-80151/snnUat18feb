@@ -12,7 +12,7 @@ public without sharing class editPricingOnOpportunityController {
             System.debug('Current User: ' + us.Name + ' Profile: ' + us.Profile.Name);
 
             List<Opportunity>oppList = [select id,StageName,Cost_Sheet_Approval_Status__c,Cost_Sheet_Finalised__c from Opportunity where Id =: opportunityId];
-            if(us.Profile.Name == 'System Administrator' || us.Profile.Name == 'Admin'){
+            if(us.Profile.Name == 'System Administrator' || us.Profile.Name == 'Admin' || us.Profile.Name == 'Sales Manager'){
                 if(oppList[0].Cost_Sheet_Finalised__c != True){
                     return '1';
                 }else{

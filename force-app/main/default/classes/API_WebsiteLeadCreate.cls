@@ -14,7 +14,7 @@ global without sharing class API_WebsiteLeadCreate {
             System.debug('leadWrap ==> ' + leadWrap);
             
             if(leadWrap != null){
-                String createLeadResponse = createLeadRecord(leadWrap);
+                String createLeadResponse = createLeadRecord(leadWrap, req);
                 if(createLeadResponse.startsWith('Success')){
                     responseBody = JSON.serialize(new IntegrationWrapper.APIResponseWrapper('Success', createLeadResponse));
                     HTTPUtility.getInstance().createServiceLogger(requestString, responseBody, '/web_lead', 'POST', 200, currentDateTime, currentDateTime, null);
@@ -30,13 +30,33 @@ global without sharing class API_WebsiteLeadCreate {
         }
     }
     
-    public static String createLeadRecord(Map<String,Object> leadWrap){
+    public static String createLeadRecord(Map<String,Object> leadWrap, RestRequest request){
         try {
+            String authKey = request.headers.get('auth-key');
+
+            if(String.isBlank(authKey)){
+                authKey = request.headers.get('Auth-Key');
+            }
+
+            if(String.isBlank(authKey)){
+                authKey = request.headers.get('AUTH-KEY');
+            }
+
+            System.debug('authKey ==> ' + authKey);
+
+            if(String.isBlank(authKey)){
+                return 'Error : Auth-Key is a mandatory field.';
+            }
+            if(authKey != System.Label.WebToLead_Authentication_Key){
+                return 'Error : Auth-Key is incorrect.';
+            }
+
             String firstName = leadWrap.containsKey('firstName') != null ? (String)leadWrap.get('firstName') : null;
             String lastName  = leadWrap.containsKey('lastName') != null ? (String)leadWrap.get('lastName') : null;
             String email     = leadWrap.containsKey('email') != null ? (String)leadWrap.get('email') : null;
             String phone     = leadWrap.containsKey('phone') != null ? (String)leadWrap.get('phone') : null;
-      
+            
+
             System.debug('firstName ==> ' + firstName);
             
        
@@ -59,10 +79,6 @@ global without sharing class API_WebsiteLeadCreate {
   
             Group leadQueue = [SELECT Id, DeveloperName, Name FROM Group WHERE DeveloperName = 'Lead_Assignment_Queue' LIMIT 1];
 
-          
-
-            
-            
             Lead leadToInsert = new Lead(
                 FirstName = leadWrap.containsKey('firstName') ? (String)leadWrap.get('firstName') : null,
                 LastName = leadWrap.containsKey('lastName') ? (String)leadWrap.get('lastName') : null,
@@ -76,14 +92,13 @@ global without sharing class API_WebsiteLeadCreate {
                 UTM_Medium__c =  leadWrap.containsKey('utm_campaign') ? (String)leadWrap.get('utm_campaign') : null,
          
                 UTM_Term__c = leadWrap.containsKey('utm_term') ? (String)leadWrap.get('utm_term') : null,
+                //LeadSource = 'Direct',
                 LeadSource = leadWrap.containsKey('lead_source') ? (String)leadWrap.get('lead_source') : null,
-           
-                Lead_Type__c = leadWrap.containsKey('lead_type') ? (String)leadWrap.get('lead_type') : null,
+                Lead_Sub_Source__c = leadWrap.containsKey('lead_sub_source') ? (String)leadWrap.get('lead_sub_source') : null,
+                Lead_Type__c = 'Digital',
                 External_Lead__c = true,
                 OwnerId = leadQueue.Id
             );
-
-           
 
             List<String> phones = new List<String>();
             List<String> emails = new List<String>();
@@ -165,15 +180,11 @@ global without sharing class API_WebsiteLeadCreate {
                            // leadByPhoneMap.get(dupLead.Phone).addError('Duplicate Lead created within 60 days found with same Phone Number.');
                         }
                         if(dupLead.Email != null && leadByEmailMap.containsKey(dupLead.Email)){
-                            return 'Duplicate Lead created within 60 days found with same Email.';
-                            //leadByEmailMap.get(dupLead.Email).addError('Duplicate Lead created within 60 days found with same Email.');
+                            return 'Duplicate Lead created within 60 days found with same Email.';    
                         }
                         if(dupLead.Alternate_Phone__c != null && leadByPhoneMap.containsKey(dupLead.Alternate_Phone__c)){
                              return 'Duplicate Lead created within 60 days found with same Phone Number.';
                          }
-                        // if(dupLead.Alternate_Email__c != null && leadByEmailMap.containsKey(dupLead.Alternate_Email__c)){
-                        //     return'Duplicate Lead created within 60 days found with same Email.';
-                        // }
                     }else{
                         system.debug('else default condition');
                     }
@@ -185,11 +196,6 @@ global without sharing class API_WebsiteLeadCreate {
                 insert leadToInsert;
             }else{
                 insert leadToInsert;
-                //  CampaignMember member = new CampaignMember(
-               //     LeadId=leadToInsert.Id,
-               //    CampaignId=CampaignRec[0].Id
-              //    );
-              //  insert member; 
             }
                      
             return 'Success: Lead created successfully';
