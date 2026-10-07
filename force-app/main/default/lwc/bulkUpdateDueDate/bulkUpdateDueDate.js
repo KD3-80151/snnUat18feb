@@ -346,38 +346,38 @@ export default class BulkUpdateDueDate extends NavigationMixin(LightningElement)
     }
     handleSave() {
         debugger;
-        // let isValid = true; // Validation flag
+        let isValid = true; // Validation flag
 
-        // // Validate each row in the pymentinstall array
-        // this.pymentinstall.forEach(row => {
-        //     // Find the corresponding inputs for the current row
-        //     const dueDateInput = this.template.querySelector(
-        //         `lightning-input[data-id="${row.Id}"][data-field="DueDate"]`
-        //     );
-        //     const payByDateInput = this.template.querySelector(
-        //         `lightning-input[data-id="${row.Id}"][data-field="PayByDate"]`
-        //     );
+        // Validate each row in the pymentinstall array
+        this.pymentinstall.forEach(row => {
+            // Find the corresponding inputs for the current row
+            const dueDateInput = this.template.querySelector(
+                `lightning-input[data-id="${row.Id}"][data-field="DueDate"]`
+            );
+            const payByDateInput = this.template.querySelector(
+                `lightning-input[data-id="${row.Id}"][data-field="PayByDate"]`
+            );
 
-        //     // Check if DueDate is empty
-        //     if (!row.DueDate || row.DueDate.trim() === '') {
-        //         dueDateInput.setCustomValidity('Due Date is required');
-        //         dueDateInput.reportValidity();
-        //         isValid = false;
-        //     } else {
-        //         dueDateInput.setCustomValidity(''); // Clear the error
-        //     }
-        //     dueDateInput.reportValidity(); // Re-render validity state
+            // Check if DueDate is empty
+            if (!row.DueDate || row.DueDate.trim() === '') {
+                dueDateInput.setCustomValidity('Due Date is required');
+                dueDateInput.reportValidity();
+                isValid = false;
+            } else {
+                dueDateInput.setCustomValidity(''); // Clear the error
+            }
+            dueDateInput.reportValidity(); // Re-render validity state
 
-        //     // Check if PayByDate is empty
-        //     if (!row.PayByDate || row.PayByDate.trim() === '') {
-        //         payByDateInput.setCustomValidity('Pay By Date is required');
-        //         payByDateInput.reportValidity();
-        //         isValid = false;
-        //     } else {
-        //         payByDateInput.setCustomValidity(''); // Clear the error
-        //     }
-        //     payByDateInput.reportValidity(); // Re-render validity state
-        // });
+            // Check if PayByDate is empty
+            // if (!row.PayByDate || row.PayByDate.trim() === '') {
+            //     payByDateInput.setCustomValidity('Pay By Date is required');
+            //     payByDateInput.reportValidity();
+            //     isValid = false;
+            // } else {
+            //     payByDateInput.setCustomValidity(''); // Clear the error
+            // }
+            payByDateInput.reportValidity(); // Re-render validity state
+        });
 
         // Stop if validation fails
         // if (!isValid) {

@@ -46,6 +46,7 @@ export default class CostSheetGeneration extends NavigationMixin(LightningElemen
     @track parkingDetailTable = false;
     @track selectedUnitRec =[];
     @track isModalOpen = false;
+    @track nextError = '';
     @track inputBoxes = [];
     @track carParkingTax = {};
 
@@ -268,6 +269,7 @@ export default class CostSheetGeneration extends NavigationMixin(LightningElemen
                             console.log('pricingElements==>' + this.pricingElements[j]);
                             if (this.discountLineItem[i].Discount_Master__r.Pricing_Element_Master__c == this.pricingElements[j].Pricing_Element_Master__c) {
                                 this.pricingElements[j].edit = true;
+                                this.pricingElements[j].discountHint = this.formatDiscountRanges(this.getDiscountRanges(this.pricingElements[j].Pricing_Element_Master__c));
                             }
                         }
 
@@ -309,6 +311,23 @@ export default class CostSheetGeneration extends NavigationMixin(LightningElemen
     }
 
 
+    // Allowed ranges come from every Discount Line Item of the pricing element's Discount Master
+    getDiscountRanges(priceMasterId) {
+        return this.discountLineItem
+            .filter(item => item.Discount_Master__r?.Pricing_Element_Master__c === priceMasterId)
+            .map(item => ({
+                min: item.Minimum__c != null ? parseFloat(item.Minimum__c) : 0,
+                max: item.Maximum__c != null ? parseFloat(item.Maximum__c) : Infinity
+            }))
+            .sort((a, b) => a.min - b.min);
+    }
+
+    formatDiscountRanges(ranges) {
+        return ranges
+            .map(range => 'Min ' + range.min + (range.max === Infinity ? '' : ' - Max ' + range.max))
+            .join(' | ');
+    }
+
     handleDiscountChange(event) {
         debugger;
         const fieldName = event.target.dataset.field;
@@ -318,28 +337,18 @@ export default class CostSheetGeneration extends NavigationMixin(LightningElemen
         const priceMasterId = this.pricingElements[rowIndex]['Pricing_Element_Master__c'];
 
         if (priceMasterId) {
-            console.log('lineItems ==>' + JSON.stringify(this.discountLineItem));
-            let maximumDiscountAmount = null;
-            for (let i = 0; i < this.discountLineItem.length; i++) {
-                console.log('priceMasterId ==>' + priceMasterId);
-                console.log('lineItems ==>' + JSON.stringify(this.discountLineItem[i].Pricing_Element_Master__c));
-                if (priceMasterId === this.discountLineItem[i].Discount_Master__r?.Pricing_Element_Master__c) {
-                    const lineMaximum = parseFloat(this.discountLineItem[i].Maximum__c);
-                    if (!isNaN(lineMaximum)) {
-                        maximumDiscountAmount = maximumDiscountAmount == null
-                            ? lineMaximum
-                            : Math.max(maximumDiscountAmount, lineMaximum);
-                    }
-                }
-            }
+            const ranges = this.getDiscountRanges(priceMasterId);
 
-            if (maximumDiscountAmount != null && value > maximumDiscountAmount) {
-                this.pricingElements[rowIndex]['limitExceed'] = "Discount Amount Limit exceeded :" + maximumDiscountAmount;
-                this.showToast('Error', 'Please Enter Discount Amount Less Than ' + maximumDiscountAmount, 'error');
+            // 0 / empty means no discount, so it is always allowed
+            if (ranges.length > 0 && value !== 0 && !ranges.some(range => value >= range.min && value <= range.max)) {
+                this.pricingElements[rowIndex]['limitExceed'] = 'Not allowed. ' + this.formatDiscountRanges(ranges);
                 return;
             }
 
             this.pricingElements[rowIndex]['limitExceed'] = "";
+            if (!this.pricingElements.some(item => item.limitExceed)) {
+                this.nextError = '';
+            }
         }
 
         // Update the Discount_Amount__c in pricingElements
@@ -398,6 +407,12 @@ export default class CostSheetGeneration extends NavigationMixin(LightningElemen
 
     handleThirdScreen() {
         debugger;
+        // The early return in handleDiscountChange leaves the last valid value in the model, so block Next while any row shows an error
+        if (this.pricingElements.some(item => item.limitExceed)) {
+            this.nextError = 'Please correct the Discount Amount highlighted above before continuing.';
+            return;
+        }
+        this.nextError = '';
         this.secondScreen = false;
         this.thirdScreen = true;
 

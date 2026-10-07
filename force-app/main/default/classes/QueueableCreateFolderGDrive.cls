@@ -8,8 +8,14 @@ public without sharing class QueueableCreateFolderGDrive implements Queueable, D
     public void execute(QueueableContext qc){
         if(!docIds.isEmpty()){
             Id currentDocId = docIds.remove(0);
-            processData(currentDocId);
-            
+            List<Id> idsToContinue = processData(currentDocId);
+
+            if(idsToContinue != null && !idsToContinue.isEmpty()){
+                List<Id> merged = new List<Id>(idsToContinue);
+                merged.addAll(docIds);
+                docIds = merged;
+            }
+
             if(!docIds.isEmpty()){
                 if(!Test.isRunningTest()) {
                 	System.enqueueJob(new QueueableCreateFolderGDrive(docIds));
@@ -17,8 +23,8 @@ public without sharing class QueueableCreateFolderGDrive implements Queueable, D
             }
         }
     }
-    
-    public static void processData(Id docId){
+
+    public static List<Id> processData(Id docId){
         try {
             System.debug('docId ===> ' + docId);
             if (docId != null) {
@@ -104,7 +110,7 @@ public without sharing class QueueableCreateFolderGDrive implements Queueable, D
                 
 				if (String.isBlank(folderName)) {
                     System.debug('Skipping folder creation: folderName is null');
-                    return;
+                    return null;
                 }
                 
                 String jsonBody = '{' +
@@ -152,70 +158,70 @@ public without sharing class QueueableCreateFolderGDrive implements Queueable, D
                             update contactRec;
                             GoogleDriveAPI.createPermission(folderId);
                             System.debug('contactRec after updation ===> ' + contactRec);
-                            
-                            System.enqueueJob(new QueueableCreateFolderGDrive(new List<Id> {oppRec.Id}));
-                            System.debug('contact updation done, calling queueable again');
+
+                            System.debug('contact updation done, re-processing same opportunity');
+                            return new List<Id>{oppRec.Id};
                         }else if(oppRec.Document_Id__c == null){
                             oppRec.Document_Id__c = folderId;
                             update oppRec;
                             System.debug('oppRec after updation ===> ' + oppRec);
-                            
-                            System.enqueueJob(new QueueableCreateFolderGDrive(new List<Id> {oppRec.Id}));
-                            System.debug('opp updation done, calling queueable again');
-                            
+
+                            System.debug('opp updation done, re-processing same opportunity');
+                            return new List<Id>{oppRec.Id};
+
                         }else{ //if(accRec.Document_Id__c == null )
-                            
+
                             docMain.Document_Id__c = folderId;
                             upsert docMain Document_Id__c;
-                            
+
                             List<SObject> sObjectList = new List<SObject>();
                             sObjectList.add(oppRec);
                             sObjectList.add(accRec);
                             System.debug('accRec after updation ===> ' + accRec);
                             System.debug('acc updation done, calling document creation again');
-                            dch.CreateDocuments(sObjectList);
-                            
+                            return dch.CreateDocuments(sObjectList);
+
                         }
                     }
                     else if (objectType == 'Applicant__c') {
                         applicantRec[0].FolderId__c = folderId;
                         update applicantRec;
-                        
+
                         GoogleDriveAPI.createPermission(folderId);
                         System.debug('permission given for applicant folder');
                         // List<Applicant__c> App = new List<Applicant__c>{applicantRec};
                         DocumentCreationHandler dch = new DocumentCreationHandler();
-                        dch.CreateDocuments(applicantRec);
+                        return dch.CreateDocuments(applicantRec);
                     }else if (objectType == 'Project__c') {
                         projectRec[0].FolderId__c = folderId;
                         update projectRec;
-                        
+
                         GoogleDriveAPI.createPermission(folderId);
                         System.debug('permission given for applicant folder');
                         // List<Applicant__c> App = new List<Applicant__c>{applicantRec};
                         DocumentCreationHandler dch = new DocumentCreationHandler();
-                        dch.CreateDocuments(projectRec);
+                        return dch.CreateDocuments(projectRec);
                     }
                     else if (objectType == 'Account') {
                         accountRec[0].Document_Id__c = folderId;
                         update accountRec;
-                        
+
                         GoogleDriveAPI.createPermission(folderId);
                         System.debug('permission given for applicant folder');
                         DocumentCreationHandler dch = new DocumentCreationHandler();
-                        dch.CreateDocuments(accountRec);
+                        return dch.CreateDocuments(accountRec);
                     }
                     else {
                         docRec[0].Status__c = 'Uploaded';
                         docRec[0].Document_Id__c = folderId;
                         update docRec;
-                        
+
                         if(docRec[0].Account__c != null && docRec[0].Opportunity__c != null && docRec[0].Applicant__c != null){
                             List<SObject> objectList = new List<SObject>();
                             objectList.add(docRec[0]);
-                            
+
                             DocumentCreationHandler dch = new DocumentCreationHandler();
-                            dch.CreateDocuments(objectList);
+                            return dch.CreateDocuments(objectList);
                         }
                     }
                 }
@@ -223,7 +229,9 @@ public without sharing class QueueableCreateFolderGDrive implements Queueable, D
         } catch (Exception e) {
             System.debug('Error in folder creation ===> ' + e.getMessage());
             System.debug('line ===> ' + e.getLineNumber());
+            return null;
         }
+        return null;
     }
         public static void dummy(){
         Integer i=0;

@@ -1,9 +1,10 @@
 .header-actions {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: flex-end;
     padding: 0.5rem 1rem;
     gap: 1rem;
+    flex-wrap: wrap;
 }
 
 .summary-bar {
@@ -11,9 +12,11 @@
     border-radius: 0.5rem;
     background: #f3f6ff;
     display: flex;
+    align-items: center;
     gap: 0.4rem;
     font-weight: 600;
-    margin-top: 1.25rem;
+    margin-top: 0;
+    min-height: 2.5rem;
 }
 
 .summary-label {
@@ -28,8 +31,10 @@
     display: flex;
     align-items: flex-end;
     gap: 0.75rem;
+    flex-wrap: wrap;
 }
 
 .date-input {
     min-width: 180px;
+    flex-shrink: 0;
 }

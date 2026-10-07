@@ -9,8 +9,12 @@ trigger TriggerOnTask on Task (before insert, before update, after insert, after
         if (Trigger.isInsert || Trigger.isUpdate || Trigger.isDelete) {
             System.debug('trigger is fired for Task--');
             TaskTriggerHandler.processTaskEvents(Trigger.new, Trigger.old, Trigger.isInsert, Trigger.isUpdate, Trigger.isDelete);
-            TaskTriggerHandler.createUnitTransferNotes(Trigger.new, Trigger.oldMap);
              System.debug('again trigger is fired for Task--');
+        }
+
+        if (Trigger.isInsert || Trigger.isUpdate) {
+            TaskTriggerHandler.authorizeCancellationAndTransferUnitBypass(Trigger.new, Trigger.oldMap);
+            TaskTriggerHandler.createUnitTransferNotes(Trigger.new, Trigger.oldMap);
         }
     }
 }

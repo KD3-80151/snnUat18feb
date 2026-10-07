@@ -401,8 +401,8 @@ private class digioRepositoryTest {
     static void testgenerateCostSheet() {
         Cost_Sheet__c cs = [SELECT Id FROM Cost_Sheet__c LIMIT 1];
         Test.startTest();
-        digioRepository.docwrpperClass result1 = digioRepository.generateCostSheet(cs.Id);
-        digioRepository.docwrpperClass result2 = digioRepository.generateCostSheet('cs.Id');
+        digioRepository.docwrpperClass result1 = digioRepository.generateCostSheetDocument(cs.Id, cs.Id);
+        digioRepository.docwrpperClass result2 = digioRepository.generateCostSheetDocument(cs.Id, cs.Id);
         Test.stopTest();
     }
     

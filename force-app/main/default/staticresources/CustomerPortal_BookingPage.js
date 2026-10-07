@@ -152,7 +152,7 @@ angular
                         if (result.length > 0 && result[0].Opportunity__r) {
 
                             $scope.totalAmount =
-                                result[0].Opportunity__r.Total_Outstanding_Amount__c || 0;
+                                result[0].Opportunity__r.Total_PS_Amount_Inclusive_Of_Tax__c || 0; //Total_Outstanding_Amount__c
 
                             $scope.amountPaid =
                                 result[0].Opportunity__r.Total_Amount_Collected__c || 0;

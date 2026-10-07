@@ -280,9 +280,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="#/CustomerPortal_InvoicePage" ng-click="setActive('invoices')" ng-class="{'active': activeTab === 'invoices'}"><i class="fa fa-file-invoice-dollar me-2"></i>Receipts</a>
                     </li>
-                    <li class="nav-item">
+                    <!-- <li class="nav-item">
                         <a class="nav-link" href="#/CustomerPortal_CustomerDocumentsPage" ng-click="setActive('customerDocuments')" ng-class="{'active': activeTab === 'customerDocuments'}"><i class="fa fa-user-circle me-2"></i>Customer Documents</a>
-                    </li>
+                    </li> -->
                     <li class="nav-item">
                         <a class="nav-link" href="#/CustomerPortal_ProjectDocumentsPage" ng-click="setActive('projectDocuments')" ng-class="{'active': activeTab === 'projectDocuments'}"><i class="fa fa-folder-open me-2"></i>Project Documents</a>
                     </li>
@@ -350,9 +350,9 @@
                     <div ng-show="activeTab === 'projectDocuments'">
                         <apex:include pageName="CustomerPortal_ProjectDocumentsPage"/>
                     </div>
-                    <div ng-show="activeTab === 'customerDocuments'">
+                    <!-- <div ng-show="activeTab === 'customerDocuments'">
                         <apex:include pageName="CustomerPortal_CustomerDocumentsPage"/>
-                    </div>
+                    </div> -->
                     <div ng-show="activeTab === 'serviceRequests'">
                         <apex:include pageName="CustomerPortal_ServiceRequestsPage"/>
                     </div>

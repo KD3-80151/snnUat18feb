@@ -113,8 +113,9 @@
                                             data-field="Discount_Amount__c" data-index={index}
                                             onchange={handleDiscountChange}>
                                         </lightning-input>
+                                        <div class="slds-text-body_small slds-text-color_weak">{element.discountHint}</div>
                                     </template>
-                                    <span style="color: red;">{element.limitExceed}</span>
+                                    <div class="slds-text-body_small" style="color: red;">{element.limitExceed}</div>
                                 </td>
                                 <td>{element.Discount__c}</td>
                                 <td>{element.ActualAmount}</td>
@@ -124,6 +125,9 @@
                 </table>
             </div>
 
+            <template if:true={nextError}>
+                <p class="slds-text-align_right slds-m-right_small" style="color: red;">{nextError}</p>
+            </template>
             <div class="next-button-container">
                 <lightning-button label="Next" onclick={handleThirdScreen} variant="brand">
                 </lightning-button>

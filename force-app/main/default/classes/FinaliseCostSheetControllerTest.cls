@@ -145,4 +145,49 @@ public class FinaliseCostSheetControllerTest {
         System.assert(result.contains('Opportunity ID') || result.contains('Approval submission failed'),
                       'Should attempt approval submission');
     }
+    
+    @isTest
+    static void testGetCostSheetPreview_Finalized() {
+        Id taskId = setupTestData(true);
+    
+        Cost_Sheet__c cs = [
+            SELECT Id
+            FROM Cost_Sheet__c
+            LIMIT 1
+        ];
+    
+        // Create payment schedules
+        FinaliseCostSheetController.createPaymentSchedule(taskId, cs.Id, cs.Id);
+    
+        Test.startTest();
+        FinaliseCostSheetController.CostSheetWrapper wrapper =
+            FinaliseCostSheetController.getCostSheetPreview(cs.Id);
+        Test.stopTest();
+    
+        System.assertNotEquals(null, wrapper);
+        System.assertEquals(1, wrapper.costSheetRecords.size());
+        System.assert(wrapper.costPricingAsstnList.size() > 0);
+        System.assert(wrapper.paymentScheduleRecords.size() > 0);
+    }
+    
+    @isTest
+    static void testGetCostSheetPreview_NotFinalized() {
+        setupTestData(false);
+    
+        Cost_Sheet__c cs = [
+            SELECT Id
+            FROM Cost_Sheet__c
+            LIMIT 1
+        ];
+    
+        Test.startTest();
+        FinaliseCostSheetController.CostSheetWrapper wrapper =
+            FinaliseCostSheetController.getCostSheetPreview(cs.Id);
+        Test.stopTest();
+    
+        System.assertNotEquals(null, wrapper);
+        System.assertEquals(1, wrapper.costSheetRecords.size());
+        System.assert(wrapper.costPricingAsstnList.size() > 0);
+        System.assertEquals(0, wrapper.paymentScheduleRecords.size());
+    }
 }

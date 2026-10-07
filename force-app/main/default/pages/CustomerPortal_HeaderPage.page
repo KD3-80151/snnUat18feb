@@ -152,9 +152,9 @@
                         <!-- </div> -->
                         <div class="profile-bell-container">
                             <!-- Bell icon (hidden on iPad Pro and similar devices) -->
-                            <div style="max-width:fit-content; padding:10px;">
+                            <!-- <div style="max-width:fit-content; padding:10px;">
                                 <i class="fa fa-bell medium-bell-icon"></i>
-                            </div>
+                            </div> -->
                             <!-- Profile image (hidden on iPad Pro and similar devices) -->
                             <div class="col-12 col-md-1 text-end">
                                 <a ng-click="loadprofilePage('profileDetails')">

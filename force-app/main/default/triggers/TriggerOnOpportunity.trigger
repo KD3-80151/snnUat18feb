@@ -13,6 +13,7 @@ trigger TriggerOnOpportunity on Opportunity (before insert,before update,after i
         OpportunityTriggerHandler.afterUpdate(Trigger.new, Trigger.oldMap);
         OpportunityTriggerHandler.deleteRelatedRecords(Trigger.new, Trigger.oldMap);
         opportunityTriggerHandler.deleteRelatedRecordsOnSalesRejection(Trigger.new, Trigger.oldMap);
+        opportunityTriggerHandler.finalizeCostSheetOnApproval(Trigger.new, Trigger.oldMap);
     }
     
 }

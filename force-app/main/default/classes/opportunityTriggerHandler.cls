@@ -263,7 +263,7 @@ public without sharing class opportunityTriggerHandler {
                     continue;
                 }
 
-                if (opp.Sales_Head_Approval_Status__c == 'Reject' && oldOpp.Sales_Head_Approval_Status__c != 'Reject') {
+                if (opp.Cost_Sheet_Approval_Status__c == 'Rejected' && oldOpp.Cost_Sheet_Approval_Status__c != 'Rejected') {
                     approvedOppIds.add(opp.Id);
                     oppOwnerById.put(opp.Id, opp.OwnerId);
                 }
@@ -298,7 +298,7 @@ public without sharing class opportunityTriggerHandler {
             List<Opportunity> oppsToUpdate = new List<Opportunity>();
             for (Id oppId : approvedOppIds) {
                 oppsToUpdate.add(new Opportunity(
-                    Id = oppId, Unit__c = null, StageName = 'New', Cost_Sheet_Template__c = null, Payment_Scheme__c = null, Cost_Sheet_Finalised__c = false
+                    Id = oppId, Unit__c = null, StageName = 'Cost Sheet Generated', Cost_Sheet_Template__c = null, Payment_Scheme__c = null, Cost_Sheet_Finalised__c = false
                 ));
             }
 
@@ -309,7 +309,6 @@ public without sharing class opportunityTriggerHandler {
             if (!costSheetsToUpdate.isEmpty()) {
                 update costSheetsToUpdate;
             }
-            
             
             if (!tasksToInsert.isEmpty()) {
                 insert tasksToInsert;
@@ -325,6 +324,64 @@ public without sharing class opportunityTriggerHandler {
         }        
     }
     
+    // Approval processes can't update another object's fields, so once the Opportunity Cost Sheet
+    // approval sets Cost_Sheet_Approval_Status__c = 'Approved', mark the chosen cost sheet as finalised.
+    // The chosen cost sheet is the one matching the Template, Payment Scheme and Unit that
+    // FinaliseCostSheetController.createPaymentSchedule stored on the Opportunity.
+    public static void finalizeCostSheetOnApproval(List<Opportunity> newList, Map<Id, Opportunity> oldMap) {
+        try {
+            if (newList == null || oldMap == null || oldMap.isEmpty()) {
+                return;
+            }
+
+            Map<Id, Opportunity> approvedOpps = new Map<Id, Opportunity>();
+            for (Opportunity opp : newList) {
+                Opportunity oldOpp = oldMap.get(opp.Id);
+                if (oldOpp != null
+                    && opp.Cost_Sheet_Approval_Status__c == 'Approved'
+                    && oldOpp.Cost_Sheet_Approval_Status__c != 'Approved'
+                    && opp.Cost_Sheet_Template__c != null
+                    && opp.Payment_Scheme__c != null) {
+                    approvedOpps.put(opp.Id, opp);
+                }
+            }
+
+            if (approvedOpps.isEmpty()) {
+                return;
+            }
+
+            Set<Id> oppIdsDone = new Set<Id>();
+            List<Cost_Sheet__c> costSheetsToUpdate = new List<Cost_Sheet__c>();
+            // Newest first, so if two cost sheets match, the latest one is finalised
+            for (Cost_Sheet__c costSheet : [SELECT Id, Opportunity__c, Unit__c, finalize_CostSheet__c,
+                                                   Cost_Scheme_Linking__r.Cost_Sheet_Template__c,
+                                                   Cost_Scheme_Linking__r.Payment_Scheme__c
+                                            FROM Cost_Sheet__c
+                                            WHERE Opportunity__c IN :approvedOpps.keySet()
+                                            AND Cost_Scheme_Linking__c != null
+                                            ORDER BY CreatedDate DESC]) {
+                Opportunity opp = approvedOpps.get(costSheet.Opportunity__c);
+                if (oppIdsDone.contains(opp.Id)
+                    || costSheet.Cost_Scheme_Linking__r.Cost_Sheet_Template__c != opp.Cost_Sheet_Template__c
+                    || costSheet.Cost_Scheme_Linking__r.Payment_Scheme__c != opp.Payment_Scheme__c
+                    || (opp.Unit__c != null && costSheet.Unit__c != opp.Unit__c)) {
+                    continue;
+                }
+                oppIdsDone.add(opp.Id);
+                if (!costSheet.finalize_CostSheet__c) {
+                    costSheetsToUpdate.add(new Cost_Sheet__c(Id = costSheet.Id, finalize_CostSheet__c = true));
+                }
+            }
+
+            if (!costSheetsToUpdate.isEmpty()) {
+                update costSheetsToUpdate;
+            }
+        } catch (Exception e) {
+            System.debug('Error in finalizeCostSheetOnApproval: ' + e.getMessage());
+            System.debug('Line Number: ' + e.getLineNumber());
+        }
+    }
+
     public static void dummyMethod(){
         Integer i = 0;
         i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;

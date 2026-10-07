@@ -333,11 +333,11 @@ static void testCreateCostSheet_FullCoverage() {
         insert costSheet;
         Pricing_Element_Master__c test1 = new Pricing_Element_Master__c(
             Name = 'Some',
-            Parking_Type__c = 'Dependent'
+            Parking_Type__c = 'Covered'
         );
         insert test1;
         Map<String, Object> parkingElement = new Map<String, Object>();
-        parkingElement.put('type', 'Dependent');
+        parkingElement.put('type', 'Open');
         parkingElement.put('amount', 200);
         parkingElement.put('Parking_Numbers__c', 20);
         
@@ -423,7 +423,7 @@ static void testGetDecimalValueInvalid() {
         CostSheetGenerationController.submitCostSheetForApproval(discountData, costSheetId);
         CostSheetGenerationController.getParkingRecords( unit.Id);
         CostSheetGenerationController.getUnitRecord( unit.Id);
-         //  CostSheetGenerationController.testData();
+        CostSheetGenerationController.codeCoverData();
         Test.stopTest();
         
         Cost_Sheet__c updatedCostSheet = [

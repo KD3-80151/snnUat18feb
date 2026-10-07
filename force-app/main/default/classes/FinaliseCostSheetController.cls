@@ -25,11 +25,10 @@ public without sharing class FinaliseCostSheetController {
      
 
      // Retrieve Cost Sheet records
-     List<Cost_Sheet__c> relatedCostSheetRecords = [SELECT Id, Opportunity__c, Name, Cost_Scheme_Linking__c ,Opportunity__r.Name,Cost_Scheme_Linking__r.Cost_Sheet_Template__r.Name,Cost_Scheme_Linking__r.Payment_Scheme__r.Name,finalize_CostSheet__c,CreatedDate
-                                                     FROM Cost_Sheet__c 
+     List<Cost_Sheet__c> relatedCostSheetRecords = [SELECT Id, Opportunity__c, Name, Cost_Scheme_Linking__c ,Opportunity__r.Name,Cost_Scheme_Linking__r.Cost_Sheet_Template__r.Name,Cost_Scheme_Linking__r.Payment_Scheme__r.Name,finalize_CostSheet__c,Discounted_Cost_Sheet__c,Cost_Sheet_Approval_Summary__c,CreatedDate
+                                                     FROM Cost_Sheet__c
                                                      WHERE Opportunity__c = :ts.WhatId];
 
-    
      System.debug('Related Cost Sheets: ' + relatedCostSheetRecords);
        String finalizeCostSheet = '';
        List<Payment_Schedule__c> getPaymentSchemes;
@@ -73,8 +72,9 @@ public without sharing class FinaliseCostSheetController {
      System.debug('Processing Cost Sheet ID: ' + costSheetId);
 
      Cost_Sheet__c getCostSheet = [select id,Opportunity__c,Name,Cost_Scheme_Linking__c,finalize_CostSheet__c,Total_Pricing_Value__c, Total_Pricing_Value_Excluding_Tax__c, Total_Tax_Value__c from Cost_Sheet__c Where Id =:costSheetId Limit 1];
-     getCostSheet.finalize_CostSheet__c = true;
-     update getCostSheet;
+     // finalize_CostSheet__c is now set after the Opportunity approval (see opportunityTriggerHandler.finalizeCostSheetOnApproval)
+     // getCostSheet.finalize_CostSheet__c = true;
+     // update getCostSheet;
 
      Cost_Scheme_Linking__c getSchemeLinking = [select id,Payment_Scheme__c,Cost_Sheet_Template__c,Cost_Sheet_Template__r.Amount__c,Cost_Sheet_Template__r.Tax_Amount__c  from Cost_Scheme_Linking__c Where id =:getCostSheet.Cost_Scheme_Linking__c Limit 1];
 
@@ -232,10 +232,12 @@ public without sharing class FinaliseCostSheetController {
                             LIMIT 1];
 
            System.debug('opportunityId ==>'+opp);
-           opp.StageName = 'Cost Sheet Approved';
-           opp.Cost_Sheet_Finalised__c = true;
-           opp.Cost_Sheet_Approval_Status__c = 'Approved';
-           update opp;                
+           // Stage / Cost_Sheet_Finalised__c / Cost_Sheet_Approval_Status__c are now updated by the
+           // Opportunity Cost Sheet Approval Process once it is approved
+           // opp.StageName = 'Cost Sheet Approved';
+           // opp.Cost_Sheet_Finalised__c = true;
+           // opp.Cost_Sheet_Approval_Status__c = 'Approved';
+           // update opp;
 
          if (opp != null && opp.Id != null) {
              Approval.ProcessSubmitRequest req = new Approval.ProcessSubmitRequest();

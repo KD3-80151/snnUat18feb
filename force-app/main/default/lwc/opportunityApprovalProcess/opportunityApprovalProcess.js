@@ -11,22 +11,23 @@ export default class OpportunityApprovalProcess extends LightningElement {
     @track selectedUserId;
     @track isDisabled = false;
 
-    async connectedCallback() {
-        debugger;
-        this.fetchCRMUsers();
-    }
+    // async connectedCallback() {
+    //     debugger;
+    //     this.fetchCRMUsers();
+    // }
 
     // Method to fetch CRM users imperatively
     async fetchCRMUsers() {
         debugger;
         try {
-            const data = await getCRMUsers();
-            if (data && data.length > 0) {
+            const data = await getCRMUsers({taskId: this.recordId});
+            if (data) {
                 
-                this.userOptions = data.map((user) => {
-                    return { label: user.Name, value: user.Id };
-                });
-                this.selectedUserId = this.userOptions[0].value; 
+                // this.userOptions = data.map((user) => {
+                //     return { label: user.Name, value: user.Id };
+                // });
+                // this.selectedUserId = this.userOptions[0].value; 
+                this.selectedUserId = data;
             }
         } catch (error) {
             this.error = error;
@@ -38,9 +39,10 @@ export default class OpportunityApprovalProcess extends LightningElement {
         this.selectedUserId = event.target.value;
     }
 
-    handleSubmit() {
+    async handleSubmit() {
         debugger;
         this.isDisabled = true;
+        await this.fetchCRMUsers();
         submitForApproval({ taskId: this.recordId, selectedUserId: this.selectedUserId })
             .then(() => {
                 this.isDisabled = false;
@@ -51,7 +53,7 @@ export default class OpportunityApprovalProcess extends LightningElement {
             })
             .catch(error => {
                 this.isDisabled = false;
-                this.showToast('Error', error.body.message, 'error');
+                this.showToast('Error: Approval is already in progress', error.body.message, 'error');
                 console.error(error);
             });
     }

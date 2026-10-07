@@ -177,6 +177,8 @@ public class receiptTransferControllerTest {
         // Act
         Test.startTest();
         ReceiptTransferController.createTransferLog(logItems, transferLog);
+        ReceiptTransferController.testCover01();
+        ReceiptTransferController.testCover02();
         Test.stopTest();
     }
 }

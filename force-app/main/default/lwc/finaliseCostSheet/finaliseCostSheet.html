@@ -14,6 +14,7 @@
                             <th>Name</th>
                             <th>Cost Sheet Template</th>
                             <th>Payment Scheme</th>
+                            <th>Approval Status</th>
                             <th>Created Date</th>
                         </tr>
                     </thead>
@@ -25,12 +26,14 @@
                                         type="radio" 
                                         name="costSheetSelect" 
                                         value={costSheet.Id} data-costsheettempid={costSheet.Cost_Scheme_Linking__r.Cost_Sheet_Template__c}
-                                        checked={costSheet.isSelected} 
+                                        checked={costSheet.isSelected}
+                                        disabled={costSheet.isRadioDisabled}
                                         onchange={handleRadioChange} />
                                 </td>
                                 <td>{costSheet.Name}</td>
                                 <td>{costSheet.Cost_Scheme_Linking__r.Cost_Sheet_Template__r.Name}</td>
                                 <td>{costSheet.Cost_Scheme_Linking__r.Payment_Scheme__r.Name}</td>
+                                <td>{costSheet.Cost_Sheet_Approval_Summary__c}</td>
                                 <td>{costSheet.trimmedCreatedDate}</td>
                             </tr>
                         </template>

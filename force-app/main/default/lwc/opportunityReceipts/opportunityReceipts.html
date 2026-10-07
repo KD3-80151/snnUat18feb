@@ -16,36 +16,10 @@
             </template>
 
             <div class="header-controls">
-                <lightning-input
-                    type="date"
-                    label="Start Date"
-                    value={startDate}
-                    onchange={handleStartDateChange}
-                    class="date-input"
-                ></lightning-input>
-
-                <lightning-input
-                    type="date"
-                    label="End Date"
-                    value={endDate}
-                    onchange={handleEndDateChange}
-                    class="date-input"
-                ></lightning-input>
-
-                <lightning-button
-                    variant="neutral"
-                    label="Search"
-                    class="slds-m-left_small"
-                    onclick={handleSearch}
-                ></lightning-button>
-
-                <lightning-button
-                    variant="brand"
-                    label="GST Paid Done"
-                    class="slds-m-left_small"
-                    onclick={handleGSTPaidDone}
-                    disabled={disableGSTPaidDone}
-                ></lightning-button>
+                <lightning-input type="date" label="Start Date" value={startDate} onchange={handleStartDateChange} class="date-input"></lightning-input>
+                <lightning-input type="date" label="End Date" value={endDate} onchange={handleEndDateChange} class="date-input"></lightning-input>
+                <lightning-button variant="neutral" label="Search" class="slds-m-left_small" onclick={handleSearch}></lightning-button>
+                <lightning-button variant="brand" label="GST Paid Done" class="slds-m-left_small" onclick={handleGSTPaidDone} disabled={disableGSTPaidDone}></lightning-button>
             </div>
         </div>
 
@@ -54,12 +28,7 @@
         </template>
 
         <template if:true={taxInvoices}>
-            <lightning-datatable
-                key-field="Id"
-                data={taxInvoices}
-                columns={columns}
-                onrowselection={handleRowSelection}
-            ></lightning-datatable>
+            <lightning-datatable key-field="Id" data={taxInvoices} columns={columns} onrowselection={handleRowSelection}></lightning-datatable>
         </template>
 
         <template if:true={showNoData}>
@@ -69,7 +38,6 @@
         </template>
     </lightning-card>
 
-    <!-- ✅ Custom Modal for Optional Tax Paid Date -->
     <template if:true={showGSTPaidModal}>
         <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
             <div class="slds-modal__container">
@@ -78,12 +46,7 @@
                 </header>
 
                 <div class="slds-modal__content slds-p-around_medium">
-                    <lightning-input
-                        type="date"
-                        label="Tax Paid Date"
-                        value={taxPaidDate}
-                        onchange={handleTaxPaidDateChange}
-                    ></lightning-input>
+                    <lightning-input type="date" label="Tax Paid Date" value={taxPaidDate} onchange={handleTaxPaidDateChange}></lightning-input>
 
                     <div class="slds-text-body_small slds-m-top_x-small slds-text-color_weak">
                         If blank, backend will update GST Paid without setting Tax Paid Date.
@@ -91,18 +54,8 @@
                 </div>
 
                 <footer class="slds-modal__footer">
-                    <lightning-button
-                        variant="neutral"
-                        label="Cancel"
-                        onclick={closeGSTPaidModal}
-                    ></lightning-button>
-
-                    <lightning-button
-                        variant="brand"
-                        label="Confirm"
-                        class="slds-m-left_small"
-                        onclick={saveGSTPaid}
-                    ></lightning-button>
+                    <lightning-button variant="neutral" label="Cancel" onclick={closeGSTPaidModal}></lightning-button>
+                    <lightning-button variant="brand" label="Confirm" class="slds-m-left_small" onclick={saveGSTPaid}></lightning-button>
                 </footer>
             </div>
         </section>

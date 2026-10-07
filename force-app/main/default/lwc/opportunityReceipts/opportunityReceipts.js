@@ -27,22 +27,46 @@ export default class OpportunityReceipts extends LightningElement {
             typeAttributes: { label: { fieldName: 'Name' }, target: '_blank' }
         },
         {
-            label: 'Account Name',
+            label: 'Company',
+            fieldName: 'companyUrl',
+            type: 'url',
+            typeAttributes: { label: { fieldName: 'companyName' }, target: '_blank' }
+        },
+        {
+            label: 'Project',
+            fieldName: 'projectUrl',
+            type: 'url',
+            typeAttributes: { label: { fieldName: 'projectName' }, target: '_blank' }
+        },
+        {
+            label: 'Block',
+            fieldName: 'blockUrl',
+            type: 'url',
+            typeAttributes: { label: { fieldName: 'blockName' }, target: '_blank' }
+        },
+        {
+            label: 'Account',
             fieldName: 'accountUrl',
             type: 'url',
             typeAttributes: { label: { fieldName: 'accountName' }, target: '_blank' }
         },
         {
-            label: 'Receipt',
-            fieldName: 'receiptUrl',
+            label: 'Opportunity',
+            fieldName: 'opportunityUrl',
             type: 'url',
-            typeAttributes: { label: { fieldName: 'receiptName' }, target: '_blank' }
+            typeAttributes: { label: { fieldName: 'opportunityName' }, target: '_blank' }
         },
         {
             label: 'Payment Schedule',
             fieldName: 'paymentScheduleUrl',
             type: 'url',
             typeAttributes: { label: { fieldName: 'paymentScheduleName' }, target: '_blank' }
+        },
+        {
+            label: 'Receipt',
+            fieldName: 'receiptUrl',
+            type: 'url',
+            typeAttributes: { label: { fieldName: 'receiptName' }, target: '_blank' }
         },
         {
             label: 'Received Amount',
@@ -68,7 +92,9 @@ export default class OpportunityReceipts extends LightningElement {
             type: 'currency',
             cellAttributes: { alignment: 'left' }
         },
+        
         { label: 'Created Date', fieldName: 'CreatedDate', type: 'date' }
+        
     ];
 
     get showGrandTotal() {
@@ -83,14 +109,8 @@ export default class OpportunityReceipts extends LightningElement {
         return this.selectedInvoiceIds && this.selectedInvoiceIds.size > 0;
     }
 
-    // ✅ single getter only
     get disableGSTPaidDone() {
-        return (
-            this.loading ||
-            !this.startDate ||
-            !this.endDate ||
-            (this.selectedInvoiceIds?.size || 0) === 0
-        );
+        return (this.loading || !this.startDate || !this.endDate || (this.selectedInvoiceIds?.size || 0) === 0);
     }
 
     handleStartDateChange(event) {
@@ -102,6 +122,7 @@ export default class OpportunityReceipts extends LightningElement {
     }
 
     async handleSearch() {
+        debugger;
         if (!this.startDate || !this.endDate) {
             this.dispatchEvent(
                 new ShowToastEvent({
@@ -118,10 +139,7 @@ export default class OpportunityReceipts extends LightningElement {
         this.selectedTotalGST = '0.00';
 
         try {
-            const data = await getTaxInvoices({
-                startDate: this.startDate,
-                endDate: this.endDate
-            });
+            const data = await getTaxInvoices({ startDate: this.startDate, endDate: this.endDate });
 
             let total = 0;
 
@@ -136,8 +154,20 @@ export default class OpportunityReceipts extends LightningElement {
                     paymentScheduleName: ti.Payment_Schedule__r?.Name,
                     accountUrl: ti.Account__c ? '/' + ti.Account__c : null,
                     accountName: ti.Account__r?.Name,
+                    opportunityUrl: ti.Opportunity__c ? '/' + ti.Opportunity__c : null,
+                    opportunityName: ti.Opportunity__r?.Name,
                     receiptUrl: ti.Receipt__c ? '/' + ti.Receipt__c : null,
-                    receiptName: ti.Receipt__r?.Name
+                    receiptName: ti.Receipt__r?.Receipt_Number__c,
+                    receiptDateUrl: ti.Receipt__r?.Receipt_Date__c,
+
+                    companyUrl: ti.Opportunity__r?.Project__r?.Company__c ? '/' + ti.Opportunity__r.Project__r.Company__c : null,
+                    companyName: ti.Opportunity__r?.Project__r?.Company__r?.Name,
+
+                    projectUrl: ti.Opportunity__r?.Project__c ? '/' + ti.Opportunity__r.Project__c : null,
+                    projectName: ti.Opportunity__r?.Project__r?.Name,
+
+                    blockUrl: ti.Opportunity__r?.Unit__r?.Floor__r?.Blocks__c ? '/' + ti.Opportunity__r.Unit__r.Floor__r.Blocks__c : null,
+                    blockName: ti.Opportunity__r?.Unit__r?.Floor__r?.Blocks__r?.Name
                 };
             });
 

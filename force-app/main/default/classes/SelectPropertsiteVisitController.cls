@@ -97,17 +97,18 @@ public without sharing class SelectPropertsiteVisitController {
             towerPicklist.sort();
             untiwrap.TowerPickistvalues = towerPicklist;
 
+            // No tower selected -> show units of every tower under the project
             String effectiveTower = towerName;
-            if (String.isBlank(effectiveTower)) {
-                effectiveTower = !towerPicklist.isEmpty() ? towerPicklist[0] : null;
-            }
             untiwrap.defaultTowerName = effectiveTower;
 
             List<Floor__c> projectTowerSlabs = new List<Floor__c>();
             Set<Id> floorIds = new Set<Id>();
 
             if (!String.isBlank(effectiveTower)) {
-                projectTowerSlabs = [SELECT Id, Name, Construction_Status__c, Floor_No__c, Blocks__c, Blocks__r.Tower_Code__c, (SELECT Id, Name, Floor__c FROM Units__r) FROM Floor__c WHERE Blocks__r.Tower_Code__c = :effectiveTower ORDER BY Floor_No__c DESC
+                projectTowerSlabs = [SELECT Id, Name, Construction_Status__c, Floor_No__c, Blocks__c, Blocks__r.Tower_Code__c, (SELECT Id, Name, Floor__c FROM Units__r) FROM Floor__c WHERE Blocks__r.Tower_Code__c = :effectiveTower AND Blocks__r.Project__c = :projectId ORDER BY Floor_No__c DESC
+                ];
+            } else {
+                projectTowerSlabs = [SELECT Id, Name, Construction_Status__c, Floor_No__c, Blocks__c, Blocks__r.Tower_Code__c, (SELECT Id, Name, Floor__c FROM Units__r) FROM Floor__c WHERE Blocks__c IN :towers ORDER BY Floor_No__c DESC
                 ];
             }
 

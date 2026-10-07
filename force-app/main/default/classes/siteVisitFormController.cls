@@ -57,6 +57,7 @@ public without sharing class siteVisitFormController {
         @AuraEnabled public List<Lead> leadList{get;set;}
         @AuraEnabled public List<Opportunity> oppList{get;set;}
         @AuraEnabled public Map<String,List<Visit__c>> oppXvisitMap{get;set;}
+        @AuraEnabled public Map<String,String> oppLeadProjectMap{get;set;}
     }
     
     @RemoteAction
@@ -65,9 +66,9 @@ public without sharing class siteVisitFormController {
             string keyString = '%' +searchkey;
             System.debug('searchkey====>'+searchkey);
             Map<String,List<Visit__c>> oppXvisitMap = new Map<String,List<Visit__c>>();
-            List<Lead> leadList = [SELECT Id, FirstName, LeadSource, Lead_Sub_Source__c, Lead_Type__c, LastName, Email, Phone, LastModifiedDate, Pre_Sales_Team_Member__r.Name, Alternate_Phone__c,Status,By_Pass_Validations__c, Channel_Partner__r.Name FROM Lead WHERE (Email LIKE :keyString OR Phone LIKE :keyString OR Alternate_Phone__c LIKE :keyString) AND isConverted = false ORDER BY LastModifiedDate DESC];
+            List<Lead> leadList = [SELECT Id, FirstName, LeadSource, Lead_Sub_Source__c, Lead_Type__c, LastName, Email, Phone, LastModifiedDate, Project__c, Project__r.Name, Pre_Sales_Team_Member__r.Name, Alternate_Phone__c,Status,By_Pass_Validations__c, Channel_Partner__r.Name FROM Lead WHERE (Email LIKE :keyString OR Phone LIKE :keyString OR Alternate_Phone__c LIKE :keyString) AND isConverted = false ORDER BY LastModifiedDate DESC];
             System.debug('leadList====>'+leadList);
-            List<Opportunity> oppList = [SELECT Id, Name, Email__c, Phone__c, Alternate_Phone__c, LeadSource, Lead_Sub_Source__c, Lead_Type__c, LastModifiedDate, Pre_Sales_Team_Member__r.Name, Channel_Partner__r.Name FROM Opportunity WHERE (Email__c LIKE :keyString OR Phone__c LIKE :keyString OR Alternate_Phone__c LIKE :keyString) ORDER BY LastModifiedDate DESC];
+            List<Opportunity> oppList = [SELECT Id, Name, Email__c, Phone__c, Alternate_Phone__c, LeadSource, Lead_Sub_Source__c, Lead_Type__c, LastModifiedDate, Project__c, Project__r.Name, Pre_Sales_Team_Member__r.Name, Sales_Team_Member__r.Name, Channel_Partner__r.Name FROM Opportunity WHERE (Email__c LIKE :keyString OR Phone__c LIKE :keyString OR Alternate_Phone__c LIKE :keyString) ORDER BY LastModifiedDate DESC];
             System.debug('oppList====>'+oppList);
             Set<String> OppIdSet = new Set<String>();
             if(!oppList.isEmpty()){
@@ -76,7 +77,7 @@ public without sharing class siteVisitFormController {
                 }
             }
             if(!OppIdSet.isEmpty()){
-                List<Visit__c> visitList = [SELECT Id, Name, CreatedDate, Opportunity__c, Opportunity__r.Name, Actual_Visit_Date__c, Visit_Time__c, Project_Name__c FROM Visit__c WHERE Opportunity__c IN :OppIdSet];
+                List<Visit__c> visitList = [SELECT Id, Name, CreatedDate, Opportunity__c, Opportunity__r.Name, Actual_Visit_Date__c, Visit_Time__c, Project_Name__c, Project__r.Name, Owner.Name FROM Visit__c WHERE Opportunity__c IN :OppIdSet];
                 if(!visitList.isEmpty()){
                     for(Visit__c visit : visitList){
                         if(!oppXvisitMap.containsKey(visit.Opportunity__c)){
@@ -86,7 +87,15 @@ public without sharing class siteVisitFormController {
                     }
                 }
             }
+            // project to prepopulate comes from the lead the opportunity was converted from
+            Map<String,String> oppLeadProjectMap = new Map<String,String>();
+            if(!OppIdSet.isEmpty()){
+                for(Lead convLead : [SELECT ConvertedOpportunityId, Project__c FROM Lead WHERE ConvertedOpportunityId IN :OppIdSet AND Project__c != null]){
+                    oppLeadProjectMap.put(convLead.ConvertedOpportunityId, convLead.Project__c);
+                }
+            }
             leadAndOppWrapper wrapper = new leadAndOppWrapper();
+            wrapper.oppLeadProjectMap = oppLeadProjectMap;
             wrapper.leadList = leadList;
             wrapper.oppList = oppList;
             wrapper.oppXvisitMap = oppXvisitMap;
@@ -276,8 +285,18 @@ public without sharing class siteVisitFormController {
         }
     }
 
+    private static String defaultOpportunityStage(){
+        String first;
+        for(Schema.PicklistEntry pe : Opportunity.StageName.getDescribe().getPicklistValues()){
+            if(!pe.isActive()) continue;
+            if(pe.isDefaultValue()) return pe.getValue();
+            if(first == null) first = pe.getValue();
+        }
+        return first;
+    }
+
     @RemoteAction
-    public static string insertVisitRecord(Visit__c visitRecord, string leadId, string oppId, String salesTeamMemberId){
+    public static string insertVisitRecord(Visit__c visitRecord, string leadId, string oppId, String salesTeamMemberId, String projectId){
         try{
             System.debug('visitRecord ===> '+visitRecord);
             System.debug('leadId===>'+leadId);
@@ -289,7 +308,13 @@ public without sharing class siteVisitFormController {
                 LIMIT 1
             ];
             
-            List<Lead> leadList = [select Id,FirstName, LastName, MiddleName, Title, Sales_Team_Member__c,OwnerId from Lead Where Id =: leadId Limit 1];
+            if (!String.isBlank(projectId)) {
+                visitRecord.Project__c = projectId;
+            }
+            if (!String.isBlank(salesTeamMemberId) && String.isBlank(visitRecord.Id)) {
+                visitRecord.OwnerId = salesTeamMemberId;
+            }
+            List<Lead> leadList = [select Id,FirstName, LastName, MiddleName, Title, Phone, Sales_Team_Member__c,OwnerId from Lead Where Id =: leadId Limit 1];
             if((leadId != null || leadId != '') && (oppId == null || oppId == '')){
                 System.debug('one Time site Visit...');
                 if(leadList[0].Sales_Team_Member__c == null){
@@ -307,7 +332,7 @@ public without sharing class siteVisitFormController {
                 system.debug(lcr.getAccountId());
                 system.debug(lcr.getContactId());
                 system.debug(lcr.getOpportunityId());
-                Lead updatedLead = [SELECT Id, ConvertedOpportunityId, ConvertedContactId, ConvertedAccountId, OwnerId,Sales_Team_Member__c,Sales_Team_Member__r.Name,Pre_Sales_Team_Member__c,Pre_Sales_Team_Member__r.Name,Name,Company,Email,Phone,Status,LeadSource,Industry,AnnualRevenue,Rating,CreatedById,CreatedDate  FROM Lead WHERE Id =: leadId];
+                Lead updatedLead = [SELECT Id, ConvertedOpportunityId, ConvertedContactId, ConvertedAccountId, OwnerId,Sales_Team_Member__c,Sales_Team_Member__r.Name,Pre_Sales_Team_Member__c,Pre_Sales_Team_Member__r.Name,Name,Company,Email,Phone,Alternate_Phone__c,Alternate_Email__c,Lead_Type__c,Lead_Sub_Source__c,Status,LeadSource,Industry,AnnualRevenue,Rating,CreatedById,CreatedDate  FROM Lead WHERE Id =: leadId];
                 if(updatedLead != null && updatedLead.ConvertedAccountId != null) {
                     List<Account> convAcc = [SELECT Id, Name, RecordTypeId FROM Account WHERE Id =: updatedLead.ConvertedAccountId LIMIT 1];
                     convAcc[0].RecordTypeId = custAccType[0].Id;
@@ -317,14 +342,31 @@ public without sharing class siteVisitFormController {
                     if (!String.isBlank(leadList[0].MiddleName))   parts.add(leadList[0].MiddleName);
                     if (!String.isBlank(leadList[0].LastName))     parts.add(leadList[0].LastName);
                     convAcc[0].Name = parts.isEmpty() ? '' : String.join(parts, ' ');
+                    if (!String.isBlank(salesTeamMemberId)) {
+                        convAcc[0].OwnerId = salesTeamMemberId;
+                    }
                     update convAcc;
                 }
                 if(updatedLead != null && updatedLead.ConvertedOpportunityId != null){
-                    Opportunity newOpp = [SELECT Id, Name, Channel_Partner__c, OwnerId, Email__c, Account.Name, Account.Phone, Phone__c,StageName,CloseDate,Amount,LeadSource,CreatedDate,Owner.Name FROM Opportunity WHERE Id =: updatedLead.ConvertedOpportunityId];
+                    Opportunity newOpp = [SELECT Id, Name, Channel_Partner__c, OwnerId, Email__c, Alternate_Phone__c, Alternate_Email__c, Lead_Type__c, Lead_Sub_Source__c, Pre_Sales_Team_Member__c, Account.Name, Account.Phone, Phone__c,StageName,CloseDate,Amount,LeadSource,CreatedDate,Owner.Name FROM Opportunity WHERE Id =: updatedLead.ConvertedOpportunityId];
                     visitRecord.Opportunity__c = updatedLead.ConvertedOpportunityId;
                     visitRecord.Channel_Partner__c = newOpp.Channel_Partner__c;
                     visitRecord.Contact__c = updatedLead.ConvertedContactId;
-                    newOpp.OwnerId = updatedLead.OwnerId;
+                    // copy contact details from the lead when conversion mapping hasn't filled them
+                    if (String.isBlank(newOpp.Phone__c)) newOpp.Phone__c = updatedLead.Phone;
+                    if (String.isBlank(newOpp.Email__c)) newOpp.Email__c = updatedLead.Email;
+                    if (String.isBlank(newOpp.Alternate_Phone__c)) newOpp.Alternate_Phone__c = updatedLead.Alternate_Phone__c;
+                    if (String.isBlank(newOpp.Alternate_Email__c)) newOpp.Alternate_Email__c = updatedLead.Alternate_Email__c;
+                    if (String.isBlank(newOpp.Lead_Type__c)) newOpp.Lead_Type__c = updatedLead.Lead_Type__c;
+                    if (String.isBlank(newOpp.Lead_Sub_Source__c)) newOpp.Lead_Sub_Source__c = updatedLead.Lead_Sub_Source__c;
+                    //if (newOpp.Pre_Sales_Team_Member__c == null) newOpp.Pre_Sales_Team_Member__c = updatedLead.Pre_Sales_Team_Member__c;
+                    newOpp.OwnerId = String.isBlank(salesTeamMemberId) ? updatedLead.OwnerId : salesTeamMemberId;
+                    if (!String.isBlank(salesTeamMemberId) && updatedLead.ConvertedContactId != null) {
+                        update new Contact(Id = updatedLead.ConvertedContactId, OwnerId = salesTeamMemberId);
+                    }
+                    if (!String.isBlank(projectId)) {
+                        newOpp.Project__c = projectId;
+                    }
                     if (!String.isBlank(salesTeamMemberId)) {
                         newOpp.Sales_Team_Member__c = salesTeamMemberId;
                     }
@@ -500,13 +542,41 @@ public without sharing class siteVisitFormController {
             }
             else if(oppId != null && oppId != '' && (leadId == null || leadId == '')){
                 System.debug('second visit..');
-                Opportunity Opp = [SELECT Id, Name, Channel_Partner__c FROM Opportunity WHERE Id =: oppId];
+                String targetOppId = oppId;
+                if(!String.isBlank(visitRecord.Id)){
+                    // re-save of a visit already created: keep it on the opportunity it was created under
+                    List<Visit__c> savedVisit = [SELECT Opportunity__c FROM Visit__c WHERE Id = :visitRecord.Id LIMIT 1];
+                    if(!savedVisit.isEmpty() && savedVisit[0].Opportunity__c != null){
+                        targetOppId = savedVisit[0].Opportunity__c;
+                    }
+                }
+                Opportunity Opp = [SELECT Id, Name, Channel_Partner__c, AccountId, Project__c, Project__r.Name, Email__c, Phone__c, Alternate_Phone__c, Alternate_Email__c, Lead_Type__c, Lead_Sub_Source__c, LeadSource, Pre_Sales_Team_Member__c FROM Opportunity WHERE Id =: targetOppId];
+                if(String.isBlank(visitRecord.Id) && !String.isBlank(projectId) && Opp.Project__c != null && Opp.Project__c != projectId){
+                    // different project for the same customer: separate opportunity
+                    Opportunity projOpp = Opp.clone(false, true, false, false);
+                    List<Project__c> selProject = [SELECT Name FROM Project__c WHERE Id = :projectId LIMIT 1];
+                    projOpp.Name = Opp.Name + ' - ' + (selProject.isEmpty() ? projectId : selProject[0].Name);
+                    projOpp.Project__c = projectId;
+                    projOpp.CloseDate = System.today().addDays(30);
+                    projOpp.StageName = defaultOpportunityStage();
+                    insert projOpp;
+                    List<OpportunityContactRole> newRoles = new List<OpportunityContactRole>();
+                    for(OpportunityContactRole r : [SELECT ContactId, Role, IsPrimary FROM OpportunityContactRole WHERE OpportunityId = :Opp.Id]){
+                        newRoles.add(new OpportunityContactRole(OpportunityId = projOpp.Id, ContactId = r.ContactId, Role = r.Role, IsPrimary = r.IsPrimary));
+                        if(visitRecord.Contact__c == null) visitRecord.Contact__c = r.ContactId;
+                    }
+                    if(!newRoles.isEmpty()) insert newRoles;
+                    Opp = projOpp;
+                }else if(Opp.Project__c == null && !String.isBlank(projectId)){
+                    Opp.Project__c = projectId;
+                }
                 visitRecord.Channel_Partner__c = Opp.Channel_Partner__c;
-                visitRecord.Opportunity__c = oppId;
+                visitRecord.Opportunity__c = Opp.Id;
                 if (!String.isBlank(salesTeamMemberId)) {
                     Opp.Sales_Team_Member__c = salesTeamMemberId;
-                    update Opp;
+                    Opp.OwnerId = salesTeamMemberId;
                 }
+                update Opp;
             }
             // System.debug(' --- location:'+location);
             
@@ -1436,5 +1506,5 @@ public without sharing class siteVisitFormController {
         i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
         
     }
-    
+    //hi
 }

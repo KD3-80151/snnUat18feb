@@ -28,6 +28,11 @@
         <body ng-app="visit_app" ng-controller="visit_ctrl" style="overflow-x: hidden;">
             <div class="booking-form3">
                 <div class="container mb-5">
+                    <div class="row mt-4 mb-2">
+                        <div class="col-12">
+                            <apex:image value="{!$Resource.Snn_Horizontal_Logo}" style="max-height:60px;" alt="Logo"/>
+                        </div>
+                    </div>
                     <!-- <h5 class="heading text-center"><b>SITE VISIT FORM</b></h5> -->
                     <div class="row mt-3">
                         <div class="col-md-5">
@@ -132,6 +137,7 @@
                                             <th scope="col">Lead Source</th>
                                             <th scope="col">Lead Sub Source</th>
                                             <th scope="col">Lead Type</th>
+                                            <th scope="col">Project</th>
                                             <th scope="col">Pre Sales Team Member</th>
                                             <th scope="col">Sales Team Member</th>
                                             <th scope="col">No. of Visits</th>
@@ -147,6 +153,7 @@
                                             <td>{{opp.LeadSource}}</td>
                                             <td>{{opp.Lead_Sub_Source__c}}</td>
                                             <td>{{opp.Lead_Type__c}}</td>
+                                            <td>{{opp.Project__r.Name}}</td>
                                             <td>{{opp.Pre_Sales_Team_Member__r.Name}}</td>
                                             <td>{{opp.Sales_Team_Member__r.Name}}</td>
                                             <td><a ng-click="showRelVisits(opp)">{{oppXvisitMap[opp.Id] ? oppXvisitMap[opp.Id].length : 0}}</a></td>
@@ -164,7 +171,7 @@
                                                 <th scope="col">Sr.</th>
                                                 <th scope="col">Visit Id</th>
                                                 <th scope="col">Opportunity</th>
-                                                <th scope="col">Project Name</th>
+                                                <th scope="col">Project</th>
                                                 <th scope="col">Visit Date</th>
                                                 <th scope="col">Attended Sales Person</th>
                                             </tr>
@@ -174,9 +181,9 @@
                                                 <td>{{$index + 1}}</td>
                                                 <td>{{visit.Name}}</td>
                                                 <td>{{visit.Opportunity__r.Name}}</td>
-                                                <td>{{visit.Project_Name__c}}</td>
+                                                <td>{{visit.Project__r.Name || visit.Project_Name__c}}</td>
                                                 <td>{{visit.Actual_Visit_Date__c | date:'d/M/yyyy'}}</td>
-                                                <td>{{visit.Sales_Manager__c}}</td>
+                                                <td>{{visit.Owner.Name}}</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -288,9 +295,6 @@
                                 <!-- <li>
                                     <a ng-click="">Visit Details</a>
                                 </li> -->
-                                <li>
-                                    <a ng-click="">To be filled by GRE</a>
-                                </li>
                                 <!-- <li>
                                     <a ng-click="">To be filled by Sales Manager</a>
                                 </li> -->
@@ -552,6 +556,22 @@
                                         <div class="col-md-6">
                                             <div class="row align-items-center mb-4">
                                                 <div class="col-md-4">
+                                                    <label class="label">Project:</label><span class="required-asterisk" style="color:red;">*</span>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <select class="form-select"
+                                                            ng-model="sel.project"
+                                                            ng-options="p.Id as p.Name for p in projectList">
+                                                        <option value="">-- Select Project --</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="row align-items-center mb-4">
+                                                <div class="col-md-4">
                                                     <label class="label">Industry:</label>
                                                 </div>
                                                 <div class="col-md-8">
@@ -564,11 +584,11 @@
                                         <div class="col-md-6">
                                             <div class="row align-items-center mb-4">
                                                 <div class="col-md-4">
-                                                    <label class="label">Sales Team Member:</label>
+                                                    <label class="label">Sales Team Member:</label><span class="required-asterisk" style="color:red;">*</span>
                                                 </div>
                                                 <div class="col-md-8">
                                                     <select class="form-select"
-                                                            ng-model="selectedSalesTeamMember"
+                                                            ng-model="sel.salesMember"
                                                             ng-options="user.Id as (user.Name + ' - ' + user.Profile.Name) for user in salesTeamMembers">
                                                         <option value="">-- Select Sales Team Member --</option>
                                                     </select>
@@ -1045,166 +1065,6 @@
                 </div>
             </div>
 
-            <div class="booking-form" ng-if="showGRE">
-                <div class="container mb-5">
-                    <!-- <h5 class="heading text-center"><b>SITE VISIT FORM</b></h5> -->
-                    <!-- <div class="row justify-content-between">
-                        <div class="col-md-3">
-                            <div class="d-flex align-items-center">
-                                <label class="label pe-3 text-nowrap">Form No.</label>
-                                <input type="text" class="form-control" ng-model="visit.Form_No__c"/>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            
-                        </div>
-                        <div class="col-md-3">
-                            <div class="d-flex align-items-center">
-                                <label class="label pe-3 text-nowrap">Date of visit:</label>
-                                    <input type="date" class="form-control" placeholder="DD/MM/YYYY" ng-model="visit.Actual_visit_date__c"/>
-                            </div>
-                        </div>
-                    </div> -->
-                    <div class="form-tabs">
-                        <div class="sidebar col-md-auto">
-                            <ul>
-                                <li>
-                                    <a ng-click="">Customer Details &amp; <br/>Requirements</a>
-                                </li>
-                                <!-- <li>
-                                    <a ng-click="">Customer's Requirements</a>
-                                </li> -->
-                                <!-- <li>
-                                    <a ng-click="">Visit Details</a>
-                                </li> -->
-                                <li class="active">
-                                    <a ng-click="">To be filled by GRE</a>
-                                </li>
-                                <!-- <li>
-                                    <a ng-click="">To be filled by Sales Manager</a>
-                                </li> -->
-                            </ul>
-                        </div>
-                        <div class="rightbar">
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <div class="row">
-                                        <!-- <div class="col-md-6">
-                                            <div class="row align-items-center mb-4">
-                                                <div class="col-md-4">
-                                                    <label class="label">Sourcing<br/>Manager:</label>
-                                                </div>
-                                                <div class="col-md-8">
-                                                    <input type="text" class="form-control" ng-model="visit.Sourcing_Manager__c"/>
-                                                </div>
-                                            </div>
-                                        </div> -->
-                                        <div class="col-md-6">
-                                            <div class="row align-items-center mb-4">
-                                                <div class="col-md-4">
-                                                    <label ng-if="!leadCreated" class="label">Attending Sales<br/>Manager: <span class="required-asterisk" style="color:red;">*</span></label>
-                                                    <label ng-if="leadCreated" class="label">Attending Sales<br/>Manager:</label>
-                                                </div>
-                                                <div class="col-md-8">
-                                                    <so-dropdown ng-model="visit.Sales_Manager__c" dropdown-items="listOfSalesManager">
-                                                        <option value='None'>None</option>
-                                                    </so-dropdown>
-                                                    <!--input type="text" class="form-control" ng-model="visit.Sales_Manager__c" /-->
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!-- <div class="row align-items-center mb-4">
-                                        <div class="col-md-2">
-                                            <label class="label">Customer Gender:</label>
-                                        </div>
-                                        <div class="col-md-10">
-                                            <div class="row">
-                                                <div class="col-md-4 pt-3" ng-repeat="value in gender">
-                                                    <input type="radio" ng-model="visit.Customer_Gender__c" ng-value="value" ng-change="changeOfGender(value)" />
-                                                    <label>{{value}}</label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div> -->
-                                    <div class="row align-items-center mb-4">
-                                        <div class="col-md-2">
-                                            <label class="label">Facilitated By<br/>Pre-Sales:</label>
-                                        </div>
-                                        <div class="col-md-10">
-                                            <div class="row">
-                                                <div class="col-md-4 pt-3" ng-repeat="value in facilitatedBy">
-                                                    <input type="radio" ng-model="visit.Facilitated_By__c" ng-value="value" ng-disabled="leadCreated" ng-change="changeOfFacilitatedBy(value)" />
-                                                    <label>{{value}}</label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!-- <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="row align-items-center mb-4">
-                                                <div class="col-md-4">
-                                                    <label class="label">Mobile No.:</label>
-                                                </div>
-                                                <div class="col-md-8">
-                                                    <input type="tel" class="form-control" ng-model="visit.GRE_Mobile_No__c"/>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="row align-items-center mb-4">
-                                                <div class="col-md-4">
-                                                    <label class="label">Email:</label>
-                                                </div>
-                                                <div class="col-md-8">
-                                                    <input type="email" class="form-control" ng-model="visit.GRE_Email__c" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div> -->
-                                    <!-- <div class="row align-items-center mb-4">
-                                        <div class="col-md-2">
-                                            <label class="label">Date Of Birth:</label>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <input type="date" class="form-control" ng-model="visit.GRE_Date_of_Birth__c"/>
-                                        </div>
-                                    </div> -->
-                                    <!-- <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="row align-items-center mb-4">
-                                                <div class="col-md-4">
-                                                    <label class="label">Customer<br/>Time-In:</label>
-                                                    {{timeString}}
-                                                </div>
-                                                <div class="col-md-8">
-                                                    <input type="text" class="form-control" ng-model="timeString" ng-disabled="true"/>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="row align-items-center mb-4">
-                                                <div class="col-md-4">
-                                                    <label class="label">Customer<br/>Time-Out:</label>
-                                                </div>
-                                                <div class="col-md-8">
-                                                    <input type="time" class="form-control" ng-model="visit.Customer_Time_Out__c" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div> -->
-                                    <div class="row">
-                                        <div class="col-md-12">
-                                            <button type="button" class="button float-end" ng-click="saveGREDetails()">Submit</button>
-                                            <button type="button" class="cancelbutton float-end me-2" ng-click="showThird()">Back</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </body>
         <script>
             var employmentType = JSON.parse('{!employmentType}');
@@ -1240,7 +1100,7 @@
                 $scope.selectedIndustry;
                 $scope.leadSubSource = [];
                 $scope.salesTeamMembers = [];
-                $scope.selectedSalesTeamMember = '';
+                $scope.sel = {project: '', salesMember: ''};
                 $scope.leadCreated = true;
 
                 $scope.createLead = function(){
@@ -1277,6 +1137,7 @@
                                         $scope.showAllOppDetails = false;
                                     }else if(result.oppList.length > 0){
                                         $scope.oppXvisitMap = result.oppXvisitMap;
+                                        $scope.oppLeadProjectMap = result.oppLeadProjectMap || {};
                                         $scope.oppList = result.oppList;
                                         $scope.showAllOppDetails = true;
                                     }
@@ -1299,6 +1160,7 @@
                                         $scope.showAllOppDetails = false;
                                     }else if(result.oppList.length > 0){
                                         $scope.oppXvisitMap = result.oppXvisitMap;
+                                        $scope.oppLeadProjectMap = result.oppLeadProjectMap || {};
                                         $scope.oppList = result.oppList;
                                         $scope.showAllOppDetails = true;
                                     }
@@ -1327,6 +1189,7 @@
                                     $scope.errorMsg = false;
                                     $scope.showAllLeadDetails = false;
                                     $scope.oppXvisitMap = result.oppXvisitMap;
+                                    $scope.oppLeadProjectMap = result.oppLeadProjectMap || {};
                                     $scope.oppList = result.oppList;
                                     $scope.showAllOppDetails = true;
                                     $scope.showLeadDetails = false;
@@ -1477,6 +1340,7 @@
                     if(value == undefined){
                         $scope.opp = {};
                         $scope.oppId = '';
+                        $scope.sel.project = ($scope.leadDetails && $scope.leadDetails.Project__c) || '';
                         $scope.showVisitSection = true;
                         $scope.errorMsg = false;
                         $scope.showLeadDetails = false;
@@ -1488,10 +1352,12 @@
                         $scope.oppId = value.Id;
                         $scope.leadDetails = {};
                         $scope.leadId = '';
+                        $scope.sel.project = ($scope.oppLeadProjectMap && $scope.oppLeadProjectMap[value.Id]) || '';
                         
                     }else{
                         $scope.leadDetails = value;
                         $scope.leadId = value.Id;
+                        $scope.sel.project = value.Project__c || '';
                         $scope.opp = {};
                         $scope.oppId = '';
                     }
@@ -1571,8 +1437,6 @@
                         swal('Info','Date of Birth cannot be future date.','info');
                         return;
                     }
-                    $("#btnCreateVisit").hide();
-                    $("#btnCreateVisitWait").show();
                     // if($scope.visit.Employment_Type__c == 'Salaried' || $scope.visit.Employment_Type__c == 'Business' || $scope.visit.Employment_Type__c == 'Professional'){
                     //     if($scope.visit.Company_Name__c == undefined || $scope.visit.Company_Name__c == ""){
                     //         debugger;
@@ -1635,11 +1499,21 @@
                     // }
 
 
+                    if($scope.sel.project == undefined || $scope.sel.project == ''){
+                        swal('Info','Please Select Project!','info');
+                        return;
+                    }
+                    if($scope.sel.salesMember == undefined || $scope.sel.salesMember == ''){
+                        swal('Info','Please Select Sales Team Member!','info');
+                        return;
+                    }
+                    $("#btnCreateVisit").hide();
+                    $("#btnCreateVisitWait").show();
                     if($scope.leadCreated == true){
                         $scope.visit.Facilitated_By__c = 'Yes';
                     }
                     if($scope.visitId == ''){
-                        siteVisitFormController.insertVisitRecord($scope.visit,$scope.leadId,$scope.oppId,$scope.selectedSalesTeamMember,function(result,event){
+                        siteVisitFormController.insertVisitRecord($scope.visit,$scope.leadId,$scope.oppId,$scope.sel.salesMember,$scope.sel.project,function(result,event){
                             debugger;
                             $("#btnCreateVisitWait").hide();
                             $("#btnCreateVisit").show();
@@ -1652,7 +1526,7 @@
                                 $scope.showCustReq = false;
                                 $scope.showVisitSection = false;
                                 $scope.visitDet = false;
-                                $scope.showGRE = true;
+                                $scope.showGRE = false;
                                 $scope.showSalesManager = false;
                                 $scope.$apply();
                             }
@@ -1663,7 +1537,7 @@
                     }
                     else{
                         // $scope.firstVisitRecord.Id = $scope.visitId;
-                        siteVisitFormController.insertVisitRecord($scope.visit,$scope.leadId,$scope.oppId,$scope.selectedSalesTeamMember,function(result,event){
+                        siteVisitFormController.insertVisitRecord($scope.visit,$scope.leadId,$scope.oppId,$scope.sel.salesMember,$scope.sel.project,function(result,event){
                             debugger;
                             $("#btnCreateVisitWait").hide();
                             $("#btnCreateVisit").show();
@@ -1673,7 +1547,7 @@
                                 $scope.showCustReq = false;
                                 $scope.showVisitSection = false;
                                 $scope.visitDet = false;
-                                $scope.showGRE = true;
+                                $scope.showGRE = false;
                                 $scope.showSalesManager = false;
                                 $scope.$apply();
                             } else {
@@ -1735,72 +1609,9 @@
                             $scope.visitDet = false;
                             $scope.showCustReq = false;
                             $scope.showVisitSection = false;
-                            $scope.showGRE = true;
+                            $scope.showGRE = false;
                             $scope.showSalesManager = false;
                             $scope.$apply();
-                        }
-                    })
-                }
-
-                $scope.saveGREDetails = function(){
-                    debugger;
-
-                    // $scope.forthVisitRecord = {"Sales_Manager__c":$scope.visit.Sales_Manager__c, "Facilitated_By__c":$scope.visit.Facilitated_By__c};
-
-                    // var year = 0
-                    // var month = 0;
-                    // var day = 0;
-                    // if($scope.forthVisitRecord.GRE_Date_of_Birth__c !=undefined && $scope.forthVisitRecord.GRE_Date_of_Birth__c!=''){
-                    //     year = $scope.forthVisitRecord.GRE_Date_of_Birth__c.getUTCFullYear();
-                    //     month = $scope.forthVisitRecord.GRE_Date_of_Birth__c.getUTCMonth()+1;
-                    //     day = $scope.forthVisitRecord.GRE_Date_of_Birth__c.getDate();
-                    // }
-
-                    var sHour = 0
-                    var sMin = 0;
-                    if ($scope.visit.Customer_Time_In__c != undefined && !angular.isNumber($scope.visit.Customer_Time_In__c)) {
-                        sHour = $scope.visit.Customer_Time_In__c.getHours();
-                        sMin = $scope.visit.Customer_Time_In__c.getMinutes();
-                    }
-
-                    // var oHour = 0
-                    // var oMin = 0;
-                    // if ($scope.forthVisitRecord.Customer_Time_Out__c != undefined && !angular.isNumber($scope.forthVisitRecord.Customer_Time_Out__c)) {
-                    //     oHour = $scope.forthVisitRecord.Customer_Time_Out__c.getHours();
-                    //     oMin = $scope.forthVisitRecord.Customer_Time_Out__c.getMinutes();
-                    // }
-
-                    // $scope.forthVisitRecord.Id = $scope.visitId;
-                    // delete($scope.forthVisitRecord.GRE_Date_of_Birth__c);
-                    delete($scope.visit.Customer_Time_In__c);
-                    // delete($scope.forthVisitRecord.Customer_Time_Out__c);
-
-                    // if($scope.oppId != null){
-                    //     $scope.forthVisitRecord.Deal__c = $scope.oppId;
-                    // }else{
-                    //     $scope.forthVisitRecord.Lead__c = $scope.leadId;
-                    // }
-                    if(($scope.visit.Sales_Manager__c == undefined || $scope.visit.Sales_Manager__c == '') && !$scope.leadCreated){
-                        swal(
-                            'Info',
-                            'Please Enter Sales Manager!',
-                            'info'
-                        );
-                        return;
-                    }
-                    siteVisitFormController.updateGREDetails($scope.leadCreated,$scope.visit,$scope.leadId,function(result,event){
-                        debugger;
-                        if(event.status && result == 'SUCCESS'){
-                            debugger;
-                            swal('Success','To be filled by GRE Details have been saved successfully..','success');
-                            $scope.showGRE = false;
-                            $scope.visitDet = false;
-                            $scope.showCustReq = false;
-                            $scope.showVisitSection = false;
-                            // $scope.showSalesManager = true;
-                            $scope.$apply();
-                        } else {
-                            swal('INTERNAL SERVER ERROR!','GRE Details failed to be updated.','error');
                         }
                     })
                 }

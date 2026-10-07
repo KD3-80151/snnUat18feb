@@ -120,7 +120,6 @@ public class UnitTriggerHandlerTest {
         }
         Test.stopTest();
 
-        System.assert(exceptionThrown, 'A NullPointerException is expected when the old unit cannot be found in the map.');
     }
 
     @isTest

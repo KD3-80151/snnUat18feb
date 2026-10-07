@@ -1,11 +1,11 @@
 public without sharing class DocumentCreationHandler {
     
     /*Vamsi Krishna Reddy Gontu*/
-    public void CreateDocuments(List<SObject> triggerNew){
+    public List<Id> CreateDocuments(List<SObject> triggerNew){
         try {
             System.debug('triggerNew==>'+triggerNew); 
             List<Document__c> documentsToInsert = new List<Document__c>();
-            List<String> docIds = new List<String>();
+            List<Id> docIds = new List<Id>();
             Map<String,List<Document_category__c>> getAllData = new Map<String,List<Document_category__c>>();
             
             List<Document_category__c> getAllDocumentCategorys  = [select id,Name,Document_Master__r.Name, Document_Master__c from Document_category__c];
@@ -113,14 +113,13 @@ public without sharing class DocumentCreationHandler {
             for(Document__c doc : documentsToInsert){
                 docIds.add(doc.Id);
             }
-            
-            if(docIds.size() > 0){
-                System.enqueueJob(new QueueableCreateFolderGDrive(docIds));
-            }
-            
+
+            return docIds;
+
         } catch (Exception e) {
             System.debug('Error in Creating Documents: ' + e.getMessage() + ' at line: ' + e.getLineNumber());
-        } 
+            return null;
+        }
     }
 
     public class ReceiptFolderWrapper {

@@ -199,8 +199,8 @@ export default class GetSelectedPropertiesFromProject extends NavigationMixin(Li
 
     SearchUnits() {
         debugger;
-        if (!this.selectedProjectName || !this.selectedTowerName) {
-            this.showToast('Error', 'Please select Project, Tower', 'error');
+        if (!this.selectedProjectName) {
+            this.showToast('Error', 'Please select Project', 'error');
             return;
         }
 
@@ -238,7 +238,7 @@ export default class GetSelectedPropertiesFromProject extends NavigationMixin(Li
 
                             for (let j = 0; j < result.FloorwithunitMapDetails[key].length; j++) {
                                 const u = result.FloorwithunitMapDetails[key][j];
-                                const matchesTower = u.Floor__r.Blocks__r.Tower_Code__c === this.TowerName;
+                                const matchesTower = !this.TowerName || u.Floor__r.Blocks__r.Tower_Code__c === this.TowerName;
                                 const matchesUnitType = !this.FlatBhkId || u.Unit_Type__c === this.FlatBhkId;
 
                                 if (matchesTower && matchesUnitType) {

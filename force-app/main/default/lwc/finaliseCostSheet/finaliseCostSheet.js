@@ -58,6 +58,7 @@ export default class FinaliseCostSheet extends LightningElement {
                     return {
                         ...costSheet,
                         isSelected: costSheet.finalize_CostSheet__c, // Mark as selected if finalized
+                        isRadioDisabled: costSheet.Cost_Sheet_Approval_Summary__c === 'Under Approval' || costSheet.Cost_Sheet_Approval_Summary__c === 'Rejected',
                         trimmedCreatedDate: costSheet.CreatedDate ? costSheet.CreatedDate.split('T')[0] : null // Trim time from CreatedDate
                     };
                 });

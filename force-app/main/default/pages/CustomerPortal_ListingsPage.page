@@ -317,8 +317,7 @@
                                         </div>
                                         <p class="card-text">{{project.Project_Address__c}}</p>
                                         <div class="listing-details">
-                                            <p><strong>Type</strong><br/>{{project.Unit_Type__c}}</p>
-                                            <!-- <table class="table listing-table">
+                                            <table class="table listing-table">
                                                 <tr>
                                                     <td><strong>{{project.Total_Amount__c || 0 | currency}}</strong><br/>Total Amount</td>
                                                     <td><strong>{{project.Unit_Type__c}}</strong><br/>Type</td>
@@ -327,11 +326,10 @@
                                                     <td><strong>{{project.Booking_Amount__c || 0 | currency}}</strong><br/>Booking Amount</td>
                                                     <td><strong>{{project.Project_Status__c}}</strong><br/>Availability</td>
                                                 </tr>
-                                            </table> -->
+                                            </table>
                                         </div>
                                         <div class="button-container">
-                                            <button class="contact-sales-button" ng-click = "openContactSales(project)">Contact Sales</button>
-                                            <button class="schedule-visit-button" ng-click = "openReferNow(project)">Refer Now</button>
+                                            <button class="schedule-visit-button" ng-click="showProjectDetails(project)">View Details</button>
                                         </div>
                                     </div>
                                 </div>
@@ -363,8 +361,7 @@
                                         <h5 class="card-title title-color">{{project.Name}}</h5>
                                         <p class="card-text">{{project.Project_Address__c}}</p>
                                         <div class="listing-details">
-                                            <p><strong>Type</strong><br/>{{project.Unit_Type__c}}</p>
-                                            <!-- <table class="table listing-table table-sm">
+                                            <table class="table listing-table table-sm">
                                                 <tr>
                                                     <td><strong>{{project.Total_Amount__c || 0 | currency}}</strong><br/>Total Amount</td>
                                                     <td><strong>{{project.Unit_Type__c}}</strong><br/>Type</td>
@@ -373,25 +370,20 @@
                                                     <td><strong>{{project.Booking_Amount__c || 0 | currency}}</strong><br/>Booking Amount</td>
                                                     <td><strong>{{project.Project_Status__c}}</strong><br/>Availability</td>
                                                 </tr>
-                                            </table> -->
+                                            </table>
                                         </div>
                                         <div class="button-container">
-                                            <button class="contact-sales-button" ng-click = "openContactSales(project)">Contact Sales</button>
-                                            <button class="schedule-visit-button" ng-click = "openReferNow(project)">Refer Now</button>
+                                            <button class="schedule-visit-button" ng-click="showProjectDetails(project)">View Details</button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div> 
+                    </div>
                     <div ng-show = "detailsPage">
                         <div id="projectDetailsMainContent" class="container-fluid">
                             <div class="d-flex flex-row" style="justify-content: space-between;">
                                 <span class="mb-4 back-link"><p class="bi bi-arrow-left icon1" ng-click="showMainPage()"></p></span>
-                                <div style="display: flex; gap: 8px;">
-                                    <button class="contact-sales-button" ng-click="openScheduleVisit(project)">Schedule Visit</button>
-                                    <!-- <button class="schedule-visit-button">Book Now</button> -->
-                                </div>
                             </div>
                             <!-- Image Carousel -->
                             <div id="propertyCarousel" class="carousel slide mt-3" data-bs-ride="carousel">

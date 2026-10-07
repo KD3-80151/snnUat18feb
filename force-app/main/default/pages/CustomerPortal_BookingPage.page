@@ -251,28 +251,32 @@
                                         </div>
                                     </td>
                                 </tr>
-                                <tr ng-show="opp.showDoc" style="background-color:#F4F4F4; border-color:#F4F4F4;" ng-if="!opp.Documents__r">
+                                <tr ng-show="opp.showDoc" style="background-color:#F4F4F4; border-color:#F4F4F4;" ng-if="!opp.Documents__r || opp.Documents__r.length === 0">
                                     <td></td>
-                                    <td style="color:#ff0000"><strong>No related documents found!!</strong></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
+                                    <td colspan="6" style="color:#ff0000"><strong>No related documents found!!</strong></td>
                                 </tr>
-                                <tr ng-show="opp.showDoc" style="background-color:#F4F4F4; border-color:#F4F4F4;" ng-repeat="doc in opp.Documents__r">
+                                <tr ng-show="opp.showDoc" ng-if="opp.Documents__r.length" style="background-color:#F4F4F4; border-color:#F4F4F4;">
                                     <td></td>
-                                    <td>{{doc.Name}}</td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td>
-                                        <div style="width:fit-content;margin-left:auto;">
-                                            <button class="btn-blue" ng-if="doc.Sub_Documents__r" ng-click="openPreview(doc.Sub_Documents__r[0].File_URL__c)"><i class="bi bi-eye"></i></button>
-                                            <button class="btn-red" ng-if="doc.Sub_Documents__r" ng-click="download(doc.Sub_Documents__r[0].File_URL__c)"><i class="fa-solid fa-download"></i></button>
+                                    <td colspan="6" style="padding:10px 0;">
+                                        <div ng-repeat="doc in opp.Documents__r" style="margin-bottom:6px;">
+                                            <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 10px; background:#e5ecf4; border-radius:4px;">
+                                                <span><strong>{{doc.Name}}</strong></span>
+                                                <button ng-class="{'btn-blue': !doc.showSubDocs, 'btn-red': doc.showSubDocs}"
+                                                    ng-if="doc.Sub_Documents__r.length"
+                                                    ng-click="doc.showSubDocs = !doc.showSubDocs"
+                                                    style="padding:4px 16px; font-size:13px; min-width:auto;">
+                                                    <span ng-show="!doc.showSubDocs">View more</span><span ng-show="doc.showSubDocs">View less</span>
+                                                </button>
+                                            </div>
+                                            <div ng-show="doc.showSubDocs">
+                                                <div ng-repeat="subDoc in doc.Sub_Documents__r" style="display:flex; align-items:center; padding:6px 20px; border-bottom:1px solid #ddd; background:#fafafa;">
+                                                    <span style="flex:1; font-size:13px;">{{subDoc.Name}}</span>
+                                                    <div>
+                                                        <button class="btn-blue" ng-click="openPreview(subDoc.File_URL__c)" style="margin-right:4px;"><i class="bi bi-eye"></i></button>
+                                                        <button class="btn-red" ng-click="download(subDoc.File_URL__c)"><i class="fa-solid fa-download"></i></button>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </td>
                                 </tr>
@@ -340,11 +344,24 @@
                                     <span aria-hidden="true">&times;</span>
                                 </button>
                                 <div style="margin-top:40px;margin-bottom:40px;" class="content-wrapper">
-                                    <div style="display:flex;" ng-repeat="document in documents">
-                                        <p>{{document.Name}}</p>
-                                        <div style="width:fit-content;margin-left:auto;">
-                                            <button class="btn-blue" ng-if="document.Sub_Documents__r" ng-click="openPreview(document.Sub_Documents__r[0].File_URL__c)"><i class="bi bi-eye"></i></button>
-                                            <button class="btn-red" ng-if="document.Sub_Documents__r" ng-click="download(document.Sub_Documents__r[0].File_URL__c)"><i class="fa-solid fa-download"></i></button>
+                                    <div ng-repeat="document in documents" style="margin-bottom:8px;">
+                                        <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 10px; background:#e5ecf4; border-radius:4px;">
+                                            <span><strong>{{document.Name}}</strong></span>
+                                            <button ng-class="{'btn-blue': !document.showSubDocs, 'btn-red': document.showSubDocs}"
+                                                ng-if="document.Sub_Documents__r.length"
+                                                ng-click="document.showSubDocs = !document.showSubDocs"
+                                                style="padding:4px 16px; font-size:13px; min-width:auto;">
+                                                <span ng-show="!document.showSubDocs">View more</span><span ng-show="document.showSubDocs">View less</span>
+                                            </button>
+                                        </div>
+                                        <div ng-show="document.showSubDocs">
+                                            <div ng-repeat="subDoc in document.Sub_Documents__r" style="display:flex; align-items:center; padding:6px 20px; border-bottom:1px solid #ddd; background:#fafafa;">
+                                                <span style="flex:1; font-size:13px;">{{subDoc.Name}}</span>
+                                                <div>
+                                                    <button class="btn-blue" ng-click="openPreview(subDoc.File_URL__c)" style="margin-right:4px;"><i class="bi bi-eye"></i></button>
+                                                    <button class="btn-red" ng-click="download(subDoc.File_URL__c)"><i class="fa-solid fa-download"></i></button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -383,7 +400,7 @@
                                     <tr>
                                         <td>{{$index+1}}</td>
                                         <td>{{ps.Name}}</td>
-                                        <td>{{ps.Agreement_Value__c}}</td>
+                                        <td>{{ps.Total_Amount_Inclusive_Of_Tax__c}}</td>
                                         <td>{{ps.Due_Date__c}}</td>
                                         <td>{{ps.Pay_Date__c}}</td>
                                         <td>{{ps.Total_Due_Amount__c}}</td>
@@ -479,3 +496,4 @@
         </div>
     </html>
 </apex:page>
+

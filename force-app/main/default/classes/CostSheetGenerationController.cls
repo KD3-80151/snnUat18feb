@@ -123,7 +123,7 @@ public without Sharing  class CostSheetGenerationController {
                 }
             }
             
-            List<Unit__c> unitList = [SELECT Id,Name,Super_Built_Up_Area_sq_ft__c,Floor_Rise__c, Base_Price_per_sqft__c,Car_Parking_Amount__c,Car_Parking__c, Premium_Charges_per_sqft__c, Infrastructure_Development_Char_pSqft__c, Facilities_Development_Charges_pSqft__c from Unit__c where Id =: unitId LIMIT 1];
+            List<Unit__c> unitList = [SELECT Id,Name,Super_Built_Up_Area_sq_ft__c,Floor_Rise__c, Base_Price_per_sqft__c,Car_Parking_Amount__c,Car_Parking__c, Premium_Charges_per_sqft__c, Infrastructure_Development_Char_pSqft__c, Facilities_Development_Charges_pSqft__c, Terrace_Area__c from Unit__c where Id =: unitId LIMIT 1];
             System.debug('unitList==>'+unitList);
             
             Task taskToClose = [select id,Subject,Status from Task Where WhatId =: opp.Id AND Subject =:'Generate Cost Sheet' Limit 1];
@@ -147,6 +147,8 @@ public without Sharing  class CostSheetGenerationController {
             for(Pricing_Element_Master__c pemr : pricingElementMasterRecords){
                 mapofPricingElements.put(pemr.Id, pemr);
             }
+
+            
             
             System.debug('mapofPricingElements==>'+mapofPricingElements);
         
@@ -171,8 +173,20 @@ public without Sharing  class CostSheetGenerationController {
                 pe.Cost_Sheet__c = costSheetId != null ? costSheetId : null;
                 pe.PE_Type__c = csp.PE_Type__c != null ? csp.PE_Type__c : null;
                 pe.Sequence__c = csp.Sequence__c != null ? csp.Sequence__c : null;
+                Boolean isTerraceValue = csp.Pricing_Element_Master__r.Name != null && csp.Pricing_Element_Master__r.Name.containsIgnoreCase('Terrace Value');
                 Decimal area = unitList[0].Super_Built_Up_Area_sq_ft__c;
-                
+                if(isTerraceValue){
+                    String terraceAreaStr = unitList[0].Terrace_Area__c;
+                    area = null;
+                    if(String.isNotBlank(terraceAreaStr)){
+                        try{
+                            area = Decimal.valueOf(terraceAreaStr.trim().replaceAll(',', ''));
+                        }catch(Exception ex){
+                            System.debug('Invalid Terrace_Area__c value: ' + terraceAreaStr);
+                        }
+                    }
+                }
+
                 System.debug('csp.Pricing_Element_Master__r.Name==>'+csp.Pricing_Element_Master__r.Name);
                 System.debug('Corner Charges==>'+pricingMap.get('Corner Premium Charges'));
                 System.debug('Floor Rise==>'+pricingMap.get('Floor Rise'));
@@ -234,7 +248,7 @@ public without Sharing  class CostSheetGenerationController {
 
                 }
                 else{
-                    pe.Quantity__c = (csp.Unit__c != null && csp.Unit__c == 'sqft' && unitList[0].Super_Built_Up_Area_sq_ft__c != null) ? unitList[0].Super_Built_Up_Area_sq_ft__c : csp.Quantity__c;
+                    pe.Quantity__c = (csp.Unit__c != null && csp.Unit__c == 'sqft' && area != null) ? area : csp.Quantity__c;
                     // pe.Rate__c = csp.Rate__c != null ? csp.Rate__c : null;
                     // pe.Amount__c = pe.Quantity__c != null && pe.Rate__c != null ? (pe.Quantity__c * pe.Rate__c) : null;
                     pe.Rate__c = csp.Rate__c;
@@ -612,12 +626,17 @@ public without Sharing  class CostSheetGenerationController {
         try{
             createPaymentSchedule(costSheetId);
             List<Object> discountList = (List<Object>) JSON.deserializeUntyped(data);
-            Map<String, String> discountByPricingMap = new Map<String, String>();
-    
+            // Keyed by Pricing Element Master Id so equal discount amounts on different elements don't overwrite each other
+            Map<String, Decimal> discountByPricingMap = new Map<String, Decimal>();
+
             for (Object discount : discountList) {
                 Map<String, Object> discountMap = (Map<String, Object>) discount;
-                if (discountMap.containsKey('discountAmount') && discountMap.containsKey('id')) {
-                    discountByPricingMap.put(String.valueOf(discountMap.get('discountAmount')), String.valueOf(discountMap.get('id')));
+                if (discountMap.containsKey('discountAmount') && discountMap.containsKey('id') && discountMap.get('discountAmount') != null) {
+                    Decimal discountAmount = Decimal.valueOf(String.valueOf(discountMap.get('discountAmount')));
+                    // A zero discount needs no approval
+                    if (discountAmount > 0) {
+                        discountByPricingMap.put(String.valueOf(discountMap.get('id')), discountAmount);
+                    }
                 }
             }
 
@@ -630,25 +649,27 @@ public without Sharing  class CostSheetGenerationController {
                     'Sales Manager' => 3,
                     'Sales Executive' => 4  
                 };
-                List<Cost_Sheet__c> costSheetRec = [SELECT Id,Opportunity__c, Opportunity__r.Project__c, Opportunity__r.Name,finalize_CostSheet__c from Cost_Sheet__c where Id =: costSheetId LIMIT 1];
+                List<Cost_Sheet__c> costSheetRec = [SELECT Id,Opportunity__c, Opportunity__r.Project__c, Opportunity__r.Name,finalize_CostSheet__c,Discounted_Cost_Sheet__c from Cost_Sheet__c where Id =: costSheetId LIMIT 1];
                 System.debug('costSheetRec ===> ' + costSheetRec);
+
+                // discountByPricingMap only holds discounts greater than 0
+                costSheetRec[0].Discounted_Cost_Sheet__c = !discountByPricingMap.isEmpty();
 
                 String highestDiscountRole = '';
                 if(costSheetRec[0].Opportunity__r.Project__c != null){
-                    List<Discount_Master__c> discountMasterList = [SELECT Id,Active__c,Pricing_Element_Master__c,(SELECT Id,Name,Maximum__c,Minimum__c,Roles__c from Discount_LineItems__r) from Discount_Master__c where Project__c =: costSheetRec[0].Opportunity__r.Project__c AND Active__c = true AND Pricing_Element_Master__c IN : discountByPricingMap.values()];
+                    List<Discount_Master__c> discountMasterList = [SELECT Id,Active__c,Pricing_Element_Master__c,(SELECT Id,Name,Maximum__c,Minimum__c,Roles__c from Discount_LineItems__r) from Discount_Master__c where Project__c =: costSheetRec[0].Opportunity__r.Project__c AND Active__c = true AND Pricing_Element_Master__c IN : discountByPricingMap.keySet()];
                     System.debug('discountMasterList ===> ' + discountMasterList);
-                    
-                    for(String amount : discountByPricingMap.keySet()){
-                        Decimal amountDecimal = Decimal.valueOf(amount);
-                        String currentPricingEle = discountByPricingMap.get(amount);
+
+                    for(String currentPricingEle : discountByPricingMap.keySet()){
+                        Decimal amountDecimal = discountByPricingMap.get(currentPricingEle);
                         System.debug('amountDecimal ===> ' + amountDecimal);
-                        System.debug('pricing ===> ' + discountByPricingMap.get(amount));
+                        System.debug('pricing ===> ' + currentPricingEle);
     
                         for(Discount_Master__c discountMaster : discountMasterList){
                             System.debug('discountMaster ===> ' + discountMaster);
                             if (currentPricingEle == discountMaster.Pricing_Element_Master__c) {
-                                List<Discount_LineItem__c> lineItemList = discountMaster.Discount_LineItems__r.isEmpty() ? null : discountMaster.Discount_LineItems__r;
-                                if(!lineItemList.isEmpty()){
+                                List<Discount_LineItem__c> lineItemList = discountMaster.Discount_LineItems__r;
+                                if(lineItemList != null && !lineItemList.isEmpty()){
                                     for(Discount_LineItem__c lineItem : lineItemList){
                                         System.debug('lineItem ===> ' + lineItem);
                                         if (amountDecimal >= lineItem.Minimum__c && amountDecimal <= lineItem.Maximum__c) {
@@ -665,11 +686,26 @@ public without Sharing  class CostSheetGenerationController {
                     }
                     System.debug('final discount role ===> ' + highestDiscountRole);
                     costSheetRec[0].Highest_Approver__c = highestDiscountRole;
+
+                    // Single-level approval: route to the Project Role user for the discount's role.
+                    // r_CostSheet_After_Insert_Update_Sync submits the approval once this field is set.
+                    Id approverId = null;
+                    if (String.isNotBlank(highestDiscountRole)) {
+                        List<Project_Roles__c> approverRoles = [SELECT User__c FROM Project_Roles__c
+                                                                WHERE Project__c = :costSheetRec[0].Opportunity__r.Project__c
+                                                                AND Role__c = :highestDiscountRole
+                                                                AND User__c != null LIMIT 1];
+                        approverId = approverRoles.isEmpty() ? null : approverRoles[0].User__c;
+                    }
+                    costSheetRec[0].Next_Approver__c = approverId;
                     System.debug('costSheetRec ===> ' + costSheetRec);
+                    update costSheetRec[0];
+                } else {
+                    // No project: no approver can be resolved, but still persist the discount flag
                     update costSheetRec[0];
                 }
             }
-            
+
         }catch(Exception e){
             system.debug('Error ==> ' + e.getMessage());
             system.debug('Error in line ==> ' + e.getLineNumber());

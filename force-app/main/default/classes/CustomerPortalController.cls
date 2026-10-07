@@ -579,6 +579,8 @@ public without sharing class CustomerPortalController {
                 lead.Referred_By_Phone__c = con.Phone;
                 lead.Referred_By_Email__c = con.Email;
                 lead.Lead_Type__c = 'Referral';
+                lead.LeadSource = 'Employee Referral';
+                lead.Lead_Sub_Source__c = 'Referral';
                 insert lead;
                 return 'SUCCESS';
             }else{
@@ -590,6 +592,8 @@ public without sharing class CustomerPortalController {
             return 'Error: '+e.getMessage();
         }
     }
+
+
 
     public class custDocWrapper {
         public List<Opportunity> oppList { get; set; }
@@ -750,7 +754,7 @@ public without sharing class CustomerPortalController {
         System.debug('Login Hash Code ---> '+hashCode);
         List<Opportunity> oppList = new List<Opportunity>();
         try{
-            oppList = [SELECT Id, Name, Project__r.Name, Unit__r.Unit_Name__c, Unit__r.Super_Built_Up_Area_sq_ft__c, Account.Customer_SAP_External_Id__c, Unit__r.Unit_Type__c, CreatedDate, Booking_Date__c, (SELECT Id, Name, (SELECT Id, File_URL__c, CreatedDate FROM Sub_Documents__r ORDER BY CreatedDate DESC LIMIT 1) FROM Documents__r) FROM Opportunity WHERE AccountId IN (SELECT AccountId FROM Contact WHERE Login_Hash_Code__c =: hashCode)];
+            oppList = [SELECT Id, Name, Project__r.Name, Unit__r.Unit_Name__c, Unit__r.Super_Built_Up_Area_sq_ft__c, Account.Customer_SAP_External_Id__c, Unit__r.Unit_Type__c, CreatedDate, Booking_Date__c, (SELECT Id, Name, (SELECT Id, Name, File_URL__c, CreatedDate FROM Sub_Documents__r ORDER BY CreatedDate DESC) FROM Documents__r) FROM Opportunity WHERE AccountId IN (SELECT AccountId FROM Contact WHERE Login_Hash_Code__c =: hashCode)];
         }catch(Exception e){
             System.debug('Error: '+e.getMessage()+' at Line '+e.getLineNumber());
         }
@@ -765,7 +769,7 @@ public without sharing class CustomerPortalController {
         }
         List<Payment_Schedule__c> paymentScheduleList = new List<Payment_Schedule__c>();
         try{
-            paymentScheduleList = [SELECT Id, Name, Due_Date__c, Agreement_Value__c, Total_Due_Amount__c, Status__c, Opportunity__r.Total_Amount_Collected__c, Opportunity__r.Total_Outstanding_Amount__c, Pay_Date__c FROM Payment_Schedule__c WHERE Opportunity__c =: oppId];
+            paymentScheduleList = [SELECT Id, Name, Due_Date__c, Agreement_Value__c, Total_Due_Amount__c, Status__c, Opportunity__r.Total_Amount_Collected__c, Opportunity__r.Total_PS_Amount_Inclusive_Of_Tax__c, Opportunity__r.Total_Outstanding_Amount__c, Total_Amount_Inclusive_Of_Tax__c, Pay_Date__c FROM Payment_Schedule__c WHERE Opportunity__c =: oppId];
         }catch(Exception e){
             System.debug('Error: '+e.getMessage()+' at Line '+e.getLineNumber());
         }
@@ -1072,7 +1076,7 @@ public without sharing class CustomerPortalController {
         
     }
     
-         public static void testCover06(){
+    public static void testCover06(){
         Integer i=0;
         i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
         i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
@@ -1105,7 +1109,7 @@ public without sharing class CustomerPortalController {
         
     }
     
-         public static void testCover07(){
+    public static void testCover07(){
         Integer i=0;
         i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
         i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;

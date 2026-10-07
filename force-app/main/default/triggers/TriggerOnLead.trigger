@@ -3,7 +3,7 @@ trigger TriggerOnLead on Lead (before insert, after insert, before update, after
     LeadHandler li = new LeadHandler();
     
     if(Trigger.isBefore && Trigger.isInsert) {
-        li.assignToQueue(Trigger.new);
+       li.assignToQueue(Trigger.new);
         LeadHandler.updateDuplicateLeads(Trigger.new);
     }
     
