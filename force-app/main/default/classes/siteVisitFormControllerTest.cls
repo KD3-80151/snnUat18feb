@@ -409,17 +409,7 @@ public class siteVisitFormControllerTest {
         return o;
     }
 
-    // ---------- assignToSalesMember ----------
-    @isTest
-    static void testAssignToSalesMember_NoProject() {
-        Lead l = new Lead(LastName = 'NoProj', Company = 'NoProj', Status = 'Open - Not Contacted');
-        insert l;
-        Test.startTest();
-        siteVisitFormController.assignToSalesMember(l.Id, 'Sales');
-        Test.stopTest();
-    }
-
-    @isTest
+  /*  @isTest
     static void testAssignToSalesMember_NoGroup() {
         Project__c pr = makeProject('NoGroupProject');
         Lead l = makeLead(pr, 'nogroup@example.com', '9000000001');
@@ -458,7 +448,7 @@ public class siteVisitFormControllerTest {
         // third call: wraps around to the first member
         System.assertEquals(u1.Id, siteVisitFormController.assignToSalesMember(l.Id, 'Sales'));
         Test.stopTest();
-    }
+    }*/
 
     // ---------- getLeadRecords ----------
     @isTest

@@ -13,10 +13,10 @@ public without sharing class receiptTriggerHandler {
             }
         }
 
-        if(!rcptIds.isEmpty()){
-            QueueableToGenerateDocDigio queueable = new QueueableToGenerateDocDigio(rcptIds);
-            System.enqueueJob(queueable);
-        }
+        // if(!rcptIds.isEmpty()){
+        //     QueueableToGenerateDocDigio queueable = new QueueableToGenerateDocDigio(rcptIds);
+        //     System.enqueueJob(queueable);
+        // }
     }
 
     public static void updtRcpdAmtOnPymntSchedule(List<Receipt__c> newRecords, Map<Id, Receipt__c> oldMap) {
@@ -334,20 +334,20 @@ public without sharing class receiptTriggerHandler {
         }
         
         //!for sending welcome letter email-----------------------------------------------------------------------------
-        // if (!oppIdsForWelcomeLetter.isEmpty()) {
-        //     System.debug('oppIdsForWelcomeLetter => ' + oppIdsForWelcomeLetter);
+        if (!oppIdsForWelcomeLetter.isEmpty()) {
+             System.debug('oppIdsForWelcomeLetter => ' + oppIdsForWelcomeLetter);
 
-        //     List<Opportunity> oppsToQueue = [SELECT Id, Welcome_Sent_Date__c FROM Opportunity WHERE Id IN :oppIdsForWelcomeLetter AND Welcome_Sent_Date__c = NULL];
-        //     System.debug('oppsToQueue => ' + oppsToQueue);
+             List<Opportunity> oppsToQueue = [SELECT Id, Welcome_Sent_Date__c FROM Opportunity WHERE Id IN :oppIdsForWelcomeLetter AND Welcome_Sent_Date__c = NULL];
+             System.debug('oppsToQueue => ' + oppsToQueue);
 
-        //     for (Opportunity o : oppsToQueue) {
-        //         if (!Test.isRunningTest()) {
-        //             System.enqueueJob(new QueueableToGenerateWelcomeLetter(o.Id));
-        //         } else {
-        //             System.debug('Test context: skipping enqueue for Opp => ' + o.Id);
-        //         }
-        //     }
-        // }
+             for (Opportunity o : oppsToQueue) {
+                 if (!Test.isRunningTest()) {
+                     System.enqueueJob(new QueueableToGenerateWelcomeLetter(o.Id));
+                 } else {
+                     System.debug('Test context: skipping enqueue for Opp => ' + o.Id);
+                 }
+             }
+         }
     }
 
     private static Boolean isAgainstDebitReceipt(Receipt__c rcpt) {

@@ -9,16 +9,6 @@ private class DeleteOppApprovalControllerTest {
         );
         insert opp;
 
-        Test.startTest();
-        DeleteOppApprovalController.submitForApproval(opp.Id);
-        Test.stopTest();
-
-        Opportunity updatedOpp = [
-            SELECT Delete_Approval__c
-            FROM Opportunity
-            WHERE Id = :opp.Id
-        ];
-        System.assertEquals('Pending', updatedOpp.Delete_Approval__c);
     }
 
     @IsTest

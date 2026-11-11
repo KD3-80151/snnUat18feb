@@ -24,6 +24,8 @@ trigger TriggerOnLead on Lead (before insert, after insert, before update, after
         }
         if(!leadsToProcess.isEmpty()){
             LeadHandler.sendAnSMSonLeadPhone(Trigger.new);
+            LeadTriggerHandler.handleLeadConversion(Trigger.new, Trigger.oldMap);
+
         }
       //  LeadHandler.shareLead(Trigger.new);
     }

@@ -193,7 +193,7 @@
         <name>mdvUnitCancellationUpdateOppANDUnitUpdate</name>
         <label>mdvUnitCancellationUpdateOppANDUnitUpdate</label>
         <locationX>1898</locationX>
-        <locationY>647</locationY>
+        <locationY>755</locationY>
         <assignmentItems>
             <assignToReference>mdvUnitCancellationUpdateOppANDUnit</assignToReference>
             <operator>Assign</operator>
@@ -211,6 +211,9 @@
         <label>Check The Record Type</label>
         <locationX>1106</locationX>
         <locationY>323</locationY>
+        <defaultConnector>
+            <targetReference>END_ELEMENT_5</targetReference>
+        </defaultConnector>
         <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
         <rules>
             <name>Case_Submit_True</name>
@@ -445,6 +448,26 @@
             <label>Update Unit Cancellation Opp and Unit</label>
         </rules>
     </decisions>
+    <ends>
+        <name>END_ELEMENT_5</name>
+        <locationX>2162</locationX>
+        <locationY>431</locationY>
+    </ends>
+    <ends>
+        <name>END_ELEMENT_6</name>
+        <locationX>1370</locationX>
+        <locationY>647</locationY>
+    </ends>
+    <ends>
+        <name>END_ELEMENT_7</name>
+        <locationX>50</locationX>
+        <locationY>539</locationY>
+    </ends>
+    <ends>
+        <name>END_ELEMENT_8</name>
+        <locationX>1634</locationX>
+        <locationY>539</locationY>
+    </ends>
     <environments>Default</environments>
     <formulas>
         <name>IsNew</name>
@@ -558,6 +581,12 @@
                 <elementReference>$Record.Opportunity__r.Unit__r.Id</elementReference>
             </value>
         </inputAssignments>
+        <inputAssignments>
+            <field>Opportunity__c</field>
+            <value>
+                <elementReference>$Record.Opportunity__c</elementReference>
+            </value>
+        </inputAssignments>
         <inputReference>$Record</inputReference>
     </recordUpdates>
     <recordUpdates>
@@ -565,6 +594,9 @@
         <label>Update Case To Account</label>
         <locationX>1370</locationX>
         <locationY>539</locationY>
+        <connector>
+            <targetReference>END_ELEMENT_6</targetReference>
+        </connector>
         <inputAssignments>
             <field>To_Contact__c</field>
             <value>
@@ -614,6 +646,9 @@
         <label>Update task submit</label>
         <locationX>50</locationX>
         <locationY>431</locationY>
+        <connector>
+            <targetReference>END_ELEMENT_7</targetReference>
+        </connector>
         <filterLogic>and</filterLogic>
         <filters>
             <field>WhatId</field>
@@ -642,6 +677,9 @@
         <label>Update Unit Data Floor Project Block</label>
         <locationX>1634</locationX>
         <locationY>431</locationY>
+        <connector>
+            <targetReference>END_ELEMENT_8</targetReference>
+        </connector>
         <inputAssignments>
             <field>To_Block__c</field>
             <value>
@@ -666,7 +704,7 @@
         <name>Update_Unit_To_Available</name>
         <label>Update Unit To Available</label>
         <locationX>1898</locationX>
-        <locationY>539</locationY>
+        <locationY>647</locationY>
         <connector>
             <targetReference>mdvUnitCancellationUpdateOppANDUnitUpdate</targetReference>
         </connector>

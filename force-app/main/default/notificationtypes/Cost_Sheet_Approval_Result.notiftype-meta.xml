@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomNotificationType xmlns="http://soap.sforce.com/2006/04/metadata">
+    <customNotifTypeName>Cost Sheet Approval Result</customNotifTypeName>
+    <description>Notifies the Cost Sheet submitter when the discount approval is approved or rejected.</description>
+    <desktop>true</desktop>
+    <masterLabel>Cost Sheet Approval Result</masterLabel>
+    <mobile>true</mobile>
+    <slack>false</slack>
+</CustomNotificationType>

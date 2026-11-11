@@ -20,14 +20,17 @@ public withOut sharing class ReusableLookupController {
                 if(String.isNotBlank(inputWrapper.selectedRecordId)) {
                     query += ' WHERE Id = \''+ inputWrapper.selectedRecordId + '\'';
                 }else if(String.isNotBlank(inputWrapper.parentFieldApiName) && String.isNotBlank(inputWrapper.parentRecordId)){
-                    query += ' WHERE '+ inputWrapper.parentFieldApiName+ ' = \''+ inputWrapper.parentRecordId + '\'';
+                    query += ' WHERE '+ inputWrapper.parentFieldApiName+ ' = \''+ String.escapeSingleQuotes(inputWrapper.parentRecordId) + '\'';
+                    if(String.isNotBlank(inputWrapper.firstFieldFilterApiName) && String.isNotBlank(inputWrapper.firstFieldFilterValue)){
+                        query += ' AND ' + getExclusionClause(inputWrapper.firstFieldFilterApiName, inputWrapper.firstFieldFilterValue);
+                    }
                     query += ' AND ' + filterCriteria;
                 }else if((String.isNotBlank(inputWrapper.firstFieldFilterApiName)) || (String.isNotBlank(inputWrapper.secondFieldFilterApiName)) || (String.isNotBlank(inputWrapper.thirdFieldFilterApiName))){
                     if((String.isNotBlank(inputWrapper.firstFieldFilterValue)) || (String.isNotBlank(inputWrapper.secondFieldFilterValue)) || (String.isNotBlank(inputWrapper.thirdFieldFilterValue))){
                         query += ' WHERE ';
                     }
                     if((String.isNotBlank(inputWrapper.firstFieldFilterApiName)) && (String.isNotBlank(inputWrapper.firstFieldFilterValue))){
-                        query += inputWrapper.firstFieldFilterApiName+ ' != \''+ inputWrapper.firstFieldFilterValue + '\'';
+                        query += getExclusionClause(inputWrapper.firstFieldFilterApiName, inputWrapper.firstFieldFilterValue);
                     }
                     if((String.isNotBlank(inputWrapper.secondFieldFilterApiName)) && (String.isNotBlank(inputWrapper.secondFieldFilterValue))){
                         query += inputWrapper.secondFieldFilterApiName+ ' = \''+ inputWrapper.secondFieldFilterValue + '\'';
@@ -83,6 +86,19 @@ public withOut sharing class ReusableLookupController {
         @AuraEnabled public String secondFieldFilterValue{get;set;}
         @AuraEnabled public String thirdFieldFilterApiName{get;set;}
         @AuraEnabled public String thirdFieldFilterValue{get;set;}
+    }
+    // comma separated values are excluded together, e.g. "Sold,Management Blocked"
+    private static String getExclusionClause(String fieldApiName, String fieldValue) {
+        if (!fieldValue.contains(',')) {
+            return fieldApiName + ' != \'' + fieldValue + '\'';
+        }
+        List<String> excludedValues = new List<String>();
+        for (String val : fieldValue.split(',')) {
+            if (String.isNotBlank(val)) {
+                excludedValues.add('\'' + String.escapeSingleQuotes(val.trim()) + '\'');
+            }
+        }
+        return fieldApiName + ' NOT IN (' + String.join(excludedValues, ',') + ')';
     }
     // helper to handle relationship fields (like Account.Name)
   private static String getFieldValue(SObject record, String fieldPath) {

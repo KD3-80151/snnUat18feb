@@ -127,9 +127,11 @@ public without sharing class SelectPropertsiteVisitController {
             if (!floorIds.isEmpty()) {
                 String baseQuery =
                     'SELECT Id, Name, Unit_Name__c, Status__c, Unit_Type__c,' +
+                    ' Super_Built_Up_Area_sq_ft__c, Base_Price_per_sqft__c, Floor_Rise__c, Premium_Charges_per_sqft__c,' +
+                    ' Infrastructure_Development_Char_pSqft__c, Facilities_Development_Charges_pSqft__c,' +
                     ' Floor__c, Floor__r.Name, Floor__r.Floor_No__c,' +
                     ' Floor__r.Blocks__r.Name, Floor__r.Blocks__r.Tower_Code__c' +
-                    ' FROM Unit__c WHERE Floor__r.Floor_No__c != null AND Floor__c IN :floorIds';
+                    ' FROM Unit__c WHERE Floor__c IN :floorIds';
 
                 if (!String.isBlank(filterUnitType)) {
                     baseQuery += ' AND Unit_Type__c = :filterUnitType';
@@ -149,8 +151,6 @@ public without sharing class SelectPropertsiteVisitController {
                         SoldCount++;
                     } else if (unit.Status__c == 'Management Blocked') {
                         ManagementBlockedCount++;
-                    } else if (unit.Status__c == 'Booked') {
-                        BlockedforSafetyClearanceCount++;
                     } else if (unit.Status__c == 'Awaiting Payment Confirmation') {
                         waitingPaymentConfirmationCount++;
                     }

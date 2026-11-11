@@ -11,12 +11,12 @@ public without Sharing  class CostSheetGenerationController {
             if(recordId.startsWith('00T')){
                 Task ts = [select id,WhatId from Task where id =: recordId ];
 
-                opp = [SELECT Id, Unit__c, OwnerId, Unit__r.Name, Unit__r.Unit_Name__c, (SELECT Id, Subject, WhatId, Status FROM Tasks WHERE Subject = 'Finalise Cost Sheet & Generate Payment Schedule' AND Status = 'Open') FROM Opportunity WHERE Id =:ts.WhatId];
+                opp = [SELECT Id, Unit__c, Project__c, OwnerId, Unit__r.Name, Unit__r.Unit_Name__c, (SELECT Id, Subject, WhatId, Status FROM Tasks WHERE Subject = 'Finalise Cost Sheet & Generate Payment Schedule' AND Status = 'Open') FROM Opportunity WHERE Id =:ts.WhatId];
                 System.debug('opp --->' + opp);
                 System.debug('opp.Tasks --->' + opp.Tasks);
             }
             else{
-                opp = [SELECT Id, Unit__c, OwnerId, Unit__r.Name, Unit__r.Unit_Name__c,(SELECT Id, Subject, WhatId, Status FROM Tasks WHERE Subject = 'Finalise Cost Sheet & Generate Payment Schedule' AND Status = 'Open') FROM Opportunity WHERE Id =:recordId];
+                opp = [SELECT Id, Unit__c, Project__c, OwnerId, Unit__r.Name, Unit__r.Unit_Name__c,(SELECT Id, Subject, WhatId, Status FROM Tasks WHERE Subject = 'Finalise Cost Sheet & Generate Payment Schedule' AND Status = 'Open') FROM Opportunity WHERE Id =:recordId];
                 System.debug('opp==>'+opp);
             }
             System.debug('opp==>'+opp);
@@ -24,7 +24,7 @@ public without Sharing  class CostSheetGenerationController {
             system.debug('oppList==> '+oppList);
             List<Unit__c> unitList = new List<Unit__c>();
             if(oppList.size() > 0 && oppList[0].Project__c != null ){
-                unitList = [SELECT Id, Name, Unit_Name__c, Floor__r.Blocks__r.Project__c FROM Unit__c Where Status__c != 'Sold' and Status__c != null and Floor__r.Blocks__r.Project__c =: oppList[0].Project__c ORDER BY Unit_Name__c];
+                unitList = [SELECT Id, Name, Unit_Name__c, Floor__r.Blocks__r.Project__c FROM Unit__c Where Status__c != 'Sold' and Status__c != null and Status__c != 'Management Blocked' and Floor__r.Blocks__r.Project__c =: oppList[0].Project__c ORDER BY Unit_Name__c];
 
             }
 
@@ -797,7 +797,7 @@ public without Sharing  class CostSheetGenerationController {
         }
     }
     
-        public static void codeCoverData(){
+    public static void codeCoverData(){
         Integer j = 0;
         j++;j++;j++;j++;j++;j++;j++;j++;
         j++;j++;j++;j++;j++;j++;j++;j++;
@@ -1122,7 +1122,6 @@ public without Sharing  class CostSheetGenerationController {
         j++;j++;j++;j++;j++;j++;j++;j++;
         j++;j++;j++;j++;j++;j++;j++;j++;
         j++;j++;j++;j++;j++;j++;j++;j++;
-        
-        
+            
     }
 }

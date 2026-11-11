@@ -30,13 +30,12 @@ export default class ParkingDetails extends LightningElement {
                         label: type,
                         value: type
                     }));
-                    const firstParkingType = result.uniqueParkingTypes;
                     this.rows = [{
-                        id: 'initial',  
-                        type: 'None',  
-                        rate: this.getAmountForParkingType(firstParkingType), 
+                        id: 'initial',
+                        type: '',
+                        rate: 0,
                         quantity: 1,  // Default quantity is 1
-                        finalAmount: this.getAmountForParkingType(firstParkingType)  
+                        finalAmount: 0
                     }];
                 }
             })
@@ -66,6 +65,9 @@ export default class ParkingDetails extends LightningElement {
         const selectedParkingType = event.target.value;
         this.typeselected = selectedParkingType;
 
+        // Store the selected type on the row itself
+        this.rows[index].type = selectedParkingType;
+
         // Update the rate based on the selected Parking Type
         const correspondingAmount = this.getAmountForParkingType(selectedParkingType);
         this.rows[index].rate = correspondingAmount;
@@ -92,13 +94,12 @@ export default class ParkingDetails extends LightningElement {
     // Handle Add Row
     handleAddRow() {
         debugger;
-        const firstParkingType = this.parkingTypeOptions;
         this.rows.push({
-            id: 'new' + this.rows.length,  
-            type: firstParkingType,  
-            rate: this.getAmountForParkingType(firstParkingType),  
+            id: 'new' + Date.now(),
+            type: '',
+            rate: 0,
             quantity: 1,
-            finalAmount: this.getAmountForParkingType(firstParkingType)  
+            finalAmount: 0
         });
     }
 
@@ -122,17 +123,23 @@ export default class ParkingDetails extends LightningElement {
         console.log('unitId:', this.unitId);  
     
         
-        this.rows.forEach(row => {
-            console.log('Row parking type:', row.type);  
-        });
-    
+        if (this.rows.some(row => !row.type)) {
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Error',
+                message: 'Please select a Parking Type for every row.',
+                variant: 'error',
+                mode: 'dismissable',
+            }));
+            return;
+        }
+
         // Prepare data to be sent to Apex
         const pricingElementsData = this.rows.map(row => ({
             amount: row.finalAmount,
-            quantity: row.quantity,
+            quantity: Number(row.quantity) || 1,
             rate: row.rate,
-            costSheetId: this.selectedCostSheetId,  // Corrected: Use selectedCostSheetId instead of unitId
-            pricingElementMasterId: this.getPricingElementMasterId(this.typeselected)  // Map the parking type to Pricing Element Master ID
+            costSheetId: this.selectedCostSheetId,
+            parkingType: row.type  // Apex finds the Pricing Element Master by its Parking Type
         }));
         
         console.log('Pricing Elements Data:', JSON.stringify(pricingElementsData));
@@ -148,7 +155,8 @@ export default class ParkingDetails extends LightningElement {
                         variant: 'success',
                         mode: 'dismissable',
                     });
-                    this.dispatchEvent(evt);  
+                    this.dispatchEvent(evt);
+                    this.dispatchEvent(new CustomEvent('saved'));
                 } else {
                     // Show error message if the insertion fails
                     const evt = new ShowToastEvent({
@@ -171,24 +179,6 @@ export default class ParkingDetails extends LightningElement {
                 this.dispatchEvent(evt);  // Dispatch the event to display the error toast message
             });
     }
-    
-    // Helper function to map Parking Type to Pricing Element Master ID
-getPricingElementMasterId(parkingType) {
-    debugger;
-    console.log('Selected parkingType:', parkingType);  
-
-    switch (parkingType) {
-        case 'Dependent':
-            return 'Car Parking - Dependent';  // This is the correct value expected in Apex
-        case 'Independent':
-            return 'Car Parking - Independent';  // This is the correct value expected in Apex
-        case 'Open':
-            return 'Car Parking - Open';  // This is the correct value expected in Apex
-        default:
-            console.log('Error: Unknown parking type:', parkingType);
-            return ''; // Empty string if no match
-    }
-}
 
 
 }

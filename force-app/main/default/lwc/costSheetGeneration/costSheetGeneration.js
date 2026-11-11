@@ -65,6 +65,10 @@ export default class CostSheetGeneration extends NavigationMixin(LightningElemen
         { id: 'row_1', type: '', amount: '', finalAmount: '', quantity: 1,Parking_Numbers__c : [''], carCGSTtax: '', carSGSTtax: '', taxAmt: '' }, // Initial row
     ];
 
+    get projectId() {
+        return this.opp ? this.opp.Project__c : null;
+    }
+
     get defaultUnit() {
         debugger;
         if (this.selectedUnitId != null && this.isUnitDisabled == true) {
@@ -339,8 +343,9 @@ export default class CostSheetGeneration extends NavigationMixin(LightningElemen
         if (priceMasterId) {
             const ranges = this.getDiscountRanges(priceMasterId);
 
-            // 0 / empty means no discount, so it is always allowed
-            if (ranges.length > 0 && value !== 0 && !ranges.some(range => value >= range.min && value <= range.max)) {
+            // 0 / empty and anything below the lowest range minimum is a free discount (no approval needed)
+            const lowestMin = ranges.length > 0 ? ranges[0].min : 0;
+            if (ranges.length > 0 && value >= lowestMin && !ranges.some(range => value >= range.min && value <= range.max)) {
                 this.pricingElements[rowIndex]['limitExceed'] = 'Not allowed. ' + this.formatDiscountRanges(ranges);
                 return;
             }
@@ -605,14 +610,18 @@ export default class CostSheetGeneration extends NavigationMixin(LightningElemen
             type: '',
             quantity: 1,
             amount: '',
-            carCGSTtax : this.carParkingTax.CGST__c != null || this.carParkingTax.CGST__c != undefined ? this.carParkingTax.CGST__c : 0,
-            carSGSTtax : this.carParkingTax.SGST__c != null || this.carParkingTax.SGST__c != undefined ? this.carParkingTax.SGST__c : 0,
+            carCGSTtax : this.carParkingTax?.CGST__c != null ? this.carParkingTax.CGST__c : 0,
+            carSGSTtax : this.carParkingTax?.SGST__c != null ? this.carParkingTax.SGST__c : 0,
             taxAmt: '',
             finalAmount: '',
             Parking_Numbers__c: ['']
         };
 
         this.rows = [...this.rows, newRow];
+    }
+
+    get noRows() {
+        return !this.rows || this.rows.length === 0;
     }
 
     handleAddRow1(event){
@@ -675,6 +684,12 @@ export default class CostSheetGeneration extends NavigationMixin(LightningElemen
     handleFouth() {
         debugger;
         console.log('this.rows==>' + this.rows);
+
+        // Parking is optional, but once the parking table is shown every row needs a Parking Type
+        if (this.parkingDetailTable && this.rows.some(row => !row.type)) {
+            this.showToast('Error', 'Please select Parking Type for all rows or delete the empty rows', 'error');
+            return;
+        }
 
           for (let row of this.rows) {
 

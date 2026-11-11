@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionCalls>
+        <description>Bell notification to the Cost Sheet submitter (owner) with the approval outcome.</description>
+        <name>Send_Approval_Result_Notification</name>
+        <label>Send Approval Result Notification</label>
+        <locationX>176</locationX>
+        <locationY>602</locationY>
+        <actionName>customNotificationAction</actionName>
+        <actionType>customNotificationAction</actionType>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>customNotifTypeId</name>
+            <value>
+                <elementReference>Get_Notification_Type.Id</elementReference>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>recipientIds</name>
+            <value>
+                <elementReference>RecipientIds</elementReference>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>title</name>
+            <value>
+                <elementReference>NotificationTitle</elementReference>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>body</name>
+            <value>
+                <elementReference>NotificationBody</elementReference>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>targetId</name>
+            <value>
+                <elementReference>$Record.Id</elementReference>
+            </value>
+        </inputParameters>
+        <nameSegment>customNotificationAction</nameSegment>
+        <offset>0</offset>
+    </actionCalls>
+    <apiVersion>62.0</apiVersion>
+    <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <assignments>
+        <name>Set_Recipient</name>
+        <label>Set Recipient</label>
+        <locationX>176</locationX>
+        <locationY>494</locationY>
+        <assignmentItems>
+            <assignToReference>RecipientIds</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>$Record.OwnerId</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Send_Approval_Result_Notification</targetReference>
+        </connector>
+    </assignments>
+    <description>Sends one custom (bell) notification to the Cost Sheet owner/submitter when any approval level Approves or Rejects the Cost Sheet.</description>
+    <environments>Default</environments>
+    <formulas>
+        <name>OutcomeText</name>
+        <dataType>String</dataType>
+        <expression>IF(
+  OR(
+    AND(TEXT({!$Record.Sales_Manager_Approval_Status__c}) = &apos;Approved&apos;, TEXT({!$Record__Prior.Sales_Manager_Approval_Status__c}) != &apos;Approved&apos;),
+    AND(TEXT({!$Record.Sales_Head_Approval_Status__c}) = &apos;Approved&apos;, TEXT({!$Record__Prior.Sales_Head_Approval_Status__c}) != &apos;Approved&apos;),
+    AND(TEXT({!$Record.MD_Approval_Status__c}) = &apos;Approved&apos;, TEXT({!$Record__Prior.MD_Approval_Status__c}) != &apos;Approved&apos;)
+  ),
+  &apos;Approved&apos;, &apos;Rejected&apos;)</expression>
+    </formulas>
+    <formulas>
+        <name>NotificationBody</name>
+        <dataType>String</dataType>
+        <expression>&apos;Cost Sheet &apos; &amp; {!$Record.Name} &amp; &apos; has been &apos; &amp; LOWER({!OutcomeText}) &amp; &apos; by &apos; &amp; {!$User.FirstName} &amp; &apos; &apos; &amp; {!$User.LastName} &amp; &apos;.&apos;</expression>
+    </formulas>
+    <formulas>
+        <name>NotificationTitle</name>
+        <dataType>String</dataType>
+        <expression>&apos;Cost Sheet &apos; &amp; {!OutcomeText}</expression>
+    </formulas>
+    <interviewLabel>r_CostSheet Approval Result Notify {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>r_CostSheet Approval Result Notify</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <recordLookups>
+        <name>Get_Notification_Type</name>
+        <label>Get Notification Type</label>
+        <locationX>176</locationX>
+        <locationY>386</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Set_Recipient</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>DeveloperName</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>Cost_Sheet_Approval_Result</stringValue>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>CustomNotificationType</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <start>
+        <locationX>50</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Get_Notification_Type</targetReference>
+        </connector>
+        <doesRequireRecordChangedToMeetCriteria>false</doesRequireRecordChangedToMeetCriteria>
+        <filterFormula>OR(
+  AND(ISCHANGED({!$Record.Sales_Manager_Approval_Status__c}), OR(TEXT({!$Record.Sales_Manager_Approval_Status__c}) = &apos;Approved&apos;, TEXT({!$Record.Sales_Manager_Approval_Status__c}) = &apos;Rejected&apos;)),
+  AND(ISCHANGED({!$Record.Sales_Head_Approval_Status__c}), OR(TEXT({!$Record.Sales_Head_Approval_Status__c}) = &apos;Approved&apos;, TEXT({!$Record.Sales_Head_Approval_Status__c}) = &apos;Rejected&apos;)),
+  AND(ISCHANGED({!$Record.MD_Approval_Status__c}), OR(TEXT({!$Record.MD_Approval_Status__c}) = &apos;Approved&apos;, TEXT({!$Record.MD_Approval_Status__c}) = &apos;Rejected&apos;))
+)</filterFormula>
+        <object>Cost_Sheet__c</object>
+        <recordTriggerType>Update</recordTriggerType>
+        <triggerType>RecordAfterSave</triggerType>
+    </start>
+    <status>Active</status>
+    <variables>
+        <name>RecipientIds</name>
+        <dataType>String</dataType>
+        <isCollection>true</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+</Flow>

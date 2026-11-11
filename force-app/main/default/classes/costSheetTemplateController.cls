@@ -378,8 +378,8 @@ public class costSheetTemplateController {
 												system.debug('new cost sheet tax linking for existing cost price association');
 												Cost_Sheet_Tax_Linking__c costSheetLink = new Cost_Sheet_Tax_Linking__c(
 													Tax_Master__c 	= tax.get('Id') != null ? (String)tax.get('Id') : null,
-													Amount__c 		= tax.get('Amount__c') != null ? Decimal.valueOf(String.valueOf(tax.get('Amount__c'))) : null,
-													App__c 			= tax.get('App__c') != null ? Integer.valueOf(String.valueOf(tax.get('App__c'))) : null,
+													Amount__c 		= safeDecimal(tax.get('Amount__c')),
+													App__c 			= safeDecimal(tax.get('App__c')),
 													Cost_Pricing_Association__c = costPARec.Id
 												);
 
@@ -420,8 +420,8 @@ public class costSheetTemplateController {
 												Cost_Sheet_Tax_Linking__c costSheetLink = new Cost_Sheet_Tax_Linking__c(
 													Id 				= existingLink.Id,
 													Tax_Master__c 	= tax.get('Id') != null ? (String)tax.get('Id') : null,
-													Amount__c 		= tax.get('Amount__c') != null ? Decimal.valueOf(String.valueOf(tax.get('Amount__c'))) : null,
-													App__c 			= tax.get('App__c') != null ? Integer.valueOf(String.valueOf(tax.get('App__c'))) : null,
+													Amount__c 		= safeDecimal(tax.get('Amount__c')),
+													App__c 			= safeDecimal(tax.get('App__c')),
 													Cost_Pricing_Association__c = existingLink.Cost_Pricing_Association__c
 												);
 												Boolean exists = false;
@@ -449,8 +449,8 @@ public class costSheetTemplateController {
 									if (String.isNotBlank(taxId)) {
 										Cost_Sheet_Tax_Linking__c costSheetLink = new Cost_Sheet_Tax_Linking__c(
 											Tax_Master__c 	= tax.get('Id') != null ? (String)tax.get('Id') : null,
-											Amount__c 		= tax.get('Amount__c') != null ? Decimal.valueOf(String.valueOf(tax.get('Amount__c'))) : null,
-											App__c 			= tax.get('App__c') != null && tax.get('App__c') != '' ? Integer.valueOf(String.valueOf(tax.get('App__c'))) : null
+											Amount__c 		= safeDecimal(tax.get('Amount__c')),
+											App__c 			= safeDecimal(tax.get('App__c'))
 										);
 										costSheetTaxLinkingListToInsert.add(costSheetLink);
 
@@ -674,18 +674,22 @@ public class costSheetTemplateController {
         // if UI sends commas like "1,23,456.78"
         s = s.replace(',', '').trim();
 
-        // If it’s still not a number, this will throw — optionally wrap in try/catch
-        return Decimal.valueOf(s);
+        // UI can send non-numeric text like "NaN" — treat it as blank instead of failing the save
+        try {
+            return Decimal.valueOf(s);
+        } catch (Exception e) {
+            System.debug('safeDecimal could not parse value ===> ' + s);
+            return null;
+        }
     }
 
     private static Integer safeInt(Object v) {
         if (v == null) return null;
         if (v instanceof Integer) return (Integer)v;
 
-        String s = String.valueOf(v);
-        if (String.isBlank(s)) return null;
-        s = s.trim();
-        return Integer.valueOf(s);
+        // handles "1.00", 2.5 etc. which Integer.valueOf rejects
+        Decimal d = safeDecimal(v);
+        return d != null ? d.round(System.RoundingMode.HALF_UP).intValue() : null;
     }
 
     

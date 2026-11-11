@@ -9,6 +9,8 @@ import getPaymentInstallment from '@salesforce/apex/bulkUpdateDueDateController.
 import saveTableData from '@salesforce/apex/bulkUpdateDueDateController.saveTableData';
 import getSelectedOppPaymentSchedules from '@salesforce/apex/bulkUpdateDueDateController.getSelectedOppPaymentSchedules';
 import saveOppsPaySchedulesSave from '@salesforce/apex/bulkUpdateDueDateController.saveOppsPaySchedulesSave';
+import resetPaymentScheduleDates from '@salesforce/apex/bulkUpdateDueDateController.resetPaymentScheduleDates';
+import resetSchemeInstallmentDates from '@salesforce/apex/bulkUpdateDueDateController.resetSchemeInstallmentDates';
 
 
 
@@ -307,7 +309,8 @@ export default class BulkUpdateDueDate extends NavigationMixin(LightningElement)
         console.log('this.rows' + this.rows);
         this.pymentinstall = this.rows.map((row, index) => ({
             ...row,
-            index: index + 1 // 1-based index
+            index: index + 1, // 1-based index
+            removeDate: false
         }));
         console.log('this.pymentinstall===>' + this.pymentinstall);
     }
@@ -320,7 +323,8 @@ export default class BulkUpdateDueDate extends NavigationMixin(LightningElement)
             .then(result=>{
                 this.oppsPaymentSchedules=result.map((record,index)=>({
                     ...record,
-                    index:index+1
+                    index:index+1,
+                    removeDate:false
                 }));
             })
         }
@@ -443,6 +447,68 @@ export default class BulkUpdateDueDate extends NavigationMixin(LightningElement)
         if(this.selectedOpp==null){
             this.oppsPaymentSchedules=[];
         }       
+    }
+    get hasRemoveSelection() {
+        return this.oppsPaymentSchedules.some(row => row.removeDate);
+    }
+    handleRemoveDateChange(event) {
+        const checked = event.target.checked;
+        const recId = event.target.dataset.id;
+        this.oppsPaymentSchedules = this.oppsPaymentSchedules.map(row =>
+            row.Id === recId ? { ...row, removeDate: checked } : row
+        );
+    }
+    get hasInstallmentRemoveSelection() {
+        return this.pymentinstall.some(row => row.removeDate);
+    }
+    handleInstallmentRemoveChange(event) {
+        const checked = event.target.checked;
+        const recId = event.target.dataset.id;
+        this.pymentinstall = this.pymentinstall.map(row =>
+            row.Id === recId ? { ...row, removeDate: checked } : row
+        );
+    }
+    handleResetInstallmentDueDate() {
+        const installmentNames = this.pymentinstall
+            .filter(row => row.removeDate)
+            .map(row => row.Payment_Schedule_Master__c);
+        if (installmentNames.length === 0) {
+            return;
+        }
+        resetSchemeInstallmentDates({
+            projectId: this.selectedProject,
+            paymentSchemeId: this.selectedScheme,
+            installmentNames
+        })
+            .then(count => {
+                this.showToast('Success', 'Demand Date and Due Date removed from ' + count + ' Payment Schedule(s).', 'success');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
+            })
+            .catch(error => {
+                console.error('Error resetting dates:', error);
+                this.showToast('Error', 'An error occurred while resetting dates.', 'error');
+            });
+    }
+    handleResetDueDate() {
+        const scheduleIds = this.oppsPaymentSchedules
+            .filter(row => row.removeDate)
+            .map(row => row.Id);
+        if (scheduleIds.length === 0) {
+            return;
+        }
+        resetPaymentScheduleDates({ scheduleIds })
+            .then(() => {
+                this.showToast('Success', 'Demand Date and Due Date are removed successfully.', 'success');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
+            })
+            .catch(error => {
+                console.error('Error resetting dates:', error);
+                this.showToast('Error', 'An error occurred while resetting dates.', 'error');
+            });
     }
     handleOppsPaySchedulesSave(){
         debugger;

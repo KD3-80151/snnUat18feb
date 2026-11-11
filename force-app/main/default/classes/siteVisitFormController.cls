@@ -21,7 +21,9 @@ public without sharing class siteVisitFormController {
         flatType = JSON.serialize(UtilityController.getPicklistValues('Project__c', 'Flat_Type__c'));
         facilitatedBy = JSON.serialize(UtilityController.getPicklistValues('Visit__c', 'Facilitated_By__c'));
         industry = JSON.serialize(UtilityController.getPicklistValues('Visit__c', 'Industry__c'));
-        leadType = JSON.serialize(UtilityController.getPicklistValueMap('Lead', 'Lead_Type__c'));
+        Map<String, String> leadTypeMap = UtilityController.getPicklistValueMap('Lead', 'Lead_Type__c');
+        leadTypeMap.remove('Digital');
+        leadType = JSON.serialize(leadTypeMap);
         reqType = JSON.serialize(UtilityController.getPicklistValues('Visit__c', 'Requirement_Type__c'));
     }
     
@@ -232,58 +234,58 @@ public without sharing class siteVisitFormController {
         }
     }
     
-    public static Id assignToSalesMember(String leadId, String type) {
-        system.debug('type:::' + type);
-        System.debug('Second Time Calling..');
-        try {
-            List<Lead> lead = [SELECT Id, Project__c FROM Lead WHERE Id =: leadId Limit 1];
-            if(lead[0].Project__c == null){
-                return 'No Project exist on the Lead...';
-            }
-            List<Assignment_Group__c> assignGroup = [SELECT Id, Name, GRE_Last_allocated_Id__c FROM Assignment_Group__c WHERE Type__c = : type AND Project__c =: lead[0].Project__c LIMIT 1];
-            if(assignGroup.isEmpty()){
-                return 'assignment Group is not there in the System.';
-            }
-            List<Assignment_Group_Member__c> members = [SELECT Id, Assignment_Id__c, Active__c, Group_Member__c FROM Assignment_Group_Member__c WHERE Assignment_Group__c = :assignGroup[0].Id AND Active__c = TRUE AND Out_Of_Office__c = FALSE ORDER BY Assignment_Id__c];
-            System.debug('members==>'+members.size());
-            if (members.isEmpty()) {
-                return null; 
-            }
-            Decimal lastAssignedId = assignGroup[0].GRE_Last_allocated_Id__c;
-            Assignment_Group_Member__c nextAssignee;
-            if (lastAssignedId == null) {  
-                nextAssignee = members[0];
-            } else {
-                Integer nextIndex = 0;
-                for (Integer i = 0; i < members.size(); i++) {
-                    if (members[i].Assignment_Id__c == lastAssignedId) {
-                        nextIndex = i + 1;
-                        break;
-                    }
-                }
-                System.debug('nextIndex==>'+nextIndex);
-                if (nextIndex >= members.size()) {
-                    nextIndex = 0;
-                }
-                nextAssignee = members[nextIndex];
-                System.debug('nextAssignee==>'+nextAssignee);
-            }
-            System.debug('nextAssignee.Assignment_Id__c==>'+nextAssignee.Assignment_Id__c);
-            assignGroup[0].GRE_Last_allocated_Id__c = nextAssignee.Assignment_Id__c;
-            update assignGroup;
-            if(!lead.isEmpty()) {
-                lead[0].OwnerId = nextAssignee.Group_Member__c;
-                lead[0].Sales_Team_Member__c = nextAssignee.Group_Member__c;
-                update lead;
-            }
-            System.debug('nextAssignee.Group_Member__c==>'+nextAssignee.Group_Member__c);
-            return nextAssignee.Group_Member__c;
+    // public static Id assignToSalesMember(String leadId, String type) {
+    //     system.debug('type:::' + type);
+    //     System.debug('Second Time Calling..');
+    //     try {
+    //         List<Lead> lead = [SELECT Id, Project__c FROM Lead WHERE Id =: leadId Limit 1];
+    //         if(lead[0].Project__c == null){
+    //             return 'No Project exist on the Lead...';
+    //         }
+    //         List<Assignment_Group__c> assignGroup = [SELECT Id, Name, GRE_Last_allocated_Id__c FROM Assignment_Group__c WHERE Type__c = : type AND Project__c =: lead[0].Project__c LIMIT 1];
+    //         if(assignGroup.isEmpty()){
+    //             return 'assignment Group is not there in the System.';
+    //         }
+    //         List<Assignment_Group_Member__c> members = [SELECT Id, Assignment_Id__c, Active__c, Group_Member__c FROM Assignment_Group_Member__c WHERE Assignment_Group__c = :assignGroup[0].Id AND Active__c = TRUE AND Out_Of_Office__c = FALSE ORDER BY Assignment_Id__c];
+    //         System.debug('members==>'+members.size());
+    //         if (members.isEmpty()) {
+    //             return null; 
+    //         }
+    //         Decimal lastAssignedId = assignGroup[0].GRE_Last_allocated_Id__c;
+    //         Assignment_Group_Member__c nextAssignee;
+    //         if (lastAssignedId == null) {  
+    //             nextAssignee = members[0];
+    //         } else {
+    //             Integer nextIndex = 0;
+    //             for (Integer i = 0; i < members.size(); i++) {
+    //                 if (members[i].Assignment_Id__c == lastAssignedId) {
+    //                     nextIndex = i + 1;
+    //                     break;
+    //                 }
+    //             }
+    //             System.debug('nextIndex==>'+nextIndex);
+    //             if (nextIndex >= members.size()) {
+    //                 nextIndex = 0;
+    //             }
+    //             nextAssignee = members[nextIndex];
+    //             System.debug('nextAssignee==>'+nextAssignee);
+    //         }
+    //         System.debug('nextAssignee.Assignment_Id__c==>'+nextAssignee.Assignment_Id__c);
+    //         assignGroup[0].GRE_Last_allocated_Id__c = nextAssignee.Assignment_Id__c;
+    //         update assignGroup;
+    //         if(!lead.isEmpty()) {
+    //             lead[0].OwnerId = nextAssignee.Group_Member__c;
+    //             lead[0].Sales_Team_Member__c = nextAssignee.Group_Member__c;
+    //             update lead;
+    //         }
+    //         System.debug('nextAssignee.Group_Member__c==>'+nextAssignee.Group_Member__c);
+    //         return nextAssignee.Group_Member__c;
             
-        } catch (Exception e) {
-            System.debug('ERROR in GRE Assignment : ' + e.getMessage() + ' at line ' + e.getLineNumber());
-            return null;
-        }
-    }
+    //     } catch (Exception e) {
+    //         System.debug('ERROR in GRE Assignment : ' + e.getMessage() + ' at line ' + e.getLineNumber());
+    //         return null;
+    //     }
+    // }
 
     private static String defaultOpportunityStage(){
         String first;
@@ -314,12 +316,12 @@ public without sharing class siteVisitFormController {
             if (!String.isBlank(salesTeamMemberId) && String.isBlank(visitRecord.Id)) {
                 visitRecord.OwnerId = salesTeamMemberId;
             }
-            List<Lead> leadList = [select Id,FirstName, LastName, MiddleName, Title, Phone, Sales_Team_Member__c,OwnerId from Lead Where Id =: leadId Limit 1];
+            List<Lead> leadList = [select Id,FirstName, LastName, MiddleName, Title, Phone, Sales_Team_Member__c,OwnerId, Channel_Partner_Name__c, Channel_Partner_Phone__c, Channel_Partner_Email__c from Lead Where Id =: leadId Limit 1];
             if((leadId != null || leadId != '') && (oppId == null || oppId == '')){
                 System.debug('one Time site Visit...');
-                if(leadList[0].Sales_Team_Member__c == null){
-                    assignToSalesMember(leadId,'Sales');
-                }
+                // if(leadList[0].Sales_Team_Member__c == null){
+                //     assignToSalesMember(leadId,'Sales');
+                // }
                 
                 Database.LeadConvert lc = new database.LeadConvert();
                 lc.setLeadId(leadId);
@@ -352,6 +354,10 @@ public without sharing class siteVisitFormController {
                     visitRecord.Opportunity__c = updatedLead.ConvertedOpportunityId;
                     visitRecord.Channel_Partner__c = newOpp.Channel_Partner__c;
                     visitRecord.Contact__c = updatedLead.ConvertedContactId;
+                    // unregistered channel partner details captured on the lead
+                    visitRecord.Channel_Partner_Name__c = leadList[0].Channel_Partner_Name__c;
+                    visitRecord.Channel_Partner_Phone__c = leadList[0].Channel_Partner_Phone__c;
+                    visitRecord.Channel_Partner_Email__c = leadList[0].Channel_Partner_Email__c;
                     // copy contact details from the lead when conversion mapping hasn't filled them
                     if (String.isBlank(newOpp.Phone__c)) newOpp.Phone__c = updatedLead.Phone;
                     if (String.isBlank(newOpp.Email__c)) newOpp.Email__c = updatedLead.Email;
@@ -521,19 +527,19 @@ public without sharing class siteVisitFormController {
                     // }
                     
                     try {
-                        CustomNotificationType  notificationTypeId = [SELECT Id FROM CustomNotificationType WHERE DeveloperName = 'New_Lead_Assigned' LIMIT 1];
-                        //Id userId = (UserInfo.getUserId());
-                        Id userId = newOpp.OwnerId; 
-                        String recordId = newOpp.Id;
-                        Messaging.CustomNotification notification = new Messaging.CustomNotification();
-                        notification.setNotificationTypeId(notificationTypeId.Id); 
-                        notification.setTitle('New Opportunity Assigned'); 
-                        notification.setBody('A new Opportunity has been assigned to you: ' + lead.Name);
-                        notification.setTargetId(recordId);
-                        System.debug('New Opportunity ID: ' + newOpp.Id);
-                        notification.setSenderId(UserInfo.getUserId());
-                        //notification.send(new List<Id>{newOpp.OwnerId});
-                        notification.send(new Set<String>{ userId });
+                        // CustomNotificationType  notificationTypeId = [SELECT Id FROM CustomNotificationType WHERE DeveloperName = 'New_Lead_Assigned' LIMIT 1];
+                        // //Id userId = (UserInfo.getUserId());
+                        // Id userId = newOpp.OwnerId; 
+                        // String recordId = newOpp.Id;
+                        // Messaging.CustomNotification notification = new Messaging.CustomNotification();
+                        // notification.setNotificationTypeId(notificationTypeId.Id); 
+                        // notification.setTitle('New Opportunity Assigned'); 
+                        // notification.setBody('A new Opportunity has been assigned to you: ' + lead.Name);
+                        // notification.setTargetId(recordId);
+                        // System.debug('New Opportunity ID: ' + newOpp.Id);
+                        // notification.setSenderId(UserInfo.getUserId());
+                        // //notification.send(new List<Id>{newOpp.OwnerId});
+                        // notification.send(new Set<String>{ userId });
                         System.debug('Custom notification sent to new Opportunity owner: ' + newOpp.OwnerId);
                     } catch (Exception ex) {
                         System.debug('Failed to send notification: ' + ex.getMessage());

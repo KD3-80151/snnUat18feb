@@ -2,7 +2,8 @@ public class SobjectLoadAssignmentUtility {
     
     
     Public static  Map<String,Id> GetQueuesNameAndId(){
-        List<Assignment_Group__c> grouplist = [Select id , Round_Robin_Queue_Name__c From Assignment_Group__c];
+        List<Assignment_Group__c> grouplist = [Select id , Round_Robin_Queue_Name__c From Assignment_Group__c where Type__c = 'Pre Sales' and isActive__c = true];
+        system.debug('grouplist ====> '+grouplist);
         set<string> queueName = new  set<string>();
         Map<String,Id> mapofQueuenameAndId = new Map<String,Id>();
         for(Assignment_Group__c assignGroupRec : grouplist){
@@ -11,6 +12,7 @@ public class SobjectLoadAssignmentUtility {
             }
             
             list<Group> queueList = [Select id,Name From Group WHERE Type = 'Queue' AND Name IN:queueName];
+            system.debug('queueList ====> '+queueList);
             for(Group queueRec :queueList ){
                 mapofQueuenameAndId.put(queueRec.Name, queueRec.Id);
             }

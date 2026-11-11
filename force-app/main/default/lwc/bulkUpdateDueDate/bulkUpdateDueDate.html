@@ -79,6 +79,7 @@
                                 <tr style="margin :10%;font-size :15px; color:white;">
                                     <th class="custom-header slds-p-vertical_small borderRadiusLeft">#</th>
                                     <th class="custom-header slds-p-vertical_small">Payment Schedule </th>
+                                    <th class="custom-header slds-p-vertical_small" style="text-align:center;">Remove Demand Date</th>
                                     <th class="custom-header slds-p-vertical_small">Demand Date</th>
                                     <th class="custom-header slds-p-vertical_small borderRadiusRight">Due Date</th>
                                 </tr>
@@ -88,8 +89,16 @@
                                     <tr key={row.Id}>
                                         <td class="custom-cell">{row.index}</td>
                                         <td class="custom-cell">{row.Name}</td>
+                                        <td class="custom-cell">
+                                            <div class="slds-grid slds-grid_align-center">
+                                                <lightning-input type="checkbox" variant="label-hidden" label="Remove Demand Date"
+                                                    checked={row.removeDate} data-id={row.Id}
+                                                    onchange={handleRemoveDateChange}>
+                                                </lightning-input>
+                                            </div>
+                                        </td>
                                         <td class="custom-cell  ">
-                                            <lightning-input type="date" value={row.Pay_Date__c} data-id={row.Id} 
+                                            <lightning-input type="date" value={row.Pay_Date__c} data-id={row.Id} disabled={row.removeDate}
                                                 data-field="PayByDate" onchange={handleDateChange2} style="width:50%;">
                                             </lightning-input>
                                         </td>
@@ -106,8 +115,14 @@
 
                         <div class="slds-grid slds-grid_align-center slds-p-top_medium"
                             style=" display: flex; justify-content: center;">
-                            <lightning-button variant="brand" label="Save" onclick={handleOppsPaySchedulesSave}>
-                            </lightning-button>
+                            <template if:true={hasRemoveSelection}>
+                                <lightning-button variant="destructive" label="Reset Due Date" onclick={handleResetDueDate}>
+                                </lightning-button>
+                            </template>
+                            <template if:false={hasRemoveSelection}>
+                                <lightning-button variant="brand" label="Save" onclick={handleOppsPaySchedulesSave}>
+                                </lightning-button>
+                            </template>
                         </div>
                     </div>
                 </template>
@@ -119,6 +134,7 @@
                                 <tr style="margin :10%;font-size :15px; color:white;">
                                     <th class="custom-header slds-p-vertical_small borderRadiusLeft">#</th>
                                     <th class="custom-header slds-p-vertical_small">Schedule Installment </th>
+                                    <th class="custom-header slds-p-vertical_small" style="text-align:center;">Remove Demand Date</th>
                                     <th class="custom-header slds-p-vertical_small">Demand Date</th>
                                     <th class="custom-header slds-p-vertical_small borderRadiusRight">Due Date</th>
                                 </tr>
@@ -128,8 +144,16 @@
                                     <tr key={row.Id}>
                                         <td class="custom-cell">{row.index}</td>
                                         <td class="custom-cell">{row.Payment_Schedule_Master__c}</td>
+                                        <td class="custom-cell">
+                                            <div class="slds-grid slds-grid_align-center">
+                                                <lightning-input type="checkbox" variant="label-hidden" label="Remove Demand Date"
+                                                    checked={row.removeDate} data-id={row.Id}
+                                                    onchange={handleInstallmentRemoveChange}>
+                                                </lightning-input>
+                                            </div>
+                                        </td>
                                         <td class="custom-cell  ">
-                                            <lightning-input type="date" value={row.PayByDate} data-id={row.Id}
+                                            <lightning-input type="date" value={row.PayByDate} data-id={row.Id} disabled={row.removeDate}
                                                 data-field="PayByDate" onchange={handleDateChange} style="width:50%;">
                                             </lightning-input>
                                         </td>
@@ -146,8 +170,14 @@
 
                         <div class="slds-grid slds-grid_align-center slds-p-top_medium"
                             style=" display: flex; justify-content: center;">
-                            <lightning-button variant="brand" label="Save" onclick={handleSave}>
-                            </lightning-button>
+                            <template if:true={hasInstallmentRemoveSelection}>
+                                <lightning-button variant="destructive" label="Reset Due Date" onclick={handleResetInstallmentDueDate}>
+                                </lightning-button>
+                            </template>
+                            <template if:false={hasInstallmentRemoveSelection}>
+                                <lightning-button variant="brand" label="Save" onclick={handleSave}>
+                                </lightning-button>
+                            </template>
                         </div>
                     </div>
                 </template>

@@ -28,7 +28,7 @@ public class SobjectLoadAssignment {
                                     Assignment_Group__r.Execution_SOQL__c,Assignment_Group__r.isActive__c,Assignment_Group__r.Last_Allocated_RRid__c,
                                     Assignment_Group__r.Minimum_Case_Volume__c,Assignment_Group__r.Max_Sobject_Assignment_Count__c,Assignment_Group__r.Round_Robin_Queue_Name__c,LastModifiedDate,Active__c,BreakTime_Started__c
                                     From Assignment_Group_Member__c 
-                                    WHERE Assignment_Group__r.isActive__c = true  and 
+                                    WHERE Assignment_Group__r.isActive__c = true  and Assignment_Group__r.Type__c = 'Pre Sales' and
                                     Out_Of_Office__c = false and BreakTime_Started__c = false];
         
         if(!rv_AssignmentGroupMember.isEmpty()){

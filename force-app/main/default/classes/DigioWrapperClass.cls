@@ -779,6 +779,7 @@ public without sharing class DigioWrapperClass {
         public String bankName{get;set;}
         public String branchName{get;set;}
         public String ifscCode{get;set;}
+        public String projectName{get;set;}
     }
 
     public class welcomeKitTable{
@@ -1153,6 +1154,7 @@ public without sharing class DigioWrapperClass {
         public String bankIfsc           { get; set; }
         public String accntName          { get; set; }
         public String allotmentDate      { get; set; }
+        public String projectAddress      { get; set; }
     }
 
     //!leagal department contact details

@@ -415,7 +415,7 @@ static void testGetDecimalValueInvalid() {
         
         Unit__c unit = new Unit__c(
             
-            Status__c = 'Booked'
+            Status__c = 'Sold'
         );
         insert unit;       
         

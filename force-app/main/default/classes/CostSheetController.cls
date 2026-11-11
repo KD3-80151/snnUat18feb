@@ -86,6 +86,11 @@ public static String createPricingElement(String jsondata) {
     try {
         List<Pricing_Element__c> pricingElementsToInsert = new List<Pricing_Element__c>();
 
+        // Car parking tax rates come from the 'Tax Details' custom setting (same as the Cost Sheet screen)
+        Tax_Details__c carParkingTax = Tax_Details__c.getValues('Tax Details');
+        Decimal cgst = carParkingTax != null && carParkingTax.CGST__c != null ? carParkingTax.CGST__c : 0;
+        Decimal sgst = carParkingTax != null && carParkingTax.SGST__c != null ? carParkingTax.SGST__c : 0;
+
         
         if (pricingElementsData == null || pricingElementsData.isEmpty()) {
             return 'Error: No data provided';
@@ -96,7 +101,9 @@ public static String createPricingElement(String jsondata) {
             System.debug('Incoming Element Data: ' + elementData);
 
             
-            Id pricingElementMasterId = getPricingElementMasterIdByName(elementData.pricingElementMasterId);
+            Id pricingElementMasterId = String.isNotBlank(elementData.parkingType)
+                ? getPricingElementMasterIdByParkingType(elementData.parkingType)
+                : getPricingElementMasterIdByName(elementData.pricingElementMasterId);
             
             if (pricingElementMasterId == null) {
                 return 'Error: Invalid Pricing Element Master Name';
@@ -108,6 +115,8 @@ public static String createPricingElement(String jsondata) {
                 Cost_Sheet__c = elementData.costSheetId,
                 Quantity__c = elementData.quantity,
                 Rate__c = elementData.rate,
+                CGST_Tax_Percentage__c = cgst,
+                SGST_Tax_Percentage__c = sgst,
                 Pricing_Element_Master__c = pricingElementMasterId,  
                 parking_Element__c = true
             );
@@ -130,6 +139,15 @@ public static String createPricingElement(String jsondata) {
 }
 
 
+private static Id getPricingElementMasterIdByParkingType(String parkingType) {
+    List<Pricing_Element_Master__c> masterRecords = [
+        SELECT Id FROM Pricing_Element_Master__c
+        WHERE Parking_Type__c = :parkingType AND Name LIKE '%Car Parking%'
+        ORDER BY CreatedDate ASC LIMIT 1
+    ];
+    return masterRecords.isEmpty() ? null : masterRecords[0].Id;
+}
+
 private static Id getPricingElementMasterIdByName(String masterName) {
     
     List<Pricing_Element_Master__c> masterRecords = [SELECT Id FROM Pricing_Element_Master__c WHERE Name = :masterName LIMIT 1];
@@ -149,6 +167,7 @@ public class PricingElementWrapper {
     @AuraEnabled public Integer quantity;
     @AuraEnabled public Decimal rate;
     @AuraEnabled public String pricingElementMasterId;  
+    @AuraEnabled public String parkingType;
 
     // No-arg constructor
     public PricingElementWrapper() {

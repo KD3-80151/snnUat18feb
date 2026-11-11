@@ -5,8 +5,8 @@
     <decisions>
         <name>Check_Status_And_Lead</name>
         <label>Check Status And Lead</label>
-        <locationX>176</locationX>
-        <locationY>134</locationY>
+        <locationX>440</locationX>
+        <locationY>458</locationY>
         <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
         <rules>
             <name>Status_Matches_And_Lead_Populated</name>
@@ -45,6 +45,70 @@
             <label>Status Matches And Lead Populated</label>
         </rules>
     </decisions>
+    <decisions>
+        <name>Lead_Is_Populated</name>
+        <label>Call Answered And Lead Populated</label>
+        <locationX>176</locationX>
+        <locationY>134</locationY>
+        <defaultConnector>
+            <targetReference>Check_Status_And_Lead</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Not Answered Or No Lead</defaultConnectorLabel>
+        <rules>
+            <name>Lead_Populated</name>
+            <conditionLogic>(2 OR 3) AND 1</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.Lead__c</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.Status__c</leftValueReference>
+                <operator>Contains</operator>
+                <rightValue>
+                    <stringValue>Call Complet</stringValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.Status__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>Answer</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Get_Related_Lead</targetReference>
+            </connector>
+            <label>Call Answered And Lead Populated</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Phone_Conversation_Not_Done</name>
+        <label>Phone Conversation Not Done</label>
+        <locationX>176</locationX>
+        <locationY>296</locationY>
+        <defaultConnector>
+            <targetReference>Check_Status_And_Lead</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Already Done</defaultConnectorLabel>
+        <rules>
+            <name>Not_Done_Yet</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>Get_Related_Lead.Phone_Conversation_Done__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Update_Lead_Fields</targetReference>
+            </connector>
+            <label>Not Done Yet</label>
+        </rules>
+    </decisions>
     <environments>Default</environments>
     <interviewLabel>Call Detail After Insert - Create Followup Task {!$Flow.CurrentDateTime}</interviewLabel>
     <label>Call Detail After Insert - Create Followup Task</label>
@@ -73,6 +137,24 @@
         <locationX>300</locationX>
         <locationY>250</locationY>
         <inputAssignments>
+            <field>OwnerId</field>
+            <value>
+                <elementReference>$Record.OwnerId</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Priority</field>
+            <value>
+                <stringValue>Normal</stringValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Status</field>
+            <value>
+                <stringValue>Not Started</stringValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
             <field>Subject</field>
             <value>
                 <stringValue>Call was not picked please take followup in next 2 hrs</stringValue>
@@ -84,36 +166,99 @@
                 <elementReference>$Record.Lead__c</elementReference>
             </value>
         </inputAssignments>
-        <inputAssignments>
-            <field>OwnerId</field>
+        <object>Task</object>
+    </recordCreates>
+    <recordLookups>
+        <name>Get_Related_Lead</name>
+        <label>Get Related Lead</label>
+        <locationX>176</locationX>
+        <locationY>215</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Phone_Conversation_Not_Done</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
             <value>
-                <elementReference>$Record.OwnerId</elementReference>
+                <elementReference>$Record.Lead__c</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>Lead</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordUpdates>
+        <name>Close_Open_Tasks_On_Lead</name>
+        <label>Close Open Tasks On Lead</label>
+        <locationX>176</locationX>
+        <locationY>458</locationY>
+        <connector>
+            <targetReference>Check_Status_And_Lead</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>WhoId</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>Get_Related_Lead.Id</elementReference>
+            </value>
+        </filters>
+        <filters>
+            <field>IsClosed</field>
+            <operator>EqualTo</operator>
+            <value>
+                <booleanValue>false</booleanValue>
+            </value>
+        </filters>
+        <inputAssignments>
+            <field>Status</field>
+            <value>
+                <stringValue>Completed</stringValue>
+            </value>
+        </inputAssignments>
+        <object>Task</object>
+    </recordUpdates>
+    <recordUpdates>
+        <name>Update_Lead_Fields</name>
+        <label>Update Lead Fields</label>
+        <locationX>176</locationX>
+        <locationY>377</locationY>
+        <connector>
+            <targetReference>Close_Open_Tasks_On_Lead</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>Get_Related_Lead.Id</elementReference>
+            </value>
+        </filters>
+        <inputAssignments>
+            <field>Phone_Conversation_Done__c</field>
+            <value>
+                <booleanValue>true</booleanValue>
             </value>
         </inputAssignments>
         <inputAssignments>
             <field>Status</field>
             <value>
-                <stringValue>Not Started</stringValue>
+                <stringValue>Contacted</stringValue>
             </value>
         </inputAssignments>
-        <inputAssignments>
-            <field>Priority</field>
-            <value>
-                <stringValue>Normal</stringValue>
-            </value>
-        </inputAssignments>
-        <object>Task</object>
-    </recordCreates>
+        <object>Lead</object>
+    </recordUpdates>
     <start>
         <locationX>50</locationX>
         <locationY>0</locationY>
         <connector>
-            <targetReference>Check_Status_And_Lead</targetReference>
+            <targetReference>Lead_Is_Populated</targetReference>
         </connector>
-        <filterLogic>no_conditions</filterLogic>
         <object>Call_Detail__c</object>
         <recordTriggerType>Create</recordTriggerType>
         <triggerType>RecordAfterSave</triggerType>
     </start>
-    <status>Draft</status>
+    <status>Active</status>
 </Flow>

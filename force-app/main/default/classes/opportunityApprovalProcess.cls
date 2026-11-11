@@ -46,10 +46,10 @@ public without sharing class opportunityApprovalProcess {
                 System.debug('nextAssignee==>'+nextAssignee);
             }
             System.debug('nextAssignee.Assignment_Id__c==>'+nextAssignee.Assignment_Id__c);
-            System.debug('nextAssignee.Group_Member__r.ManagerId==>'+nextAssignee.Group_Member__r.ManagerId);
+            System.debug('nextAssignee.Group_Member__c==>'+nextAssignee.Group_Member__c);
             assignGroup[0].GRE_Last_allocated_Id__c = nextAssignee.Assignment_Id__c;
             update assignGroup;
-            return nextAssignee.Group_Member__r.ManagerId;
+            return nextAssignee.Group_Member__c;
         }catch(Exception e){
             System.debug('Exception Message: ' + e.getMessage());
             System.debug('Line Number: ' + e.getLineNumber());
@@ -114,7 +114,7 @@ public without sharing class opportunityApprovalProcess {
         req1.setComments('Submitting for approval to the Previous Owner\'s Manager');
         req1.setObjectId(updatedOpportunity[0].Id);
         req1.setSubmitterId(UserInfo.getUserId()); // Submitter (current user)
-        req1.setProcessDefinitionNameOrId('Sales_head_and_CRM_Approval_Process'); // Set the approval process name
+        req1.setProcessDefinitionNameOrId('Sales_head_and_CRM_Approval_Process_New'); // Set the approval process name
         req1.setNextApproverIds(new List<Id>{updatedOpportunity[0].Sales_Team_Member__r.ManagerId});
         Approval.ProcessResult result1 = Approval.process(req1);
         // Step 2: Assign the Owner as the approver
@@ -144,14 +144,16 @@ public without sharing class opportunityApprovalProcess {
         opp.OwnerId = newOwnerId; // Set new owner
         // opp.CRM_Approval_Status__c = 'Sent'; // Update CRM Approval Status
         // Update the Sales Team Member field to the previous owner
-        opp.Sales_Team_Member__c = previousOwnerId; // Set previous owner in Sales Team Member field
+        //!sagar comment -- we are assigning salesteam member directly from sitevist in case of GRE
+        //!need to ask - do we assign in case of pre sales conversion. 
+        //opp.Sales_Team_Member__c = previousOwnerId; // Set previous owner in Sales Team Member field 
         System.debug('Updating Opportunity: ' + opp);
         update opp; // Update the Opportunity record
         System.debug('Opportunity updated successfully');
     }
     
     
-        public static void codeCoverData(){
+    public static void codeCoverData(){
         Integer j = 0;
         j++;j++;j++;j++;j++;j++;j++;j++;
         j++;j++;j++;j++;j++;j++;j++;j++;

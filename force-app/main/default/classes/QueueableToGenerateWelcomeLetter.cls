@@ -41,8 +41,8 @@ public without sharing class QueueableToGenerateWelcomeLetter implements Queueab
             }
 
             List<Opportunity> oppList = [
-                SELECT Id, Name, AccountId, Account.Full_Name__c, Account.Email__c, Account.Phone, Unit__r.Unit_Name__c, Unit__r.Floor__r.Blocks__r.Tower_Code__c, Project__r.Name, Project__r.Bank_Name__c, Project__r.Company__c,
-                Project__r.Company__r.Name, Project__r.Company__r.Address__c, Project__r.Company__r.Email__c, Project__r.Company__r.PAN_No__c, Project__r.Account_Name__c, Project__r.Account_Number__c,
+                SELECT Id, Name, Project__c, AccountId, Account.Full_Name__c, Account.Email__c, Account.Phone, Unit__r.Unit_Name__c, Unit__r.Floor__r.Blocks__r.Tower_Code__c, Project__r.Name, Project__r.Bank_Name__c, Project__r.Company__c,
+                Project__r.Company__r.Name, Project__r.Company__r.Address__c, Project__r.Company__r.Email__c, Project__r.Company__r.PAN_No__c, Project__r.Account_Name__c, Project__r.Account_Number__c, Project__r.Project_Address__c,
                 Project__r.Type_of_Account__c, Project__r.Branch__c, Project__r.IFSC_Code__c, Booking_Date__c, (SELECT Id, Account__r.Full_Name__c FROM Applicants__r),
                 (SELECT Id, Name, Document_Id__c FROM Documents__r WHERE Name = 'Root Folder' LIMIT 1) FROM Opportunity WHERE Id = :recordId LIMIT 1];
 
@@ -56,13 +56,20 @@ public without sharing class QueueableToGenerateWelcomeLetter implements Queueab
             String parentFolderId;
             String docId;
             if (opp.Documents__r != null && !opp.Documents__r.isEmpty()) {
-                parentFolderId = opp.Documents__r[0].Document_Id__c;
-                docId          = opp.Documents__r[0].Id;
+                parentFolderId  = opp.Documents__r[0].Document_Id__c;
+                docId           = opp.Documents__r[0].Id;
             }
 
             Digio_Integration__c customData = Digio_Integration__c.getValues('Digio');
-            String templateKey = (customData != null) ? customData.Welcome_Letter__c : null;
+            String templateKey = null;
+            if (customData != null) {
+                templateKey = (opp.Project__c == System.label.Felicity_Project) ? customData.Welcome_Letter_Felicity__c
+                            : (opp.Project__c == System.label.Duomont_Project) ? customData.Welcome_Letter_Duomont__c
+                            : customData.Welcome_Letter__c;
+            }
+
             system.debug('templateKey::>>' + templateKey);
+
 
             if (customData == null || String.isBlank(customData.Authorization__c) || String.isBlank(customData.Endpoint_URL__c) || String.isBlank(templateKey) || String.isBlank(parentFolderId) || String.isBlank(docId)) {
                 wrapperRec.message = 'misssing data, please checke ';
@@ -109,6 +116,7 @@ public without sharing class QueueableToGenerateWelcomeLetter implements Queueab
             tempValues.unitName             = (opp.Unit__r != null && opp.Unit__r.Unit_Name__c != null) ? opp.Unit__r.Unit_Name__c : '';
             tempValues.towerCode            = (opp.Unit__r != null && opp.Unit__r.Floor__r.Blocks__r.Tower_Code__c != null) ? opp.Unit__r.Floor__r.Blocks__r.Tower_Code__c : '';
             tempValues.projectName          = (opp.Project__r != null && opp.Project__r.Name != null) ? opp.Project__r.Name : '';
+            tempValues.projectAddress       = (opp.Project__r != null && opp.Project__r.Project_Address__c != null) ? opp.Project__r.Project_Address__c : '';
             tempValues.companyName          = (opp.Project__r != null && opp.Project__r.Company__c != null) ? opp.Project__r.Company__r.Name : '';
             tempValues.companyAddress       = (opp.Project__r != null && opp.Project__r.Company__c != null) ? opp.Project__r.Company__r.Address__c : '';
             tempValues.companyEmail         = (opp.Project__r != null && opp.Project__r.Company__c != null) ? opp.Project__r.Company__r.Email__c : '';

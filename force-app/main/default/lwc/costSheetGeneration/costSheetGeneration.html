@@ -18,7 +18,7 @@
                     <template if:false={defaultUnit}>
                         <c-resusable-lookup label="Select Unit" selected-icon-name="custom:custom64" object-label="Unit"
                             object-api-name="Unit__c" field-api-name="Unit_Name__c" other-field-api-name="Name" first-field-filter-api-name="Status__c"
-                            first-field-filter-value="Sold" onvalueselected={handleChangeUnit} value={selectedUnitId} disabled={isUnitDisabled}>
+                            first-field-filter-value="Sold,Management Blocked" parent-field-api-name="Floor__r.Blocks__r.Project__c" parent-record-id={projectId} onvalueselected={handleChangeUnit} value={selectedUnitId} disabled={isUnitDisabled}>
                         </c-resusable-lookup>
                     </template>
 
@@ -186,7 +186,7 @@
                             <tr key={row.id}>
                                 <!-- Parking Type Combobox -->
                                 <td>
-                                    <lightning-combobox name="parkingType" placeholder="Select Parking Type" data-id={row.id}
+                                    <lightning-combobox name="parkingType" label="Parking Type" variant="label-hidden" required placeholder="Select Parking Type" data-id={row.id}
                                         value={row.type} options={parkingType} data-index={index}
                                         onchange={handleParkingTypeChange}>
                                     </lightning-combobox>
@@ -194,12 +194,15 @@
 
                                 <!-- Amount (Readonly) -->
                                 <td>{row.amount} </td>
-                                <td><lightning-input name="quantity" value={row.quantity} data-id={row.id} data-index={index} onchange={handleParkingTypeChange}></lightning-input></td>
-                                <td style="display: flex; flex-direction: column; gap: 5px;"> 
+                                <td><lightning-input name="quantity" label="Quantity" variant="label-hidden" value={row.quantity} data-id={row.id} data-index={index} onchange={handleParkingTypeChange}></lightning-input></td>
+                                <td>
+                                  <div style="display: flex; flex-direction: column; gap: 5px;">
                                   <template for:each={row.Parking_Numbers__c} for:item="num" for:index="numIndex">
-                                    <lightning-input 
-                                        key={num.key} 
-                                        type="text" 
+                                    <lightning-input
+                                        key={num.key}
+                                        label="Parking Number"
+                                        variant="label-hidden"
+                                        type="text"
                                         data-id={row.id} 
                                         data-index={numIndex} 
                                         value={num.value} 
@@ -207,7 +210,7 @@
                                         onchange={handleParkingNumberChange}>
                                     </lightning-input>
                                 </template>
-                                   
+                                  </div>
                                 </td>
                                 <td>
                                     CGST: {row.carCGSTtax}%</br>
@@ -236,9 +239,17 @@
                 </table>
             </div>
 
+            <template if:true={noRows}>
+                <div class="slds-p-around_small">
+                    <lightning-button label="Add Parking Row" icon-name="utility:add" variant="brand"
+                        onclick={handleAddRow}>
+                    </lightning-button>
+                </div>
+            </template>
+
         </template>
 
-   
+
 
         <template if:true={noParkingDetails}>
 
@@ -262,12 +273,12 @@
             </div>
 
             <!-- Amount Circle -->
-            <div
+            <!-- <div
                 class="slds-col slds-size_1-of-1 slds-large-size_1-of-4 slds-text-align_center slds-p-horizontal_small">
                 <div class="amount-circle">
                     <span class="amount-text">{formattedTotalAmount}</span>
                 </div>
-            </div>
+            </div> -->
 
 
         </diV>

@@ -5,8 +5,11 @@
     <decisions>
         <name>On_creation</name>
         <label>On creation</label>
-        <locationX>314</locationX>
+        <locationX>446</locationX>
         <locationY>323</locationY>
+        <defaultConnector>
+            <targetReference>END_ELEMENT_4</targetReference>
+        </defaultConnector>
         <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
         <rules>
             <name>yes</name>
@@ -52,7 +55,56 @@
             </connector>
             <label>when Opportunity Stage is Changed</label>
         </rules>
+        <rules>
+            <name>Awaiting_Payment_Confirmation</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.Unit__c</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.StageName</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>Cost Sheet Approved</stringValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.StageName</leftValueReference>
+                <operator>IsChanged</operator>
+                <rightValue>
+                    <booleanValue>true</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Update_Units</targetReference>
+            </connector>
+            <label>Awaiting Payment Confirmation</label>
+        </rules>
     </decisions>
+    <ends>
+        <name>END_ELEMENT_4</name>
+        <locationX>842</locationX>
+        <locationY>431</locationY>
+    </ends>
+    <ends>
+        <name>END_ELEMENT_5</name>
+        <locationX>50</locationX>
+        <locationY>539</locationY>
+    </ends>
+    <ends>
+        <name>END_ELEMENT_6</name>
+        <locationX>314</locationX>
+        <locationY>539</locationY>
+    </ends>
+    <ends>
+        <name>END_ELEMENT_8</name>
+        <locationX>578</locationX>
+        <locationY>539</locationY>
+    </ends>
     <environments>Default</environments>
     <formulas>
         <name>isNew</name>
@@ -85,6 +137,9 @@
         <label>Create Task</label>
         <locationX>50</locationX>
         <locationY>431</locationY>
+        <connector>
+            <targetReference>END_ELEMENT_5</targetReference>
+        </connector>
         <inputAssignments>
             <field>OwnerId</field>
             <value>
@@ -123,6 +178,9 @@
         <label>Update Unit Record</label>
         <locationX>314</locationX>
         <locationY>431</locationY>
+        <connector>
+            <targetReference>END_ELEMENT_6</targetReference>
+        </connector>
         <filterLogic>and</filterLogic>
         <filters>
             <field>Id</field>
@@ -139,8 +197,32 @@
         </inputAssignments>
         <object>Unit__c</object>
     </recordUpdates>
+    <recordUpdates>
+        <name>Update_Units</name>
+        <label>Update Units</label>
+        <locationX>578</locationX>
+        <locationY>431</locationY>
+        <connector>
+            <targetReference>END_ELEMENT_8</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>$Record.Unit__c</elementReference>
+            </value>
+        </filters>
+        <inputAssignments>
+            <field>Status__c</field>
+            <value>
+                <stringValue>Awaiting Payment Confirmation</stringValue>
+            </value>
+        </inputAssignments>
+        <object>Unit__c</object>
+    </recordUpdates>
     <start>
-        <locationX>188</locationX>
+        <locationX>320</locationX>
         <locationY>0</locationY>
         <connector>
             <targetReference>On_creation</targetReference>

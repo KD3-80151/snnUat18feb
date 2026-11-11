@@ -188,6 +188,63 @@ public static String saveOppsPaySchedulesSave(String paymentSchedules) {
     }
 }
 
+@AuraEnabled
+public static String resetPaymentScheduleDates(List<Id> scheduleIds) {
+    if(scheduleIds == null || scheduleIds.isEmpty()) {
+        throw new AuraHandledException('No Payment Schedules selected.');
+    }
+
+    try {
+        List<Payment_Schedule__c> paySchedulesToUpdt = new List<Payment_Schedule__c>();
+        for(Id scheduleId : scheduleIds) {
+            paySchedulesToUpdt.add(new Payment_Schedule__c(
+                Id = scheduleId,
+                Due_Date__c = null,
+                Pay_Date__c = null
+            ));
+        }
+        update paySchedulesToUpdt;
+        return 'success';
+    } catch (Exception e) {
+        System.debug('Error =========>' + e.getLineNumber() + '===========>' + e.getMessage());
+        throw new AuraHandledException('Error resetting Payment Schedule dates: ' + e.getMessage());
+    }
+}
+
+@AuraEnabled
+public static Integer resetSchemeInstallmentDates(String projectId, String paymentSchemeId, List<String> installmentNames) {
+    if(String.isBlank(projectId) || String.isBlank(paymentSchemeId)) {
+        throw new AuraHandledException('Project and Payment Scheme are required.');
+    }
+    if(installmentNames == null || installmentNames.isEmpty()) {
+        throw new AuraHandledException('No installments selected.');
+    }
+
+    try {
+        Map<Id, Opportunity> opportunities = new Map<Id, Opportunity>(
+            [SELECT Id FROM Opportunity WHERE Project__c = :projectId AND Payment_Scheme__c = :paymentSchemeId]
+        );
+
+        List<Payment_Schedule__c> paySchedulesToUpdt = new List<Payment_Schedule__c>();
+        for(Payment_Schedule__c schedule : [SELECT Id FROM Payment_Schedule__c
+                                            WHERE Opportunity__c IN :opportunities.keySet()
+                                            AND Name IN :installmentNames
+                                            AND Demand_Letter_Sent__c = false]) {
+            schedule.Due_Date__c = null;
+            schedule.Pay_Date__c = null;
+            paySchedulesToUpdt.add(schedule);
+        }
+
+        if(!paySchedulesToUpdt.isEmpty()) {
+            update paySchedulesToUpdt;
+        }
+        return paySchedulesToUpdt.size();
+    } catch (Exception e) {
+        System.debug('Error =========>' + e.getLineNumber() + '===========>' + e.getMessage());
+        throw new AuraHandledException('Error resetting Payment Schedule dates: ' + e.getMessage());
+    }
+}
+
 // Wrapper
 public class PaymentScheduleWrapper {
     public Id id;

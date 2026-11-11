@@ -1,0 +1,43 @@
+<template>
+    <lightning-card title="Add Communication Note" icon-name="standard:note">
+        <div class="slds-p-horizontal_medium slds-is-relative">
+            <template lwc:if={isLoading}>
+                <lightning-spinner alternative-text="Saving" size="small"></lightning-spinner>
+            </template>
+
+            <lightning-input
+                label="Title"
+                value={title}
+                max-length="255"
+                required
+                onchange={handleTitleChange}>
+            </lightning-input>
+
+            <lightning-textarea
+                label="Remarks"
+                value={remarks}
+                required
+                onchange={handleRemarksChange}>
+            </lightning-textarea>
+
+            <lightning-input
+                type="datetime"
+                label="Next Follow Up Date Time"
+                value={nextFollowUpDateTime}
+                field-level-help="If entered, the Lead is updated and a follow up Task is created for this date."
+                onchange={handleFollowUpChange}>
+            </lightning-input>
+        </div>
+
+        <div slot="footer" class="slds-text-align_right">
+            <lightning-button label="Cancel" onclick={handleCancel} disabled={isLoading}></lightning-button>
+            <lightning-button
+                class="slds-m-left_x-small"
+                variant="brand"
+                label="Save"
+                onclick={handleSave}
+                disabled={isLoading}>
+            </lightning-button>
+        </div>
+    </lightning-card>
+</template>

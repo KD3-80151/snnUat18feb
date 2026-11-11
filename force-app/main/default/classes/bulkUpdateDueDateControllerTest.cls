@@ -228,6 +228,138 @@ public class bulkUpdateDueDateControllerTest {
         Test.startTest();
         String result = bulkUpdateDueDateController.saveOppsPaySchedulesSave(jsonInput);
         Test.stopTest();
-       
+
+    }
+
+    @isTest
+    static void testSaveOppsPaySchedulesSaveBlankInput() {
+        Test.startTest();
+        try {
+            bulkUpdateDueDateController.saveOppsPaySchedulesSave('');
+            System.assert(false, 'Expected exception for blank JSON input.');
+        } catch (AuraHandledException e) {
+
+        }
+        Test.stopTest();
+    }
+
+    @isTest
+    static void testGetPaymentSchemeNullParams() {
+        Test.startTest();
+        try {
+            bulkUpdateDueDateController.getpaymentScheme(null, null, null);
+            System.assert(false, 'Expected exception for null parameters.');
+        } catch (AuraHandledException e) {
+
+        }
+        Test.stopTest();
+    }
+
+    @isTest
+    static void testSaveTableDataEmptyInstallments() {
+        Project__c project = [SELECT Id FROM Project__c LIMIT 1];
+        Payment_Scheme__c paymentScheme = [SELECT Id FROM Payment_Scheme__c LIMIT 1];
+
+        String payload = JSON.serialize(
+            new Map<String, Object>{
+                'projectId' => project.Id,
+                'paymentSchemeId' => paymentScheme.Id,
+                'paymentInstallments' => new List<Object>()
+            }
+        );
+
+        Test.startTest();
+        bulkUpdateDueDateController.saveTableData(payload);
+        Test.stopTest();
+    }
+
+    @isTest
+    static void testResetPaymentScheduleDates() {
+        List<Payment_Schedule__c> schedules = [SELECT Id FROM Payment_Schedule__c LIMIT 2];
+        List<Id> scheduleIds = new List<Id>();
+        for (Payment_Schedule__c s : schedules) {
+            scheduleIds.add(s.Id);
+        }
+
+        Test.startTest();
+        String result2 = bulkUpdateDueDateController.resetPaymentScheduleDates(scheduleIds);
+        Test.stopTest();
+
+        System.assertEquals('success', result2);
+
+        List<Payment_Schedule__c> updated = [SELECT Id, Due_Date__c, Pay_Date__c FROM Payment_Schedule__c WHERE Id IN :scheduleIds];
+        for (Payment_Schedule__c s : updated) {
+            System.assertEquals(null, s.Due_Date__c);
+            System.assertEquals(null, s.Pay_Date__c);
+        }
+    }
+
+    @isTest
+    static void testResetPaymentScheduleDatesInvalidInput() {
+        Test.startTest();
+        try {
+            bulkUpdateDueDateController.resetPaymentScheduleDates(null);
+            System.assert(false, 'Expected exception for null schedule ids.');
+        } catch (AuraHandledException e) {
+
+        }
+
+        try {
+            bulkUpdateDueDateController.resetPaymentScheduleDates(new List<Id>());
+            System.assert(false, 'Expected exception for empty schedule ids.');
+        } catch (AuraHandledException e) {
+
+        }
+        Test.stopTest();
+    }
+
+    @isTest
+    static void testResetSchemeInstallmentDates() {
+        Project__c project = [SELECT Id FROM Project__c LIMIT 1];
+        Payment_Scheme__c paymentScheme = [SELECT Id FROM Payment_Scheme__c LIMIT 1];
+        List<String> installmentNames = new List<String>{ 'Installment 1', 'Installment 2' };
+
+        Test.startTest();
+        Integer updatedCount = bulkUpdateDueDateController.resetSchemeInstallmentDates(project.Id, paymentScheme.Id, installmentNames);
+        Test.stopTest();
+
+        System.assert(updatedCount >= 0);
+    }
+
+    @isTest
+    static void testResetSchemeInstallmentDatesInvalidInput() {
+        Project__c project = [SELECT Id FROM Project__c LIMIT 1];
+        Payment_Scheme__c paymentScheme = [SELECT Id FROM Payment_Scheme__c LIMIT 1];
+        List<String> installmentNames = new List<String>{ 'Installment 1' };
+
+        Test.startTest();
+        try {
+            bulkUpdateDueDateController.resetSchemeInstallmentDates(null, paymentScheme.Id, installmentNames);
+            System.assert(false, 'Expected exception for blank project id.');
+        } catch (AuraHandledException e) {
+
+        }
+
+        try {
+            bulkUpdateDueDateController.resetSchemeInstallmentDates(project.Id, null, installmentNames);
+            System.assert(false, 'Expected exception for blank payment scheme id.');
+        } catch (AuraHandledException e) {
+
+        }
+
+        try {
+            bulkUpdateDueDateController.resetSchemeInstallmentDates(project.Id, paymentScheme.Id, null);
+            System.assert(false, 'Expected exception for null installment names.');
+        } catch (AuraHandledException e) {
+
+        }
+
+        try {
+            bulkUpdateDueDateController.resetSchemeInstallmentDates(project.Id, paymentScheme.Id, new List<String>());
+            System.assert(false, 'Expected exception for empty installment names.');
+        } catch (AuraHandledException e) {
+
+        }
+        Test.stopTest();
     }
 }

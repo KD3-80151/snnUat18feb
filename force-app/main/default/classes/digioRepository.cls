@@ -659,7 +659,7 @@ public without Sharing class digioRepository {
                 String docId;
                 String subDocUrl = '';
                 docwrpperClass wrapperRec = new docwrpperClass();
-                List<Receipt__c> receiptRecord = [select id,Name,Drawn_On_Bank__c,JV_Reference_Number__c,Transaction_Reference_Number__c, CIN__c, UPI_Provider__c,Receipt_Date__c,Opportunity__r.Project__r.Name,Opportunity__c,Mode_Of_Payment__c,Reference_Number__c,Cheque_Date__c,Bank__c,
+                List<Receipt__c> receiptRecord = [select id,Name,Drawn_On_Bank__c,JV_Reference_Number__c,Approval_Status__c, Transaction_Reference_Number__c, CIN__c, UPI_Provider__c,Receipt_Date__c,Opportunity__r.Project__r.Name,Opportunity__c,Mode_Of_Payment__c,Reference_Number__c,Cheque_Date__c,Bank__c,
                                                   Opportunity__r.Unit__r.Unit_Type__c,Amount__c, TDS_Amount__c, Opportunity__r.Unit__r.Floor__r.Blocks__r.Name,Opportunity__r.Unit__r.Unit_Name__c,Opportunity__r.Unit__r.Name,Opportunity__r.Opportunity_Unique_Id__c,Receipt_Number__c, BSR_Code__c,
                                                   JV_Date__c,DD_Date__c,Paid_Date__c,Challan_Date__c,Fund_Transfer_Date__c, Cheque_Number__c, DD_Number__c,  Opportunity__r.Project__r.Company__r.Name,Opportunity__r.Project__r.Company__r.Address__c,Opportunity__r.Project__r.Company__r.Email__c  from Receipt__c Where Id =: recorId Limit 1];
                 
@@ -697,7 +697,7 @@ public without Sharing class digioRepository {
                     String formattedTimestamp = now.format('yyyy-MM-dd HH:mm:ss');
                     String fileName = 'Receipt - '+ formattedTimestamp;
                     generateDoc.file_name = fileName;
-                    
+
                     DigioWrapperClass.signersList signer = new DigioWrapperClass.signersList();
                     signer.identifier = 'projects@snnestates.com';
                     signer.signer_tag = 'Signer 1';
@@ -706,7 +706,7 @@ public without Sharing class digioRepository {
                     
                     generateDoc.signers = new List<DigioWrapperClass.signersList>{signer};
                     DigioWrapperClass.serenityReceiptTemplateList tempList = new DigioWrapperClass.serenityReceiptTemplateList();
-                    tempList.template_key = customData.Serenity_Receipt_Template_Key__c;
+                    tempList.template_key = receiptRecord[0].Approval_Status__c == 'Approved' ? customData.Serenity_Receipt_Template_Key__c : customData.Provisional_Receipt__c;
                     system.debug('firstApplicantNmae ::' + firstApplicantName);
                     DigioWrapperClass.serenityReceiptTemplateValues templateVariables = new DigioWrapperClass.serenityReceiptTemplateValues();
                     templateVariables.receiptNo             = receiptRecord[0].Receipt_Number__c != null ? receiptRecord[0].Receipt_Number__c : '';
@@ -1490,9 +1490,9 @@ public without Sharing class digioRepository {
                         costSheetPaymentTable.breakup = ps.Installment__c != null ? String.valueOf(ps.Installment__c) + '%' : '';
                         costSheetPaymentTable.paymentSchedule   = ps.Name != null ? ps.Name : null;
                         costSheetPaymentTable.installDate   = ps.Due_Date__c != null ? ps.Due_Date__c : null;
-                        costSheetPaymentTable.amountValue = (costSheetTable.totalValue * installmentPercentage) / 100;
+                        costSheetPaymentTable.amountValue = ((costSheetTable.totalValue * installmentPercentage) / 100).setScale(2);
                         if(costSheetPaymentTable.amountValue != null){
-                            TotalAmountsvaluepayment += Math.round(costSheetPaymentTable.amountValue);
+                            TotalAmountsvaluepayment += Math.round((costSheetPaymentTable.amountValue).setScale(2));
                         }
                         paymentScheduleList.add(costSheetPaymentTable);
                     }
@@ -1911,7 +1911,13 @@ public without Sharing class digioRepository {
                     signer.sign_type = 'document_review';
                     generateDoc.signers = new List<DigioWrapperClass.signersList>{signer};
                     DigioWrapperClass.wlcomeKitValueList tempList = new DigioWrapperClass.wlcomeKitValueList();
-                    tempList.template_key = customData.welComeKit_Template_Key__c;
+                    
+                    
+                    tempList.template_key = (oppRecord[0].Project__c == System.label.Felicity_Project) ? customData.Welcome_Letter_Felicity__c : (oppRecord[0].Project__c == System.label.Duomont_Project) ? customData.Welcome_Letter_Duomont__c : customData.Welcome_Letter__c;
+
+                    // oppRecord[0].Project__c != null && oppRecord[0].Project__c == System.label.Felicity_Project ? (tempList.template_key = customData.Welcome_Letter_Felicity__c): oppRecord[0].Project__c != null && oppRecord[0].Project__c == System.label.Duomont_Project ? (tempList.template_key = customData.Welcome_Letter_Duomont__c) : tempList.template_key = customData.Welcome_Letter__c;
+
+                    // tempList.template_key = customData.welComeKit_Template_Key__c;
                     DigioWrapperClass.welcomeKitTemplateValues welcomeKitDetail = new DigioWrapperClass.welcomeKitTemplateValues();
                     welcomeKitDetail.todayDate          = System.Today();
                     welcomeKitDetail.unitNumber         = oppRecord[0].Unit__r.Unit_Name__c != null ? oppRecord[0].Unit__r.Unit_Name__c : '';
@@ -1931,6 +1937,8 @@ public without Sharing class digioRepository {
                     welcomeKitDetail.bankName           = oppRecord[0].Project__r.Bank_Name__c != null ? oppRecord[0].Project__r.Bank_Name__c : '';
                     welcomeKitDetail.branchName         = oppRecord[0].Project__r.Branch__c != null ? oppRecord[0].Project__r.Branch__c : '';
                     welcomeKitDetail.ifscCode           = oppRecord[0].Project__r.IFSC_Code__c != null ? oppRecord[0].Project__r.IFSC_Code__c : '';
+                    welcomeKitDetail.projectName        = oppRecord[0].Project__r.Name != null ? oppRecord[0].Project__r.Name : '';
+                    //welcomeKitDetail.projectAddress     = oppRecord[0].Project__r.Project_Address__c != null ? oppRecord[0].Project__r.Project_Address__c : '';
                     tempList.template_values = welcomeKitDetail;
                     generateDoc.templates = new List<DigioWrapperClass.wlcomeKitValueList>{tempList};
                     String jsonBody = Json.serialize(generateDoc);
@@ -2107,7 +2115,7 @@ public without Sharing class digioRepository {
                 SELECT Id, Name, Allotment_Letter_Generated_Date_Time__c, Channel_Partner__r.Name, Unit__r.Carpet_Area__c, Unit__r.Terrace_Area__c, Unit__r.Balcony_Area__c, Agreement_Value__c, Total_Amount_Collected__c, Sales_Team_Member__r.Name, Project__r.Name, Unit__r.Unit_Number_Only__c,  Unit__r.Unit_Type__c, Unit__r.Super_Built_Up_Area_sq_ft__c, Unit__r.Floor__r.Floor_No__c, Unit__r.Floor__r.Blocks__r.Tower_Code__c, Unit__r.Floor__r.Blocks__r.Name, Unit__r.Salable_Area__c, Account.Id, Account.Name, Account.Full_Name__c, Account.Phone, Account.Application_Date__c, Account.RERA_Number__c, Account.Company_Firm_Name__c, Account.Primary_Contact_Number__c, Account.Alternate_Contact_Number__c,
                 Account.Email__c, Account.Official_Email__c, Account.Passport_Number__c, Account.Industry__c, Account.W_o_S_o_D_o__c, Account.Date_of_Birth__c, Account.Spouse_Name__c, Account.Spouse_Date_of_Birth__c, Account.Anniversary_Date__c, Account.Resident_Status__c, Account.Country_of_Residence__c, Account.PAN__c,
                 Account.Location__c, Account.Designation__c, Account.Name_of_Authorised_Signatory__c, Account.Referral_Name__c, Account.Referal_Email__c, Account.Referral_Project_Name__c, Account.Referral_Phone_Number__c, Account.If_Others_Work_Funtion_Role__c, Account.Permanent_Address__Street__s, Account.Permanent_Address__City__s, Account.Permanent_Address__StateCode__s, Account.Permanent_Address__PostalCode__s, Account.Permanent_Address__CountryCode__s,
-                Account.Address_for_Communication__Street__s, Account.Address_for_Communication__City__s, Account.Address_for_Communication__StateCode__s, Account.Address_for_Communication__PostalCode__s, Account.Address_for_Communication__CountryCode__s,
+                Account.Address_for_Communication__Street__s, Account.Address_for_Communication__City__s, Account.Address_for_Communication__StateCode__s, Account.Address_for_Communication__PostalCode__s, Account.Address_for_Communication__CountryCode__s, Owner.Name,
                 (SELECT Id, Name, Document_Id__c FROM Documents__r WHERE Name = 'Root Folder' LIMIT 1),
                 (SELECT Id, Token_Amount__c, Total_Amount__c, Mode_Of_Payment__c, Cheque_Date__c, Receipt_Date__c, Drawn_on_Bank__c, Bank__c FROM Receipts__r WHERE Token_Amount__c = true ORDER BY CreatedDate ASC) FROM Opportunity WHERE Id = :oppId LIMIT 1];
             
@@ -2216,7 +2224,7 @@ public without Sharing class digioRepository {
             // tv.totalReciptAmountInWords     = (opp.Receipts__r != null && !opp.Receipts__r.isEmpty() && opp.Receipts__r[0].Total_Amount__c != null) ? NumbersToWordsConversionClass.formatIndianCurrency(opp.Receipts__r[0].Total_Amount__c) : '';
             tv.salesuserName                = (opp.Sales_Team_Member__r != null && opp.Sales_Team_Member__r.Name != null) ? opp.Sales_Team_Member__r.Name : '';
             tv.todayDate                    = Date.Today();
-            tv.crmUser                      = crmUser;
+            tv.crmUser                      = opp.Owner.Name;//crmUser;
             tv.allotmentLetterDate          = (opp.Allotment_Letter_Generated_Date_Time__c != null) ? NumbersToWordsConversionClass.formattedDate(Date.valueOf(opp.Allotment_Letter_Generated_Date_Time__c)) : '';
             tv.oppChanelPartName            = (opp.Channel_Partner__r != null && opp.Channel_Partner__r.Name != null) ? opp.Channel_Partner__r.Name : '';
             tv.floorNumber                  = (opp.Unit__r != null && opp.Unit__r.Floor__r != null && opp.Unit__r.Floor__r.Floor_No__c != null) ? String.valueOf(opp.Unit__r.Floor__r.Floor_No__c) : '';

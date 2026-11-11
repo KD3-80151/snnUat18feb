@@ -25,7 +25,12 @@ public class LeadHandler {
                         lead.Lead_Type__c = 'Direct';
                         lead.Pre_Sales_Team_Member__c = UserInfo.getUserId();
                         System.debug('Skipped Lead ' + lead.Id + ' due to unmet conditions');
-                    } else{
+                    } 
+                    else if(lead.Is_User_Assigned__c == false && lead.By_Pass_Validations__c == true && lead.External_Lead__c == true && lead.Lead_Type__c == 'Digital'){
+                        lead.OwnerId = leadQueue.Id;
+                        system.debug('emntered digital api');
+                    }
+                    else{
                         lead.Is_User_Assigned__c = true;
                     }
                 

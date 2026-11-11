@@ -148,6 +148,18 @@ export default class CostSheetTemplate extends LightningElement {
         // console.log('Paginated data ===> ' + JSON.stringify(this.recordsToDisplay));
     }
 
+    // Header checkbox mirrors the current page, so it resets when the user moves to another page
+    get isAllPricingSelected() {
+        return this.recordsToDisplay.length > 0 && this.recordsToDisplay.every(item => item.isChecked);
+    }
+
+    syncRecordsToDisplay() {
+        this.recordsToDisplay = this.recordsToDisplay.map(item => ({
+            ...item,
+            isChecked : this.selectedPricingElementList.includes(item.Id)
+        }));
+    }
+
     jobPaginationCallbackAsstn(event){
         debugger;
         this.costPricingAssociationsList = event.detail.recordToDisplay;
@@ -1150,6 +1162,7 @@ export default class CostSheetTemplate extends LightningElement {
             ...item,
             isChecked : this.selectedPricingElementList.includes(item.Id)
         }));
+        this.syncRecordsToDisplay();
         this.originalCostPricingAssociationsList = this.costPricingAssociationsList;
         console.log('this.selectedPricingElementList ===> ' + this.selectedPricingElementList);
         console.log('this.costPricingAssociationsList ===> ' + JSON.stringify(this.costPricingAssociationsList));
@@ -1207,6 +1220,7 @@ export default class CostSheetTemplate extends LightningElement {
                 );
             }
         }
+        this.syncRecordsToDisplay();
         this.originalCostPricingAssociationsList = this.costPricingAssociationsList;
         console.log('costPricingAssociationsList ===> ' + JSON.stringify(this.costPricingAssociationsList));
     }

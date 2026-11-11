@@ -1,6 +1,7 @@
 import { LightningElement, api, track } from 'lwc';
 import getCostSheets from '@salesforce/apex/CostSheetController.getCostSheets';
 import checkForRelatedUnit from '@salesforce/apex/CostSheetController.checkForRelatedUnit';
+import { CloseActionScreenEvent } from 'lightning/actions';
 
 export default class EditCarParking extends LightningElement {
     @api recordId;  
@@ -95,5 +96,11 @@ export default class EditCarParking extends LightningElement {
 
     handleCloseChildComponent() {
         this.showChildComponent = false;  
+    }
+
+    // After a successful save, close the child and the quick action screen itself
+    handleSaved() {
+        this.showChildComponent = false;
+        this.dispatchEvent(new CloseActionScreenEvent());
     }
 }

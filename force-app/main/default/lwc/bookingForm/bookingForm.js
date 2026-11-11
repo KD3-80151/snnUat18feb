@@ -247,13 +247,13 @@ export default class BookingForm extends LightningElement {
                 this.showSpinner = false;
                 this.handleCancel();
             }else{
-                this.showToast('Error', 'Error Processing Applicant Details!!!', 'error');
+                this.showToast('Error', result || 'Error Processing Applicant Details!!!', 'error');
                 this.nextText = 'Error Processing Applicant Details!!!!';
             }
-            
+
         })
         .catch(error => {
-            this.showToast('Error', error, 'error');
+            this.showToast('Error', error?.body?.message || 'Error Processing Applicant Details!!!', 'error');
             this.nextText = 'Error Processing Applicant Details!!!!';
         });
     }

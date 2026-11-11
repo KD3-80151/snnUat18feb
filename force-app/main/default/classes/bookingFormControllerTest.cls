@@ -34,6 +34,33 @@ public class bookingFormControllerTest {
     }
 
     @isTest
+    public static void testCreateApplicantsWithExistingAccount() {
+        Account primaryAccount = new Account(Name = 'Primary Account',Last_Name__c = 'Krishna', Email__c = 'primary@example.com', Phone = '1234567890');
+        Account existingAccount = new Account(Name = 'Existing Account',Last_Name__c = 'Sharma', Email__c = 'existing@example.com', Phone = '1234567895');
+        insert new List<Account>{primaryAccount, existingAccount};
+
+        insert new Contact(LastName = 'Krishna', AccountId = primaryAccount.Id, Phone = '1234567890');
+        insert new Contact(LastName = 'Sharma', AccountId = existingAccount.Id, Phone = '1234567895');
+
+        Opportunity opp = new Opportunity(Name = 'Test Opportunity', StageName = 'Prospecting', CloseDate = System.today(), AccountId = primaryAccount.Id);
+        insert opp;
+
+        // Co-applicant matched by Email, another by Phone (same existing account), and one new
+        Account byEmail = new Account(Name = 'Existing Updated', First_Name__c = 'Existing', Last_Name__c = 'Updated', Email__c = 'EXISTING@example.com', Phone = '9999999999');
+        Account byPhone = new Account(Name = 'Existing Again', Last_Name__c = 'Again', Phone = '1234567895');
+        Account newApplicant = new Account(Name = 'New Applicant', Last_Name__c = 'New', Email__c = 'new@example.com', Phone = '1234567896');
+
+        Test.startTest();
+        bookingFormController.createApplicants(new List<Account>{byEmail, byPhone, newApplicant}, opp.Id, '[]', primaryAccount.Id, primaryAccount);
+        Test.stopTest();
+
+        System.assertEquals(1, [SELECT COUNT() FROM Account WHERE Email__c = 'existing@example.com'], 'Existing account should be reused, not duplicated');
+        System.assertEquals(1, [SELECT COUNT() FROM Account WHERE Email__c = 'new@example.com'], 'New co-applicant account should be created');
+        System.assertEquals(1, [SELECT COUNT() FROM Contact WHERE AccountId = :existingAccount.Id], 'Existing contact should be updated, not duplicated');
+        System.assertEquals(2, [SELECT COUNT() FROM Applicant__c WHERE Opportunity__c = :opp.Id], 'One Applicant per co-applicant account');
+    }
+
+    @isTest
     public static void testSaveContentVersion() {
         // Test the saveContentVersion method
         String fileName = 'testfile.png';

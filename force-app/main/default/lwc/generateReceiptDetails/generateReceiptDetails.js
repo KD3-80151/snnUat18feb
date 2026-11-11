@@ -54,10 +54,12 @@ export default class GenerateReceiptDetails extends LightningElement {
 
     connectedCallback() {
         console.log('Component Loaded - connectedCallback');
-        this.fetchReceipts();
+        // Multiple receipts are allowed per opportunity, so always show the form
+        this.loadPicklistValues();
+        this.fetchAccounts();
     }
 
-    @track showReceiptData = true;
+    @track showReceiptData = false;
     fetchReceipts() {
         debugger;
         console.log('Fetching Receipts for Record ID:', this.recordId); // Debugging

@@ -52,7 +52,7 @@ public without sharing class QueueableToSendDemandLetterEmails implements Queuea
                 oppIdByEmailMap.put(String.valueOf(opp.Id), opp);
             }
             
-            List<OrgWideEmailAddress> oweaList = [SELECT Id, Address FROM OrgWideEmailAddress WHERE Address = 'sagar.kumar@utilitarianlabs.com' LIMIT 1];
+            List<OrgWideEmailAddress> oweaList = [SELECT Id, Address FROM OrgWideEmailAddress WHERE Address = 'projects@snnestates.com' LIMIT 1];
             
             for (String oppId1 : oppIdByContentVersionIds.keySet()) {
                 List<Messaging.EmailFileAttachment> attachments = new List<Messaging.EmailFileAttachment>();

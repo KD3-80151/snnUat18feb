@@ -218,7 +218,7 @@
                                 </so-dropdown>
                             </div>
                             <div class="col-md-6 mt-3">
-                                <label class="label pe-3 text-nowrap">Lead Type</label>
+                                <label class="label pe-3 text-nowrap">Lead Type<span class="required-asterisk" style="color:red;">*</span></label>
                                 <select class="form-select" ng-model="leadDetails.Lead_Type__c" ng-change="updateDependentFields()">
                                     <option ng-repeat="value in leadType" ng-selected="true">{{value}}</option>
                                 </select>
@@ -236,10 +236,29 @@
                                 </select>
                             </div>
                             <div class="col-md-6 mt-3" ng-if = "leadDetails.Lead_Type__c == 'Channel Partner'">
+                                <label class="label pe-3 text-nowrap">Lead Source</label>
+                                <select class="form-select" ng-model="leadDetails.LeadSource" ng-change="changeOfCpSource()">
+                                    <option value="">-- Select Lead Source --</option>
+                                    <option ng-repeat="source in cpLeadSources" value="{{source}}">{{source}}</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mt-3" ng-if = "leadDetails.Lead_Type__c == 'Channel Partner' && leadDetails.LeadSource == 'Existing CP'">
                                 <label class="label">Channel Partner</label><br/>
                                 <so-dropdown class="col-md-12" ng-model="leadDetails.Channel_Partner__c" dropdown-items="cpList">
                                     <option value='None'>None</option>
                                 </so-dropdown>
+                            </div>
+                            <div class="col-md-6 mt-3" ng-if = "leadDetails.Lead_Type__c == 'Channel Partner' && leadDetails.LeadSource == 'Unregister CP'">
+                                <label class="label pe-3 text-nowrap">Channel Partner Name<span class="required-asterisk" style="color:red;">*</span></label>
+                                <input type="text" class="form-control" ng-model="leadDetails.Channel_Partner_Name__c" />
+                            </div>
+                            <div class="col-md-6 mt-3" ng-if = "leadDetails.Lead_Type__c == 'Channel Partner' && leadDetails.LeadSource == 'Unregister CP'">
+                                <label class="label pe-3 text-nowrap">Channel Partner Phone<span class="required-asterisk" style="color:red;">*</span></label>
+                                <input type="text" class="form-control" ng-model="leadDetails.Channel_Partner_Phone__c" />
+                            </div>
+                            <div class="col-md-6 mt-3" ng-if = "leadDetails.Lead_Type__c == 'Channel Partner' && leadDetails.LeadSource == 'Unregister CP'">
+                                <label class="label pe-3 text-nowrap">Channel Partner Email</label>
+                                <input type="text" class="form-control" ng-model="leadDetails.Channel_Partner_Email__c" />
                             </div>
                             <div class="col-md-6 mt-3" ng-if = "leadDetails.Lead_Type__c == 'Referral'">
                                 <label class="label pe-3 text-nowrap">Referral Name</label>
@@ -1288,6 +1307,24 @@
                         // $("#txtEmail").addClass('border-theme');
                         return true;
                     }
+                    if($scope.leadDetails.Lead_Type__c == "" || $scope.leadDetails.Lead_Type__c == undefined){
+                        swal(
+                            'Info',
+                            'Please Select Lead Type!',
+                            'info'
+                        );
+                        return true;
+                    }
+                    if($scope.leadDetails.Lead_Type__c == 'Channel Partner' && $scope.leadDetails.LeadSource == 'Unregister CP'){
+                        if(!$scope.leadDetails.Channel_Partner_Name__c){
+                            swal('Info','Please Enter Channel Partner Name!','info');
+                            return true;
+                        }
+                        if(!$scope.leadDetails.Channel_Partner_Phone__c){
+                            swal('Info','Please Enter Channel Partner Phone!','info');
+                            return true;
+                        }
+                    }
                     if($scope.validateEmail($scope.leadDetails.Email)){
                         swal(
                             'Info',
@@ -1686,13 +1723,16 @@
                     $scope.showSalesManager = false;
                 }
 
+                $scope.cpLeadSources = ['Existing CP', 'Unregister CP'];
+
                 $scope.getDependentPicklist = function(){
                     debugger;
                     siteVisitFormController.getFieldDependencies('Lead','LeadSource','Lead_Sub_Source__c',function(result,event){
                         debugger;
                         if(event.status,result){
                             $scope.sourceXsubSourceMap = result;
-                            $scope.leadSources = Object.entries($scope.sourceXsubSourceMap).map(([key, values]) => {
+                            // Existing CP / Unregister CP are only for Channel Partner leads
+                            $scope.leadSources = Object.entries($scope.sourceXsubSourceMap).filter(([key]) => $scope.cpLeadSources.indexOf(key) === -1).map(([key, values]) => {
                                 return { key: key, values: values };
                             });
                             // console.log('$scope.leadSources ---> '+JSON.stringify($scope.leadSources));
@@ -1709,8 +1749,15 @@
                     $scope.leadSubSource = $scope.sourceXsubSourceMap[$scope.leadDetails.LeadSource];
                 }
 
-                $scope.updateDependentFields = function(){
+                $scope.changeOfCpSource = function(){
                     $scope.leadDetails.Channel_Partner__c = '';
+                    $scope.leadDetails.Channel_Partner_Name__c = '';
+                    $scope.leadDetails.Channel_Partner_Phone__c = '';
+                    $scope.leadDetails.Channel_Partner_Email__c = '';
+                }
+
+                $scope.updateDependentFields = function(){
+                    $scope.changeOfCpSource();
                     $scope.leadDetails.LeadSource = '';
                     $scope.leadDetails.Lead_Sub_Source__c = '';
                     $scope.leadDetails.Referred_By_Name__c= '';

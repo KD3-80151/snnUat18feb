@@ -23,7 +23,15 @@
     <enableMobileDeviceAccess>false</enableMobileDeviceAccess>
     <finalApprovalActions>
         <action>
+            <name>Assign_To_CRM_Member_for_Booking_Process</name>
+            <type>Task</type>
+        </action>
+        <action>
             <name>Cost_Sheet_Approval_Status</name>
+            <type>FieldUpdate</type>
+        </action>
+        <action>
+            <name>Cost_Sheet_Finalised</name>
             <type>FieldUpdate</type>
         </action>
         <action>
@@ -40,10 +48,6 @@
     </finalRejectionActions>
     <finalRejectionRecordLock>false</finalRejectionRecordLock>
     <initialSubmissionActions>
-        <action>
-            <name>Assign_To_CRM_Member_for_Booking_Process</name>
-            <type>Task</type>
-        </action>
         <action>
             <name>initially_stage_change</name>
             <type>FieldUpdate</type>

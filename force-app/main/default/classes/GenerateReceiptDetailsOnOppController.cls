@@ -1,4 +1,4 @@
-public class GenerateReceiptDetailsOnOppController {
+public without sharing class GenerateReceiptDetailsOnOppController {
 
     @AuraEnabled(cacheable=true)
     public static List<String> getPicklistValues(String fieldName) {

@@ -14,8 +14,10 @@ public with sharing class DeleteOppApprovalController {
             if (opp.Delete_Approval__c == 'Pending') {
                 throw new AuraHandledException('Delete approval is already pending.');
             }
-            if (opp.Delete_Approval__c == 'Approved') {
-                throw new AuraHandledException('Delete approval is already approved.');
+            // Approved records can be resubmitted for another delete cycle.
+            // Unlock records still locked by an earlier final approval.
+            if (Approval.isLocked(opp.Id)) {
+                Approval.unlock(opp.Id);
             }
 
             opp.Delete_Approval__c = 'Pending';

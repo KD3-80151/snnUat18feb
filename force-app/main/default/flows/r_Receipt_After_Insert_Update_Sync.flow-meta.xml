@@ -19,22 +19,6 @@
             <targetReference>Main_Decision</targetReference>
         </connector>
     </assignments>
-    <assignments>
-        <name>Total_Count</name>
-        <label>Total Count</label>
-        <locationX>270</locationX>
-        <locationY>647</locationY>
-        <assignmentItems>
-            <assignToReference>CountofReceipts</assignToReference>
-            <operator>Add</operator>
-            <value>
-                <numberValue>1.0</numberValue>
-            </value>
-        </assignmentItems>
-        <connector>
-            <targetReference>Loop_on_Receipts</targetReference>
-        </connector>
-    </assignments>
     <decisions>
         <name>Check_Demand_Letter_on_Receipt</name>
         <label>Check Demand Letter on Receipt</label>
@@ -55,28 +39,6 @@
                 <targetReference>Get_opp_of_Opportunity</targetReference>
             </connector>
             <label>Check Demand Letter</label>
-        </rules>
-    </decisions>
-    <decisions>
-        <name>Check_Receipt_Count</name>
-        <label>Check Receipt Count</label>
-        <locationX>182</locationX>
-        <locationY>839</locationY>
-        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
-        <rules>
-            <name>Is_Receipt_Count_1</name>
-            <conditionLogic>and</conditionLogic>
-            <conditions>
-                <leftValueReference>CountofReceipts</leftValueReference>
-                <operator>EqualTo</operator>
-                <rightValue>
-                    <numberValue>1.0</numberValue>
-                </rightValue>
-            </conditions>
-            <connector>
-                <targetReference>Update_Related_Opportunities_Stage</targetReference>
-            </connector>
-            <label>Is Receipt Count 1 ?</label>
         </rules>
     </decisions>
     <decisions>
@@ -116,10 +78,60 @@
                     <booleanValue>true</booleanValue>
                 </rightValue>
             </conditions>
+            <conditions>
+                <leftValueReference>$Record.Token_Amount__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <booleanValue>true</booleanValue>
+                </rightValue>
+            </conditions>
             <connector>
-                <targetReference>Get_Recepit_Records</targetReference>
+                <targetReference>Update_Related_Opportunities_Stage</targetReference>
             </connector>
             <label>IsApproved ?</label>
+        </rules>
+        <rules>
+            <name>IsRejected</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>IsNew</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.Approval_Status__c</leftValueReference>
+                <operator>IsChanged</operator>
+                <rightValue>
+                    <booleanValue>true</booleanValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.Approval_Status__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>Rejected</stringValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>mdvReceiptCheck</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <booleanValue>true</booleanValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.Token_Amount__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <booleanValue>true</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Create_Rejected_Receipt_Task</targetReference>
+            </connector>
+            <label>IsRejected ?</label>
         </rules>
         <rules>
             <name>Receipt_is_Getting_Created_Tag_Opportunity</name>
@@ -150,20 +162,6 @@
     </formulas>
     <interviewLabel>r_Receipt After Insert/Update Sync {!$Flow.CurrentDateTime}</interviewLabel>
     <label>r_Receipt After Insert/Update Sync</label>
-    <loops>
-        <name>Loop_on_Receipts</name>
-        <label>Loop on Receipts</label>
-        <locationX>182</locationX>
-        <locationY>539</locationY>
-        <collectionReference>Get_Recepit_Records</collectionReference>
-        <iterationOrder>Asc</iterationOrder>
-        <nextValueConnector>
-            <targetReference>Total_Count</targetReference>
-        </nextValueConnector>
-        <noMoreValuesConnector>
-            <targetReference>Check_Receipt_Count</targetReference>
-        </noMoreValuesConnector>
-    </loops>
     <processMetadataValues>
         <name>BuilderType</name>
         <value>
@@ -224,6 +222,44 @@
         <object>Task</object>
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </recordCreates>
+    <recordCreates>
+        <name>Create_Rejected_Receipt_Task</name>
+        <label>Create Rejected Receipt Task</label>
+        <locationX>314</locationX>
+        <locationY>431</locationY>
+        <inputAssignments>
+            <field>ActivityDate</field>
+            <value>
+                <elementReference>dueDate</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>OwnerId</field>
+            <value>
+                <elementReference>$Record.Opportunity__r.OwnerId</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Priority</field>
+            <value>
+                <stringValue>High</stringValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Subject</field>
+            <value>
+                <stringValue>Add Receipt Details/Token Amount</stringValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>WhatId</field>
+            <value>
+                <elementReference>$Record.Opportunity__c</elementReference>
+            </value>
+        </inputAssignments>
+        <object>Task</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordCreates>
     <recordLookups>
         <name>Get_opp_of_Opportunity</name>
         <label>Get opp of Opportunity</label>
@@ -250,27 +286,6 @@
         </filters>
         <getFirstRecordOnly>true</getFirstRecordOnly>
         <object>Demand_Letter__c</object>
-        <storeOutputAutomatically>true</storeOutputAutomatically>
-    </recordLookups>
-    <recordLookups>
-        <name>Get_Recepit_Records</name>
-        <label>Get Recepit Records</label>
-        <locationX>182</locationX>
-        <locationY>431</locationY>
-        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
-        <connector>
-            <targetReference>Loop_on_Receipts</targetReference>
-        </connector>
-        <filterLogic>and</filterLogic>
-        <filters>
-            <field>Opportunity__c</field>
-            <operator>EqualTo</operator>
-            <value>
-                <elementReference>$Record.Opportunity__c</elementReference>
-            </value>
-        </filters>
-        <getFirstRecordOnly>false</getFirstRecordOnly>
-        <object>Receipt__c</object>
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </recordLookups>
     <recordUpdates>
@@ -322,17 +337,6 @@
     </start>
     <status>Active</status>
     <variables>
-        <name>CountofReceipts</name>
-        <dataType>Number</dataType>
-        <isCollection>false</isCollection>
-        <isInput>true</isInput>
-        <isOutput>true</isOutput>
-        <scale>0</scale>
-        <value>
-            <numberValue>0.0</numberValue>
-        </value>
-    </variables>
-    <variables>
         <name>mdvReceiptCheck</name>
         <dataType>Boolean</dataType>
         <isCollection>false</isCollection>
@@ -340,17 +344,6 @@
         <isOutput>false</isOutput>
         <value>
             <booleanValue>true</booleanValue>
-        </value>
-    </variables>
-    <variables>
-        <name>TotalCount</name>
-        <dataType>Number</dataType>
-        <isCollection>false</isCollection>
-        <isInput>true</isInput>
-        <isOutput>true</isOutput>
-        <scale>1</scale>
-        <value>
-            <elementReference>CountofReceipts</elementReference>
         </value>
     </variables>
 </Flow>

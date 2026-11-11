@@ -51,6 +51,7 @@
           total-pricing-value={selectedCostSheet.Total_Pricing_Value__c}
           unit-id={selectedCostSheet.Unit__c}
           onclose={handleCloseChildComponent}
+          onsaved={handleSaved}
           no-related-unit-message={noRelatedUnitMessage} >
       </c-parking-details>
   </template>
