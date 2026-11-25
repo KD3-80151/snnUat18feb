@@ -15,6 +15,8 @@ import resetSchemeInstallmentDates from '@salesforce/apex/bulkUpdateDueDateContr
 
 
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+
+const FUTURE_DATE_MSG = "Demand Date cannot be a future date. Please select today's date or a past date.";
 export default class BulkUpdateDueDate extends NavigationMixin(LightningElement) {
     @track companies = [];
     @track selectedCompany;
@@ -97,7 +99,33 @@ export default class BulkUpdateDueDate extends NavigationMixin(LightningElement)
     //     //console.log(`Updated ${fieldName} for row ${rowId}:`, this.pymentinstall);
     // }
 
+
+    // Today's date in the user's local time (toISOString() would give the UTC date, i.e. yesterday in IST before 05:30)
+    get todayIso() {
+        const d = new Date();
+        const pad = (n) => String(n).padStart(2, '0');
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    }
+
+    isFutureDate(value) {
+        return !!value && value > this.todayIso;
+    }
+
+    rejectFutureDate(event) {
+        const value = event.target.value;
+        if (event.target.dataset.field === 'PayByDate' && this.isFutureDate(value)) {
+            event.target.setCustomValidity(FUTURE_DATE_MSG);
+            event.target.reportValidity();
+            this.showToast('Error', FUTURE_DATE_MSG, 'error');
+            return true;
+        }
+        event.target.setCustomValidity('');
+        event.target.reportValidity();
+        return false;
+    }
+
     handleDateChange(event) {
+        if (this.rejectFutureDate(event)) return;
         const value = event.target.value;
         const fieldName = event.target.dataset.field;
         const recId = event.target.dataset.id;
@@ -118,6 +146,7 @@ export default class BulkUpdateDueDate extends NavigationMixin(LightningElement)
         });
     }
     handleDateChange2(event) {
+        if (this.rejectFutureDate(event)) return;
         const value = event.target.value;
         const fieldName = event.target.dataset.field;
         const recId = event.target.dataset.id;
@@ -391,6 +420,11 @@ export default class BulkUpdateDueDate extends NavigationMixin(LightningElement)
         // }
 
 
+        if (this.pymentinstall.some(row => this.isFutureDate(row.PayByDate))) {
+            this.showToast('Error', FUTURE_DATE_MSG, 'error');
+            return;
+        }
+
         const payload = {
             projectId: this.selectedProject,
             paymentSchemeId: this.selectedScheme,
@@ -421,7 +455,7 @@ export default class BulkUpdateDueDate extends NavigationMixin(LightningElement)
             })
             .catch(error => {
                 console.error('Error saving data:', error);
-                this.showToast('Error', 'An error occurred while saving data.', 'error');
+                this.showToast('Error', (error && error.body && error.body.message) ? error.body.message : 'An error occurred while saving data.', 'error');
             });
     }
     showToast(title, message, variant) {
@@ -512,6 +546,10 @@ export default class BulkUpdateDueDate extends NavigationMixin(LightningElement)
     }
     handleOppsPaySchedulesSave(){
         debugger;
+        if (this.oppsPaymentSchedules.some(row => this.isFutureDate(row.Pay_Date__c))) {
+            this.showToast('Error', FUTURE_DATE_MSG, 'error');
+            return;
+        }
         this.oppsPaymentSchedules=this.oppsPaymentSchedules.map(record=>({
             ...record,
             id:record.Id,

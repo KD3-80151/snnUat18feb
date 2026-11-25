@@ -157,8 +157,8 @@ public class GenerateReceiptDetailsControllerTest {
         
         // Ensure at least one receipt exists for this Opportunity (your @testSetup already inserts one,
         // but this keeps the test resilient if setup changes in future)
-        if ([SELECT COUNT() FROM Receipt__c WHERE Opportunity__c = :opp.Id] == 0) {
-            insert new Receipt__c(Opportunity__c = opp.Id);
+        if ([SELECT COUNT() FROM Receipt__c WHERE Opportunity__c = :opp.Id AND Token_Amount__c = true] == 0) {
+            insert new Receipt__c(Opportunity__c = opp.Id, Token_Amount__c = true);
         }
         
         // Create a fresh Task linked to the Opportunity (so WhatId != null and points to an Opp)
@@ -210,7 +210,7 @@ public class GenerateReceiptDetailsControllerTest {
         insert o;
         
         // Ensure at least one receipt exists for that Opportunity
-        Receipt__c r = new Receipt__c(Opportunity__c = o.Id);
+        Receipt__c r = new Receipt__c(Opportunity__c = o.Id, Token_Amount__c = true);
         insert r;
         
         // Task tied to that Opportunity
@@ -251,7 +251,161 @@ public class GenerateReceiptDetailsControllerTest {
         
         System.assertEquals(null, outNull, 'Should return null when WhatId is not an Opportunity or no receipts.');
     }
-    
-    
-    
+
+    // Each date key is sent alone so every else-if branch of the date handling runs
+    @isTest
+    static void testCreateReceiptAllDateTypes() {
+        Task task = [SELECT Id FROM Task WHERE Subject = 'Test Task' LIMIT 1];
+        List<String> dateKeys = new List<String>{
+            'fundTransferDate', 'ddDate', 'paidDate', 'challanDate', 'jvDate', 'fundDate'
+        };
+
+        Test.startTest();
+        for (String key : dateKeys) {
+            Map<String, Object> receiptData = new Map<String, Object>{
+                'opportunityId' => task.Id,
+                'modeOfPayment' => 'EFT',
+                'amount' => '1000.50',
+                key => '2024-03-24'
+            };
+            GenerateReceiptDetailsController.createReceipt(receiptData, null);
+        }
+        // Invalid date string -> date parse catch block
+        GenerateReceiptDetailsController.createReceipt(new Map<String, Object>{
+            'opportunityId' => task.Id,
+            'amount' => '100',
+            'chequeDate' => 'not-a-date'
+        }, null);
+        Test.stopTest();
+
+        System.assert([SELECT COUNT() FROM Receipt__c WHERE Token_Amount__c = true] > 0, 'Receipts should be created.');
+    }
+
+    @isTest
+    static void testCreateReceiptTaskNotOnOpportunity() {
+        Account acc = new Account(Name = 'Non Opp Account');
+        insert acc;
+        Task tOnAccount = new Task(Subject = 'On Account', WhatId = acc.Id, Status = 'Not Started');
+        insert tOnAccount;
+        Integer before = [SELECT COUNT() FROM Receipt__c];
+
+        Test.startTest();
+        GenerateReceiptDetailsController.createReceipt(new Map<String, Object>{
+            'opportunityId' => tOnAccount.Id,
+            'amount' => '100'
+        }, acc.Id);
+        Test.stopTest();
+
+        System.assertEquals(before, [SELECT COUNT() FROM Receipt__c], 'No receipt should be created when the task is not on an Opportunity.');
+    }
+
+    @isTest
+    static void testCreateReceiptInvalidPan() {
+        Task task = [SELECT Id FROM Task WHERE Subject = 'Test Task' LIMIT 1];
+        Boolean thrown = false;
+
+        Test.startTest();
+        try {
+            GenerateReceiptDetailsController.createReceipt(new Map<String, Object>{
+                'opportunityId' => task.Id,
+                'panNo' => 'INVALID',
+                'amount' => '100'
+            }, null);
+        } catch (AuraHandledException e) {
+            thrown = true;
+        }
+        Test.stopTest();
+
+        System.assert(thrown, 'An invalid PAN should throw an AuraHandledException.');
+    }
+
+    @isTest
+    static void testCreateReceiptInvalidAmount() {
+        Task task = [SELECT Id FROM Task WHERE Subject = 'Test Task' LIMIT 1];
+        Integer before = [SELECT COUNT() FROM Receipt__c];
+
+        Test.startTest();
+        // Non-numeric amount -> generic exception is caught and logged inside createReceipt
+        GenerateReceiptDetailsController.createReceipt(new Map<String, Object>{
+            'opportunityId' => task.Id,
+            'amount' => 'abc'
+        }, null);
+        Test.stopTest();
+
+        System.assertEquals(before, [SELECT COUNT() FROM Receipt__c], 'No receipt should be created for an invalid amount.');
+    }
+
+    @isTest
+    static void testCheckDuplicateFound() {
+        Opportunity opp = [SELECT Id FROM Opportunity LIMIT 1];
+        Task task = [SELECT Id FROM Task WHERE WhatId = :opp.Id LIMIT 1];
+
+        Test.startTest();
+        Boolean ddResult = GenerateReceiptDetailsController.checkDuplicate(task.Id, 'DD', 'SDFGHJ');
+        Boolean chequeResult = GenerateReceiptDetailsController.checkDuplicate(task.Id, 'Cheque', 'DFGJK');
+        Boolean blankResult = GenerateReceiptDetailsController.checkDuplicate(task.Id, 'DD', '');
+        Test.stopTest();
+
+        System.assertEquals(false, ddResult, 'Existing DD number should be flagged as duplicate.');
+        System.assertEquals(false, chequeResult, 'Existing Cheque number should be flagged as duplicate.');
+        System.assertEquals(true, blankResult, 'Blank number should not be treated as duplicate.');
+    }
+
+    @isTest
+    static void testGetAccountValuesWithApplicants() {
+        Opportunity opp = [SELECT Id, AccountId FROM Opportunity LIMIT 1];
+        Account coApplicant = new Account(Name = 'Co Applicant');
+        insert coApplicant;
+        insert new Applicant__c(Opportunity__c = opp.Id, Account__c = coApplicant.Id);
+        Task task = [SELECT Id FROM Task WHERE WhatId = :opp.Id LIMIT 1];
+
+        Test.startTest();
+        List<Account> accounts = GenerateReceiptDetailsController.getAccountValues(task.Id);
+        // Invalid Id -> exception path is caught inside the method
+        List<Account> invalid = GenerateReceiptDetailsController.getAccountValues('invalidId');
+        // Blank Id -> returns empty list
+        List<Account> blank = GenerateReceiptDetailsController.getAccountValues('');
+        Test.stopTest();
+
+        System.assertEquals(2, accounts.size(), 'Should return the Opportunity account and the applicant account.');
+        System.assertEquals(0, invalid.size(), 'Invalid Id should return an empty list.');
+        System.assertEquals(0, blank.size(), 'Blank Id should return an empty list.');
+    }
+
+    @isTest
+    static void testCloseCurrentTaskNoDuplicateFillTask() {
+        Opportunity opp = [SELECT Id FROM Opportunity LIMIT 1];
+        insert new Receipt__c(Opportunity__c = opp.Id, Token_Amount__c = true);
+        Task first = new Task(Subject = 'First', WhatId = opp.Id, Status = 'Not Started');
+        Task second = new Task(Subject = 'Second', WhatId = opp.Id, Status = 'Not Started');
+        insert new List<Task>{ first, second };
+
+        Test.startTest();
+        GenerateReceiptDetailsController.closeCurrentTask(first.Id);
+        GenerateReceiptDetailsController.closeCurrentTask(second.Id);
+        Test.stopTest();
+
+        System.assertEquals(1, [SELECT COUNT() FROM Task WHERE WhatId = :opp.Id AND Subject = 'Fill Applicant Details'],
+            'Fill Applicant Details should be created only once.');
+    }
+
+    @isTest
+    static void testCloseCurrentTaskWithoutTokenReceipt() {
+        Account a = new Account(Name = 'No Token');
+        insert a;
+        Opportunity o = new Opportunity(Name = 'No Token Opp', StageName = 'Prospecting', CloseDate = Date.today(), AccountId = a.Id);
+        insert o;
+        insert new Receipt__c(Opportunity__c = o.Id, Token_Amount__c = false);
+        Task t = new Task(Subject = 'No Token Task', WhatId = o.Id, Status = 'Not Started');
+        insert t;
+
+        Test.startTest();
+        GenerateReceiptDetailsController.closeCurrentTask(t.Id);
+        List<Receipt__c> out = GenerateReceiptDetailsController.fetchRelatedReceipts(t.Id);
+        Test.stopTest();
+
+        System.assertEquals(null, out, 'Non-token receipts should not be returned.');
+        System.assertEquals(0, [SELECT COUNT() FROM Task WHERE WhatId = :o.Id AND Subject = 'Fill Applicant Details'],
+            'No follow-up task without a Token Amount receipt.');
+    }
 }

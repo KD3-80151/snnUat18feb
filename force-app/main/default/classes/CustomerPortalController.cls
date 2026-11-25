@@ -136,41 +136,38 @@ public without sharing class CustomerPortalController {
 
     public class InvoiceWrapper{
         public List<Opportunity> oppList { get; set; }
+        /** No longer filled: the per-receipt TDS upload was removed from the portal (client, Nov 2026). Kept for compatibility. */
         public Map<String, Document__c> nameXreceipt { get; set; }
+        /** TDS Challans the customer uploaded from the portal, per Opportunity Id, newest first. */
+        public Map<Id, List<Sub_Document__c>> oppIdXTdsChallans { get; set; }
     }
+
+    /** Only these receipts are shown to the customer on the portal's Receipts tab (credit/debit notes are not). */
+    public static final String RECEIPT_TYPE_TAX_INVOICE = 'Tax Invoice';
 
     /*Vamsi*/
     @RemoteAction
     public static InvoiceWrapper getInvoiceDetails(String hashCode) {
         List<Opportunity> oppList = new List<Opportunity>();
-        Map<String,Document__c> nameXreceipt = new Map<String,Document__c>();
         InvoiceWrapper wrapper = new InvoiceWrapper();
+        wrapper.oppList = oppList;
+        wrapper.nameXreceipt = new Map<String, Document__c>();
+        wrapper.oppIdXTdsChallans = new Map<Id, List<Sub_Document__c>>();
         try {
-            if (hashCode != null) {
+            if (String.isNotBlank(hashCode)) {
                 // Query the Contact based on the hash code
-                Contact con = [SELECT Id, AccountId, Login_Hash_Code__c FROM Contact WHERE Login_Hash_Code__c = :hashCode LIMIT 1];
-                if (con != null && con.AccountId != null) {
-                    // Find the Opportunity associated with the Account
-                    oppList = [SELECT Id, Name, (SELECT Id, Name, CreatedDate, Total_Amount__c, Demand_Letter__r.Payment_Schedule__r.Name, Approval_Status__c, TDS_Approval_Status__c FROM Receipts__r) FROM Opportunity WHERE AccountId = :con.AccountId];
-                    Set<String> receiptNames = new Set<String>();
-                    if(!oppList.isEmpty()){
-                        wrapper.oppList = oppList;
-                        for(Opportunity opp : oppList){
-                            if(opp.Receipts__r != null && !opp.Receipts__r.isEmpty()){
-                                for(Receipt__c receipt : opp.Receipts__r){
-                                    receiptNames.add(receipt.Name);
-                                }
-                            }
-                        }
-                        List<Document__c> relatedDocs = [SELECT Id, Name, Opportunity__c, (SELECT Id, Name, File_URL__c FROM Sub_Documents__r ORDER BY CreatedDate DESC LIMIT 1) FROM Document__c WHERE Name IN :receiptNames];
-                        if(relatedDocs != null && !relatedDocs.isEmpty()){
-                            for(Document__c doc : relatedDocs){
-                                if(!nameXreceipt.containsKey(doc.Name)){
-                                    nameXreceipt.put(doc.Name, doc);
-                                }
-                            }
-                        }
-                        wrapper.nameXreceipt = nameXreceipt;
+                List<Contact> cons = [SELECT Id, AccountId, Login_Hash_Code__c FROM Contact WHERE Login_Hash_Code__c = :hashCode LIMIT 1];
+                if (!cons.isEmpty() && cons[0].AccountId != null) {
+                    // The customer's bookings with their Tax Invoice receipts (receipt number = Receipt_Number__c)
+                    oppList = [SELECT Id, Name,
+                                      (SELECT Id, Name, Receipt_Number__c, CreatedDate, Total_Amount__c, Demand_Letter__r.Payment_Schedule__r.Name, Approval_Status__c
+                                       FROM Receipts__r
+                                       WHERE Type__c = :RECEIPT_TYPE_TAX_INVOICE
+                                       ORDER BY CreatedDate ASC)
+                               FROM Opportunity WHERE AccountId = :cons[0].AccountId];
+                    wrapper.oppList = oppList;
+                    if (!oppList.isEmpty()) {
+                        wrapper.oppIdXTdsChallans = tdsChallansByOpportunity(new Map<Id, Opportunity>(oppList).keySet());
                     }
                 }
             }
@@ -181,12 +178,247 @@ public without sharing class CustomerPortalController {
         return wrapper;
     }
 
+    /** Files in each booking's "TDS Uploaded Docs" folder, newest first. */
+    @TestVisible
+    private static Map<Id, List<Sub_Document__c>> tdsChallansByOpportunity(Set<Id> oppIds) {
+        Map<Id, List<Sub_Document__c>> result = new Map<Id, List<Sub_Document__c>>();
+        for (Sub_Document__c file : [SELECT Id, Name, CreatedDate, Document__r.Opportunity__c
+                                     FROM Sub_Document__c
+                                     WHERE Document__r.Opportunity__c IN :oppIds AND Document__r.Name = :TDS_CHALLAN_FOLDER
+                                     ORDER BY CreatedDate DESC]) {
+            Id oppId = file.Document__r.Opportunity__c;
+            if (!result.containsKey(oppId)) {
+                result.put(oppId, new List<Sub_Document__c>());
+            }
+            result.get(oppId).add(file);
+        }
+        return result;
+    }
+
+    /* ---------- TDS Challan upload from the portal (client, Nov 2026) ---------- */
+
+    /** Drive folder (and Document__c record) per booking that holds the TDS Challans customers upload. */
+    public static final String TDS_CHALLAN_FOLDER = 'TDS Uploaded Docs';
+    /** Largest file accepted, in bytes (the page checks the same limit before sending). */
+    public static final Integer TDS_CHALLAN_MAX_BYTES = 3 * 1024 * 1024;
+    /** A file with the same name for the same booking within this many minutes is treated as a repeat click / retry. */
+    @TestVisible
+    private static final Integer TDS_CHALLAN_REPEAT_MINUTES = 15;
+    private static final Set<String> TDS_CHALLAN_EXTENSIONS = new Set<String>{ 'pdf', 'jpg', 'jpeg', 'png' };
+    private static final String TDS_CHALLAN_UPLOAD_FAILED = 'The file could not be uploaded. Please try again.';
+    /** Owner-notification events published in this transaction (used by tests). */
+    @TestVisible
+    private static Integer tdsChallanEventsPublished = 0;
+
+    public class TdsChallanResult {
+        public Boolean success { get; set; }
+        public Boolean alreadyUploaded { get; set; }
+        public String message { get; set; }
+        public String fileName { get; set; }
+        TdsChallanResult() {
+            success = false;
+            alreadyUploaded = false;
+        }
+    }
+
+    /**
+     * Stores a TDS Challan uploaded by the customer in the booking's "TDS Uploaded Docs" folder
+     * (Google Drive + Document__c/Sub_Document__c) and notifies the booking owner to verify it and
+     * create the TDS receipt. The notification goes through a platform event because the portal runs as
+     * the site guest user.
+     */
+    @RemoteAction
+    public static TdsChallanResult uploadTdsChallan(String hashCode, String opportunityId, String fileName, String fileData, String fileType) {
+        TdsChallanResult result = new TdsChallanResult();
+        try {
+            if (String.isBlank(hashCode)) {
+                result.message = 'Your session has expired. Please log in again.';
+                return result;
+            }
+            if (String.isBlank(fileName) || String.isBlank(fileData)) {
+                result.message = 'Please select the TDS Challan file to upload.';
+                return result;
+            }
+            String extension = fileName.contains('.') ? fileName.substringAfterLast('.').toLowerCase() : '';
+            if (!TDS_CHALLAN_EXTENSIONS.contains(extension)) {
+                result.message = 'Please upload the TDS Challan as a PDF, JPG or PNG file.';
+                return result;
+            }
+
+            List<Contact> cons = [SELECT Id, AccountId FROM Contact WHERE Login_Hash_Code__c = :hashCode AND AccountId != null LIMIT 1];
+            if (cons.isEmpty()) {
+                result.message = 'Your session has expired. Please log in again.';
+                return result;
+            }
+            Id oppId;
+            try {
+                oppId = Id.valueOf(opportunityId);
+            } catch (Exception badId) {
+                oppId = null;
+            }
+            // The booking must belong to the logged-in customer.
+            List<Opportunity> opps = oppId == null ? new List<Opportunity>() :
+                [SELECT Id, Name, Document_Id__c FROM Opportunity WHERE Id = :oppId AND AccountId = :cons[0].AccountId LIMIT 1];
+            if (opps.isEmpty()) {
+                result.message = 'This booking could not be found. Please refresh the page and try again.';
+                return result;
+            }
+            Opportunity opp = opps[0];
+            String storedName = fileName.trim().abbreviate(80);   // Sub_Document__c Name holds 80 characters
+            result.fileName = storedName;
+
+            // A double click or retry must not store the same challan twice (or notify twice).
+            Datetime repeatSince = System.now().addMinutes(-TDS_CHALLAN_REPEAT_MINUTES);
+            List<Sub_Document__c> recent = [SELECT Id FROM Sub_Document__c
+                                            WHERE Name = :storedName AND Document__r.Opportunity__c = :opp.Id
+                                            AND Document__r.Name = :TDS_CHALLAN_FOLDER AND CreatedDate >= :repeatSince LIMIT 1];
+            if (!recent.isEmpty()) {
+                result.success = true;
+                result.alreadyUploaded = true;
+                result.message = 'This TDS Challan has already been uploaded. Our team will verify it and create your TDS receipt.';
+                return result;
+            }
+
+            Blob fileBlob = EncodingUtil.base64Decode(fileData);
+            if (fileBlob.size() == 0) {
+                result.message = 'The selected file is empty. Please choose another file.';
+                return result;
+            }
+            if (fileBlob.size() > TDS_CHALLAN_MAX_BYTES) {
+                result.message = 'The file is too large. Please upload a file of up to 3 MB.';
+                return result;
+            }
+
+            List<Document__c> folders = [SELECT Id, Document_Id__c FROM Document__c
+                                         WHERE Opportunity__c = :opp.Id AND Name = :TDS_CHALLAN_FOLDER
+                                         ORDER BY CreatedDate ASC LIMIT 1];
+            Document__c folder = folders.isEmpty() ? null : folders[0];
+            String parentFolderId = String.isNotBlank(opp.Document_Id__c) ? opp.Document_Id__c : rootDriveFolderId(opp.Id);
+
+            String accessToken = GoogleDriveAPI.getAccessToken();
+            if (String.isBlank(accessToken)) {
+                result.message = TDS_CHALLAN_UPLOAD_FAILED;
+                return result;
+            }
+
+            // All callouts happen before any DML (Salesforce does not allow a callout after uncommitted DML).
+            String folderId = folder != null ? folder.Document_Id__c : null;
+            if (String.isBlank(folderId)) {
+                folderId = createDriveFolder(TDS_CHALLAN_FOLDER, parentFolderId, accessToken);
+            }
+            if (String.isBlank(folderId)) {
+                result.message = TDS_CHALLAN_UPLOAD_FAILED;
+                return result;
+            }
+            String driveFileId = uploadFileToDrive(folderId, storedName, fileType, fileBlob, accessToken);
+            if (String.isBlank(driveFileId)) {
+                result.message = TDS_CHALLAN_UPLOAD_FAILED;
+                return result;
+            }
+
+            if (folder == null) {
+                folder = new Document__c(Name = TDS_CHALLAN_FOLDER, Opportunity__c = opp.Id, Status__c = 'Uploaded', Document_Id__c = folderId);
+                insert folder;
+            } else if (folder.Document_Id__c != folderId) {
+                folder.Document_Id__c = folderId;
+                folder.Status__c = 'Uploaded';
+                update folder;
+            }
+
+            Sub_Document__c file = new Sub_Document__c(
+                Name           = storedName,
+                File_URL__c    = 'https://drive.google.com/file/d/' + driveFileId + '/preview?usp=drivesdk',
+                Document__c    = folder.Id,
+                Description__c = 'TDS Challan uploaded by the customer from the Customer Portal on '
+                                 + System.now().format('dd-MM-yyyy hh:mm a', 'Asia/Kolkata') + '.'
+            );
+            insert file;
+
+            // Delivered after this transaction commits; the subscriber notifies the booking owner.
+            Database.SaveResult published = EventBus.publish(new TDS_Challan_Upload__e(
+                Opportunity_Id__c  = opp.Id,
+                Sub_Document_Id__c = file.Id,
+                File_Name__c       = storedName
+            ));
+            if (published.isSuccess()) {
+                tdsChallanEventsPublished++;
+            } else {
+                System.debug(LoggingLevel.ERROR, 'TDS Challan notification event not published: ' + published.getErrors());
+            }
+
+            result.success = true;
+            result.message = 'Your TDS Challan has been uploaded. Our team will verify it and create your TDS receipt.';
+            return result;
+        } catch (Exception e) {
+            System.debug('TDS Challan upload failed: ' + e.getMessage() + ' at line ' + e.getLineNumber());
+            result.success = false;
+            result.alreadyUploaded = false;
+            result.message = TDS_CHALLAN_UPLOAD_FAILED;
+            return result;
+        }
+    }
+
+    /** The booking's "Root Folder" in Drive, used when the Opportunity itself has no folder id. */
+    private static String rootDriveFolderId(Id oppId) {
+        for (Document__c d : [SELECT Document_Id__c FROM Document__c
+                              WHERE Opportunity__c = :oppId AND Name = 'Root Folder' AND Document_Id__c != null
+                              ORDER BY CreatedDate ASC LIMIT 1]) {
+            return d.Document_Id__c;
+        }
+        return null;
+    }
+
+    /** Uploads one file to a Drive folder (callouts only, no DML) and returns the Drive file id, or null. */
+    @TestVisible
+    private static String uploadFileToDrive(String folderId, String fileName, String fileType, Blob fileBlob, String accessToken) {
+        String mimeType = String.isNotBlank(fileType) ? fileType : 'application/pdf';
+        String metadata = JSON.serialize(new Map<String, Object>{ 'name' => fileName, 'mimeType' => mimeType, 'parents' => new List<String>{ folderId } });
+        HttpRequest init = new HttpRequest();
+        init.setMethod('POST');
+        init.setEndpoint('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable');
+        init.setHeader('Authorization', 'Bearer ' + accessToken);
+        init.setHeader('Content-Type', 'application/json; charset=UTF-8');
+        init.setHeader('Content-Length', String.valueOf(metadata.length()));
+        init.setBody(metadata);
+        HttpResponse initRes = new Http().send(init);
+        String location = initRes.getHeader('Location');
+        if (String.isBlank(location)) {
+            System.debug('Drive upload session not created ===> ' + initRes.getStatusCode() + ' ' + initRes.getBody());
+            return null;
+        }
+
+        Integer size = fileBlob.size();
+        HttpRequest put = new HttpRequest();
+        put.setMethod('PUT');
+        put.setEndpoint(location);
+        put.setHeader('Content-Type', mimeType);
+        put.setHeader('Content-Length', String.valueOf(size));
+        put.setHeader('Content-Range', 'bytes 0-' + (size - 1) + '/' + size);
+        put.setBodyAsBlob(fileBlob);
+        put.setTimeout(120000);
+        HttpResponse res = new Http().send(put);
+        if (res.getStatusCode() == 200 || res.getStatusCode() == 201) {
+            Map<String, Object> body = (Map<String, Object>) JSON.deserializeUntyped(res.getBody());
+            return body != null ? (String) body.get('id') : null;
+        }
+        System.debug('Drive upload failed ===> ' + res.getStatusCode() + ' ' + res.getBody());
+        return null;
+    }
+
     public class wrapperForResponse{
         public Boolean is308Response{get;set;}
         public String locationValue{get;set;}
         public String rangeValue{get;set;}
         public String subDocUrl{get;set;}
+        /** Set when the upload is refused (e.g. TDS document already submitted); shown to the customer. */
+        public String errorMessage{get;set;}
+        /** True when the same file was already uploaded for this receipt and no new copy was made. */
+        public Boolean alreadyUploaded{get;set;}
     }
+
+    /** Documents uploaded by customers from the portal are kept in their own folder per Opportunity. */
+    public static final String PORTAL_UPLOAD_FOLDER = 'Customer Portal Uploads';
+    public static final String RECEIPTS_FOLDER = 'Receipts';
 
     @RemoteAction
     public static wrapperForResponse uploadDocuments(String receiptId, String fileName, String fileData, String totalFileSize, String documentName, String fileType){
@@ -194,127 +426,135 @@ public without sharing class CustomerPortalController {
             System.debug('totalFileSize ===> ' + totalFileSize);
             system.debug('documentName ===> ' + documentName);
             system.debug('receiptId ===> ' + receiptId);
-            Id oppId;
+            if(String.isBlank(receiptId) || String.isBlank(fileName) || fileData == null || totalFileSize == null){
+                return null;
+            }
 
-            if(receiptId != null){
-                Receipt__c receiptRec = [SELECT Id, Opportunity__c FROM Receipt__c WHERE Id = :receiptId LIMIT 1];
-                oppId = receiptRec.Opportunity__c;
-            }
+            Receipt__c receiptRec = [SELECT Id, Opportunity__c, Opportunity__r.Document_Id__c, TDS_Approval_Status__c FROM Receipt__c WHERE Id = :receiptId LIMIT 1];
+            Id oppId = receiptRec.Opportunity__c;
             system.debug('oppId ===> ' + oppId);
-            
-            if(fileData != null && totalFileSize != null){
-                Blob blobData = EncodingUtil.base64Decode(fileData);
-                Integer totalFileSizeBlob = blobData.size();
-                String contentRange = 'bytes 0-' + (totalFileSizeBlob-1) + '/' + (totalFileSizeBlob);
-                System.debug('contentRange ===> ' + contentRange);
-                List<Document__c> docList = [SELECT Id,Name,Document_Id__c,Account__c,Account__r.Document_Id__c from Document__c where Name =: 'Receipts' and Opportunity__c = :oppId LIMIT 1];
-                system.debug('docList ===> ' + docList);
-                if(!docList.isEmpty()){
-                    // GoogleDriveAPI.wrapperForResponse result = GoogleDriveAPI.uploadFileToGoogleDrive(fileName,'application/pdf',docList[0].Document_Id__c,fileData,contentRange,docList[0].Id);
-                    try{
-                        // String fileType = 'application/pdf';
-                        String folderId = docList[0].Document_Id__c;
-                        String docId = docList[0].Id;
-                        system.debug('fileName ===> ' + fileName);
-                        system.debug('fileType ===> ' + fileType);
-                        system.debug('folderId ===> ' + folderId);
-                        System.debug('fileData length ===> ' + fileData.length());
-                        String locationValue = '';
-                        String subDocUrl = '';
-                        
-                        if(fileName != null && fileData != null){
-                            List<String> folderList = (folderId != null || folderId != '') ? new List<String>{folderId} : new List<String>();
-                            system.debug('folderList ===> ' + folderList);
-                            Map<String,Object> jsonData = new Map<String,Object>();
-                            jsonData.put('name',fileName);
-                            jsonData.put('mimeType',fileType);
-                            if(!folderList.isEmpty()){
-                                jsonData.put('parents', folderList);
-                            }
-                            String jsonString = JSON.serialize(jsonData);
-                            System.debug('jsonString length ===> ' + jsonString.length());
-                            Integer jsonStringLength = jsonString.length();
-                            
-                            String accessToken = GoogleDriveAPI.getAccessToken();
-                            String endpoint = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable';
-                            
-                            Http http = new Http();
-                            
-                            if(accessToken != null){
-                                HttpRequest req = new HttpRequest();
-                                req.setMethod('POST');
-                                req.setEndpoint(endpoint);
-                                req.setHeader('Authorization', 'Bearer ' + accessToken);
-                                req.setHeader('Content-Type', 'application/json; charset=UTF-8');
-                                req.setHeader('Content-Length', String.valueOf(jsonStringLength));
-                                req.setBody(jsonString);
-                                
-                                HttpResponse res = http.send(req);
-                                locationValue = res.getHeader('Location') != null ? res.getHeader('Location') : null;
-                                System.debug('location ===> ' + locationValue);
-                                system.debug('contentRange ==> ' + contentRange);
-                                
-                                if(locationValue != null){
-                                    Blob fileBlob = EncodingUtil.base64Decode(fileData);
-                                    system.debug('fileBlob ===> ' + fileBlob);
-                                    Integer fileDataStringLength = fileBlob.size();
-                                    system.debug('fileDataStringLength ===> ' + fileDataStringLength);
-                                    HttpRequest request = new HttpRequest();
-                                    request.setMethod('PUT');
-                                    request.setEndpoint(locationValue);
-                                    request.setHeader('Content-Type', 'application/pdf');
-                                    request.setHeader('Content-Length', String.valueOf(fileDataStringLength));
-                                    request.setHeader('Content-Range', contentRange);
-                                    //request.setBody(fileData);
-                                    request.setBodyAsBlob(fileBlob);
-                                    
-                                    system.debug('request ==> ' + request);
-                                    
-                                    HttpResponse response = http.send(request);
-                                    System.debug('response ===> '+ response);
-                                    System.debug('response code ===> '+ response.getBody());
-                                    
-                                    String range = response.getHeader('Range') != null ? response.getHeader('Range') : null;
-                                    System.debug('range ===> ' + range);
-                                    Boolean is308Response = response.getStatusCode() == 308 ? true: false;
-                                    
-                                    if(response.getStatusCode() == 200 || response.getStatusCode() == 201){
-                                        Map<String, Object> responseBody = (Map<String, Object>) JSON.deserializeUntyped(response.getBody());
-                                        System.debug('responseBody ===> ' + responseBody);
-                                        if(responseBody != null){
-                                            String fileId = responseBody.get('id') != null ? (String) responseBody.get('id') : null;
-                                            System.debug('fileId ===> ' + fileId);
-                                            String fileUrl = 'https://drive.google.com/file/d/' + fileId + '/preview?usp=drivesdk';
-                                            Sub_Document__c file = new Sub_Document__c();
-                                            file.Name        = fileName;
-                                            file.File_URL__c = fileUrl;
-                                            file.Document__c = docId;
-                                            insert file;
-                                            System.debug('file ===> ' + file);
-                                            subDocUrl = file.File_URL__c;
-                                        }
-                                    }
-                                    
-                                    wrapperForResponse wrp = new wrapperForResponse();
-                                    wrp.locationValue = locationValue;
-                                    wrp.is308Response = is308Response;
-                                    wrp.rangeValue = range;
-                                    wrp.subDocUrl = subDocUrl;
-                                    system.debug('wrp ===> ' + wrp);
-                                    
-                                    return wrp;
-                                }
-                            }
-                        }
-                        return null;
-                    }catch(Exception e){
-                        system.debug('Error ==> ' + e.getMessage());
-                        system.debug('Error in line ==> ' + e.getLineNumber());
-                        return null;
-                    }
-                }
+
+            // 1) A TDS document that is already submitted / approved must not be uploaded again.
+            if(receiptRec.TDS_Approval_Status__c == 'Sent' || receiptRec.TDS_Approval_Status__c == 'Approved'){
+                wrapperForResponse refused = new wrapperForResponse();
+                refused.errorMessage = receiptRec.TDS_Approval_Status__c == 'Sent'
+                    ? 'Your TDS document for this receipt has already been submitted and is pending approval.'
+                    : 'Your TDS document for this receipt has already been approved.';
+                return refused;
             }
-            return null;
+
+            // 2) Idempotent: the same file for the same Opportunity is never stored twice
+            //    (previously every retry after a failure created another copy in Drive and Salesforce).
+            List<Sub_Document__c> existing = [SELECT Id, File_URL__c FROM Sub_Document__c
+                                              WHERE Name = :fileName AND Document__r.Opportunity__c = :oppId
+                                              AND Document__r.Name IN (:PORTAL_UPLOAD_FOLDER, :RECEIPTS_FOLDER)
+                                              ORDER BY CreatedDate DESC LIMIT 1];
+            if(!existing.isEmpty()){
+                wrapperForResponse same = new wrapperForResponse();
+                same.subDocUrl = existing[0].File_URL__c;
+                same.alreadyUploaded = true;
+                same.is308Response = false;
+                return same;
+            }
+
+            // 3) Target folder: "Customer Portal Uploads" (created on first use), falling back to "Receipts".
+            List<Document__c> folders = [SELECT Id, Name, Document_Id__c FROM Document__c
+                                         WHERE Opportunity__c = :oppId AND Name IN (:PORTAL_UPLOAD_FOLDER, :RECEIPTS_FOLDER)
+                                         ORDER BY CreatedDate ASC];
+            Document__c portalFolder;
+            Document__c receiptsFolder;
+            for(Document__c d : folders){
+                if(d.Name == PORTAL_UPLOAD_FOLDER && portalFolder == null) portalFolder = d;
+                if(d.Name == RECEIPTS_FOLDER && receiptsFolder == null) receiptsFolder = d;
+            }
+
+            String accessToken = GoogleDriveAPI.getAccessToken();
+            if(accessToken == null){
+                return null;
+            }
+
+            // All callouts happen before any DML (Salesforce does not allow a callout after uncommitted DML).
+            String folderId = (portalFolder != null) ? portalFolder.Document_Id__c : null;
+            Boolean createdPortalFolder = false;
+            if(String.isBlank(folderId)){
+                String parentFolderId = String.isNotBlank(receiptRec.Opportunity__r.Document_Id__c) ? receiptRec.Opportunity__r.Document_Id__c : null;
+                folderId = createDriveFolder(PORTAL_UPLOAD_FOLDER, parentFolderId, accessToken);
+                createdPortalFolder = String.isNotBlank(folderId);
+            }
+            if(String.isBlank(folderId) && receiptsFolder != null){
+                folderId = receiptsFolder.Document_Id__c;   // fallback: previous behaviour
+            }
+            if(String.isBlank(folderId)){
+                return null;
+            }
+
+            Blob fileBlob = EncodingUtil.base64Decode(fileData);
+            Integer totalFileSizeBlob = fileBlob.size();
+            String contentRange = 'bytes 0-' + (totalFileSizeBlob-1) + '/' + (totalFileSizeBlob);
+            Http http = new Http();
+
+            Map<String,Object> jsonData = new Map<String,Object>{ 'name' => fileName, 'mimeType' => fileType, 'parents' => new List<String>{ folderId } };
+            String jsonString = JSON.serialize(jsonData);
+            HttpRequest req = new HttpRequest();
+            req.setMethod('POST');
+            req.setEndpoint('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable');
+            req.setHeader('Authorization', 'Bearer ' + accessToken);
+            req.setHeader('Content-Type', 'application/json; charset=UTF-8');
+            req.setHeader('Content-Length', String.valueOf(jsonString.length()));
+            req.setBody(jsonString);
+            HttpResponse res = http.send(req);
+            String locationValue = res.getHeader('Location');
+            System.debug('location ===> ' + locationValue);
+            if(locationValue == null){
+                return null;
+            }
+
+            HttpRequest request = new HttpRequest();
+            request.setMethod('PUT');
+            request.setEndpoint(locationValue);
+            request.setHeader('Content-Type', String.isNotBlank(fileType) ? fileType : 'application/pdf');
+            request.setHeader('Content-Length', String.valueOf(totalFileSizeBlob));
+            request.setHeader('Content-Range', contentRange);
+            request.setBodyAsBlob(fileBlob);
+            HttpResponse response = http.send(request);
+            System.debug('response code ===> '+ response.getStatusCode() + ' ' + response.getBody());
+
+            wrapperForResponse wrp = new wrapperForResponse();
+            wrp.locationValue = locationValue;
+            wrp.is308Response = response.getStatusCode() == 308;
+            wrp.rangeValue = response.getHeader('Range');
+            wrp.alreadyUploaded = false;
+
+            if(response.getStatusCode() == 200 || response.getStatusCode() == 201){
+                Map<String, Object> responseBody = (Map<String, Object>) JSON.deserializeUntyped(response.getBody());
+                String fileId = (responseBody != null && responseBody.get('id') != null) ? (String) responseBody.get('id') : null;
+
+                // DML only after the callouts
+                Id targetFolderRecordId;
+                if(createdPortalFolder){
+                    if(portalFolder == null){
+                        portalFolder = new Document__c(Name = PORTAL_UPLOAD_FOLDER, Opportunity__c = oppId, Status__c = 'Uploaded', Document_Id__c = folderId);
+                        insert portalFolder;
+                    }else{
+                        portalFolder.Document_Id__c = folderId;
+                        portalFolder.Status__c = 'Uploaded';
+                        update portalFolder;
+                    }
+                    targetFolderRecordId = portalFolder.Id;
+                }else{
+                    targetFolderRecordId = (portalFolder != null && portalFolder.Document_Id__c == folderId) ? portalFolder.Id : receiptsFolder.Id;
+                }
+
+                Sub_Document__c file = new Sub_Document__c(
+                    Name        = fileName,
+                    File_URL__c = 'https://drive.google.com/file/d/' + fileId + '/preview?usp=drivesdk',
+                    Document__c = targetFolderRecordId
+                );
+                insert file;
+                wrp.subDocUrl = file.File_URL__c;
+            }
+            system.debug('wrp ===> ' + wrp);
+            return wrp;
         }catch(Exception e){
             system.debug('Error ==> ' + e.getMessage());
             system.debug('Error in line ==> ' + e.getLineNumber());
@@ -322,21 +562,56 @@ public without sharing class CustomerPortalController {
         }
     }
 
+    /** Creates a Google Drive folder (callout only, no DML) and returns its id, or null. */
+    @TestVisible
+    private static String createDriveFolder(String folderName, String parentFolderId, String accessToken){
+        try{
+            Map<String, Object> body = new Map<String, Object>{ 'name' => folderName, 'mimeType' => 'application/vnd.google-apps.folder' };
+            if(String.isNotBlank(parentFolderId)){
+                body.put('parents', new List<String>{ parentFolderId });
+            }
+            HttpRequest req = new HttpRequest();
+            req.setMethod('POST');
+            req.setEndpoint('https://www.googleapis.com/drive/v3/files?fields=id');
+            req.setHeader('Authorization', 'Bearer ' + accessToken);
+            req.setHeader('Content-Type', 'application/json; charset=UTF-8');
+            req.setBody(JSON.serialize(body));
+            HttpResponse res = new Http().send(req);
+            if(res.getStatusCode() == 200 || res.getStatusCode() == 201){
+                Map<String, Object> parsed = (Map<String, Object>) JSON.deserializeUntyped(res.getBody());
+                return parsed != null ? (String) parsed.get('id') : null;
+            }
+            System.debug('Folder creation failed ===> ' + res.getStatusCode() + ' ' + res.getBody());
+        }catch(Exception e){
+            System.debug('Folder creation error ===> ' + e.getMessage());
+        }
+        return null;
+    }
+
     @RemoteAction
     public static String submitTDSApproval(String receiptId){
-        Approval.ProcessSubmitRequest req = new Approval.ProcessSubmitRequest();
-        // req.setComments('Submitting new Receipt document for approval.');
-        req.setObjectId(receiptId);
-        String submitter = System.label.Guest_User_approval_submitter; // Id of the user that will fire the approval on behalf of the guest user. 
-        req.setProcessDefinitionNameOrId('TDS_Document_Approval');
-        req.setSubmitterId(submitter);
-        Approval.ProcessResult result = Approval.process(req);
-        if (result.isSuccess()) {
-            System.debug('Approval request submitted successfully.');
-            return 'Approval request submitted successfully for Receipt ID: ' + receiptId;
-        } else {
+        try{
+            // A receipt already waiting for approval is not submitted again.
+            List<ProcessInstance> pending = [SELECT Id FROM ProcessInstance WHERE TargetObjectId = :receiptId AND Status = 'Pending' LIMIT 1];
+            if(!pending.isEmpty()){
+                return 'Approval request already submitted successfully for Receipt ID: ' + receiptId;
+            }
+            Approval.ProcessSubmitRequest req = new Approval.ProcessSubmitRequest();
+            req.setObjectId(receiptId);
+            String submitter = System.label.Guest_User_approval_submitter; // Id of the user that will fire the approval on behalf of the guest user. 
+            req.setProcessDefinitionNameOrId('TDS_Document_Approval');
+            req.setSubmitterId(submitter);
+            Approval.ProcessResult result = Approval.process(req);
+            if (result.isSuccess()) {
+                System.debug('Approval request submitted successfully.');
+                return 'Approval request submitted successfully for Receipt ID: ' + receiptId;
+            }
             System.debug('Approval request submission failed.');
             return 'Approval request submission failed for Receipt ID: ' + receiptId;
+        }catch(Exception e){
+            // Previously this surfaced as a silent JS failure, so customers kept re-uploading the same file.
+            System.debug('Approval request submission error: ' + e.getMessage());
+            return 'Approval request submission failed for Receipt ID: ' + receiptId + '. ' + e.getMessage();
         }
     }
 
@@ -529,8 +804,22 @@ public without sharing class CustomerPortalController {
 
     public class ProjectDocumentWrapper{
         public List<Project__c> projectList { get; set; }
-        public Map<String, List<Document__c>> projectXDocuments { get; set; }
+        public Map<String, List<ProjectDocGroup>> projectXDocuments { get; set; }
     }
+
+    /** One accordion section in the portal: a folder (Document__c) or the files attached directly to the Project. */
+    public class ProjectDocGroup {
+        public String Id { get; set; }
+        public String Name { get; set; }
+        public List<Sub_Document__c> files { get; set; }
+        public ProjectDocGroup(String id, String name, List<Sub_Document__c> files) {
+            this.Id = id;
+            this.Name = name;
+            this.files = files != null ? files : new List<Sub_Document__c>();
+        }
+    }
+
+    public static final String PROJECT_FILES_GROUP = 'Project Documents';
 
     @RemoteAction
     public static ProjectDocumentWrapper getProjectDocuments(String loginHashCode) {
@@ -540,15 +829,27 @@ public without sharing class CustomerPortalController {
         ProjectDocumentWrapper projectDocWrapper = new ProjectDocumentWrapper();
         try{
             List<Project__c> projectList = [SELECT Id, Name FROM Project__c];
-            Map<String, List<Document__c>> projectXDocuments = new Map<String, List<Document__c>>();
+            Map<String, List<ProjectDocGroup>> projectXDocuments = new Map<String, List<ProjectDocGroup>>();
             if(!projectList.isEmpty()){
                 for(Project__c projectRecord : projectList){
-                    projectXDocuments.put(projectRecord.Id, new List<Document__c>());
+                    projectXDocuments.put(projectRecord.Id, new List<ProjectDocGroup>());
+                }
+                // Files uploaded from the Project record ("Upload Files") are linked directly to the Project,
+                // not to a Document__c folder, so they never appeared in the portal before.
+                Map<Id, List<Sub_Document__c>> directFiles = new Map<Id, List<Sub_Document__c>>();
+                for(Sub_Document__c f : [SELECT Id, Name, File_URL__c, Project__c FROM Sub_Document__c
+                                         WHERE Project__c IN :projectXDocuments.keySet() AND Document__c = null AND File_URL__c != null
+                                         ORDER BY CreatedDate DESC]){
+                    if(!directFiles.containsKey(f.Project__c)) directFiles.put(f.Project__c, new List<Sub_Document__c>());
+                    directFiles.get(f.Project__c).add(f);
+                }
+                for(Id projectId : directFiles.keySet()){
+                    projectXDocuments.get(projectId).add(new ProjectDocGroup(null, PROJECT_FILES_GROUP, directFiles.get(projectId)));
                 }
                 List<Document__c> allDocuments = [SELECT Id, Name, Project__c, (SELECT Id, Name, File_URL__c FROM Sub_Documents__r ORDER BY CreatedDate DESC) FROM Document__c WHERE Project__c IN :projectXDocuments.keySet()];
                 if(!allDocuments.isEmpty()){
                     for(Document__c doc : allDocuments){
-                        projectXDocuments.get(doc.Project__c).add(doc);
+                        projectXDocuments.get(doc.Project__c).add(new ProjectDocGroup(doc.Id, doc.Name, doc.Sub_Documents__r));
                     }
                 }
             }
@@ -592,8 +893,6 @@ public without sharing class CustomerPortalController {
             return 'Error: '+e.getMessage();
         }
     }
-
-
 
     public class custDocWrapper {
         public List<Opportunity> oppList { get; set; }

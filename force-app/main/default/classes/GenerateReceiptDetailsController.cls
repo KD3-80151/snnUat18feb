@@ -12,20 +12,24 @@ public without sharing class GenerateReceiptDetailsController {
                     task[0].Status = 'Completed';
                     update task[0];
 
-                    List<Receipt__c> receipts = [SELECT Id,Opportunity__c,Opportunity__r.OwnerId FROM Receipt__c WHERE Opportunity__c = :task[0].WhatId];
+                    List<Receipt__c> receipts = [SELECT Id,Opportunity__c,Opportunity__r.OwnerId FROM Receipt__c WHERE Opportunity__c = :task[0].WhatId AND Token_Amount__c = true];
                     if(!receipts.isEmpty()){
                         Opportunity opp = new Opportunity();
                         opp.Id = task[0].WhatId;
                         opp.StageName = 'Booking Data Entry';
                         update opp;
 
-                        Task tsk = new Task();
-                        tsk.Subject = 'Fill Applicant Details';
-                        tsk.OwnerId = receipts[0].Opportunity__r.OwnerId;
-                        tsk.Priority = 'High';
-                        tsk.WhatId = task[0].WhatId;
-                        tsk.ActivityDate = System.Today() + 3;
-                        insert tsk;
+                        // Avoid a duplicate if the receipt flow already created this task
+                        Integer openFillTasks = [SELECT COUNT() FROM Task WHERE WhatId = :task[0].WhatId AND Subject = 'Fill Applicant Details' AND IsClosed = false];
+                        if(openFillTasks == 0){
+                            Task tsk = new Task();
+                            tsk.Subject = 'Fill Applicant Details';
+                            tsk.OwnerId = receipts[0].Opportunity__r.OwnerId;
+                            tsk.Priority = 'High';
+                            tsk.WhatId = task[0].WhatId;
+                            tsk.ActivityDate = System.Today() + 3;
+                            insert tsk;
+                        }
                     }
                 }
             }
@@ -34,14 +38,14 @@ public without sharing class GenerateReceiptDetailsController {
         }
     }
 
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static List<Receipt__c> fetchRelatedReceipts(Id taskId){
         try {
             System.debug('taskId ===> ' + taskId);
             if(taskId != null){
                 List<Task> task = [SELECT WhatId FROM Task WHERE Id = :taskId LIMIT 1];
                 if(!task.isEmpty() && task[0].WhatId != null){
-                    List<Receipt__c> receipts = [SELECT Id FROM Receipt__c WHERE Opportunity__c = :task[0].WhatId];
+                    List<Receipt__c> receipts = [SELECT Id FROM Receipt__c WHERE Opportunity__c = :task[0].WhatId AND Token_Amount__c = true];
                     System.debug('receipts ===> ' + receipts);
                     return receipts.isEmpty() ? null : receipts;
                 }
@@ -132,8 +136,8 @@ public without sharing class GenerateReceiptDetailsController {
             if (String.isNotBlank(receipt.PAN_TAN_Number__c) && !Pattern.matches('^[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}$', receipt.PAN_TAN_Number__c)) {
                 throw new AuraHandledException('Please enter a valid PAN Number in the format ABCDE1234F.');
             }
-            receipt.Amount__c = receiptData.containsKey('amount') && receiptData.get('amount') != null ? Integer.valueOf(receiptData.get('amount')) : null;
-            receipt.TDS_Amount__c = receiptData.containsKey('tdsAmount') && receiptData.get('tdsAmount') != null ? Integer.valueOf(receiptData.get('tdsAmount')) : null;
+            receipt.Amount__c = toAmount(receiptData.get('amount'));
+            receipt.TDS_Amount__c = toAmount(receiptData.get('tdsAmount'));
             receipt.Branch__c = receiptData.containsKey('branch') && receiptData.get('branch') != null ? (String) receiptData.get('branch') : null;
             receipt.Mode_of_Payment__c = receiptData.containsKey('modeOfPayment') && receiptData.get('modeOfPayment') != null ? (String) receiptData.get('modeOfPayment') : null;
             receipt.Drawn_on_Bank__c = receiptData.containsKey('drawnOnBank') && receiptData.get('drawnOnBank') != null ? (String) receiptData.get('drawnOnBank') : null;
@@ -301,6 +305,14 @@ public without sharing class GenerateReceiptDetailsController {
         }
     }
 
+    // Amounts arrive from the LWC as strings like '12211.12'; keep the decimals (2 dp, matching the Currency fields).
+    private static Decimal toAmount(Object value) {
+        if (value == null || String.isBlank(String.valueOf(value))) {
+            return null;
+        }
+        return Decimal.valueOf(String.valueOf(value).trim()).setScale(2, RoundingMode.HALF_UP);
+    }
+
     @AuraEnabled
     public static Boolean checkDuplicate(String taskId, String type, String uniqueNumber) {
         System.debug('DD Number or Cheque Number --->'+uniqueNumber);
@@ -321,7 +333,7 @@ public without sharing class GenerateReceiptDetailsController {
         return true;
     }
     
-        public static void testCover01(){
+    public static void testCover01(){
         Integer i=0;
         i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;
         i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++; i++;i++; i++; i++; i++; i++; i++;

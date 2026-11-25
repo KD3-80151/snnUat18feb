@@ -99,6 +99,7 @@
                                         </td>
                                         <td class="custom-cell  ">
                                             <lightning-input type="date" value={row.Pay_Date__c} data-id={row.Id} disabled={row.removeDate}
+                                                max={todayIso} message-when-range-overflow="Demand Date cannot be a future date."
                                                 data-field="PayByDate" onchange={handleDateChange2} style="width:50%;">
                                             </lightning-input>
                                         </td>
@@ -154,6 +155,7 @@
                                         </td>
                                         <td class="custom-cell  ">
                                             <lightning-input type="date" value={row.PayByDate} data-id={row.Id} disabled={row.removeDate}
+                                                max={todayIso} message-when-range-overflow="Demand Date cannot be a future date."
                                                 data-field="PayByDate" onchange={handleDateChange} style="width:50%;">
                                             </lightning-input>
                                         </td>

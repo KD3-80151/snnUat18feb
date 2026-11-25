@@ -122,12 +122,20 @@ public without Sharing  class bulkUpdateDueDateController {
             }
             
             if (!schedulesToUpdate.isEmpty()) {
+                UpdatePaymentScheduleController.validateDemandDates(schedulesToUpdate);
                 update schedulesToUpdate;
                 System.debug('Updated Payment Schedules =============>'+schedulesToUpdate);
             }
+        } catch (AuraHandledException e) {
+            throw e;
         } catch (Exception e) {
+            // Previously swallowed, so the screen showed "success" even when nothing was saved.
             System.debug('error ===> ' + e.getMessage());
             System.debug('error ===> ' + e.getLineNumber());
+            String msg = 'Error updating Payment Schedules: ' + e.getMessage();
+            AuraHandledException ex = new AuraHandledException(msg);
+            ex.setMessage(msg);
+            throw ex;
         }
         
     }
@@ -178,10 +186,13 @@ public static String saveOppsPaySchedulesSave(String paymentSchedules) {
         }
 
         if(!paySchedulesToUpdt.isEmpty()) {
+            UpdatePaymentScheduleController.validateDemandDates(paySchedulesToUpdt);
             update paySchedulesToUpdt;
         }
 
         return 'success';
+    } catch (AuraHandledException e) {
+        throw e;
     } catch (Exception e) {
         System.debug('Error =========>' + e.getLineNumber() + '===========>' + e.getMessage());
         throw new AuraHandledException('Error updating Payment Schedules: ' + e.getMessage());

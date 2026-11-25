@@ -13,40 +13,50 @@ export default class UploadFilesInDrive extends LightningElement {
     showSpinner = false;
     @track selectedDocumentId = '';
     @track isShowModal = false;
-    @track recordId;
     @track docId;
     @track folderId;
+    folderError;
+    _recordId;
     googleDriveLink = 'https://drive.google.com/file/d/1bPxd-RZR4y2FLyUz9R4lN_T5QJummzFO/preview?usp=drivesdk';
 
-    connectedCallback() {
-    debugger;
-    // Use URLSearchParams for cleaner handling of URL parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const recordIdParam = urlParams.get('recordId');
-
-    if (recordIdParam) {
-        this.recordId = recordIdParam;
-        console.log('recordId from URL:', this.recordId);
-        this.fetchFolderId();
-    } else {
-        console.error('recordId parameter not found in the URL');
+    // Injected automatically when used as a Quick Action / on a record page (e.g. Document__c)
+    @api
+    get recordId() {
+        return this._recordId;
     }
-}
+    set recordId(value) {
+        if (value && value !== this._recordId) {
+            this._recordId = value;
+            this.fetchFolderId();
+        }
+    }
+
+    connectedCallback() {
+        // Fallback: support being opened with ?recordId=... in the URL
+        if (!this._recordId) {
+            const recordIdParam = new URLSearchParams(window.location.search).get('recordId');
+            if (recordIdParam) {
+                this.recordId = recordIdParam;
+            }
+        }
+    }
 
     fetchFolderId() {
-        getFolderId({ recordId: this.recordId })
+        getFolderId({ recordId: this._recordId })
             .then((result) => {
-                debugger;
-                this.folderId = result;
+                if (result && !result.startsWith('Error')) {
+                    this.folderId = result;
+                    this.folderError = undefined;
+                } else {
+                    this.folderId = undefined;
+                    this.folderError = result;
+                }
                 console.log('folderId:', this.folderId);
             })
             .catch((error) => {
+                this.folderError = 'Unable to fetch the Google Drive folder for this record.';
                 console.error('Error retrieving folderId:', error);
             });
-        }
-
-    get recordId() {
-        return this.currectRecordId;
     }
 
     handleFileChange(event) {
@@ -57,7 +67,10 @@ export default class UploadFilesInDrive extends LightningElement {
 
     handleUpload() {
         debugger;
-        console.log('selectedthis.recordId ===> ' + this.selectedDocumentId);
+        if (!this.folderId) {
+            this.showToast('Error', this.folderError || 'Google Drive folder not found for this record.', 'error');
+            return;
+        }
         if (this.selectedFile) {
             this.showToast('Success', 'File will be uploaded shortly!!!', 'success');
             this.uploadFileInChunks(this.selectedFile);
@@ -157,7 +170,6 @@ export default class UploadFilesInDrive extends LightningElement {
                 break;
             }
         }
-        this.refreshComp();
     }
 
     readFileAsBase64(file) {
@@ -191,7 +203,7 @@ export default class UploadFilesInDrive extends LightningElement {
         const files = event.dataTransfer.files;
         if (files.length > 0) {
             this.selectedFile = files[0];
-            this.uploadFile(this.selectedFile);
+            this.handleUpload();
         }
     }
 

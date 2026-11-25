@@ -3,7 +3,7 @@
         <h1 class="center-title">Generate Receipt Details</h1>
         <template if:true={showReceiptData}>
             <div style="color: red; font-size: 20px; text-align: center; padding: 60px; font-weight: 700;">
-                Receipts have already been generated for this opportunity. Click <strong>Next</strong> to proceed.
+                A Token Amount receipt has already been generated for this opportunity. Click <strong>Next</strong> to proceed.
             </div>
             <div class="slds-m-top_medium slds-text-align_center">
                 <lightning-button variant="brand" label="Next" onclick={receiptsExists}></lightning-button>
@@ -39,7 +39,7 @@
                 <!-- Cheque Mode -->
                 <template if:true={isCheque}>
                     <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
-                        <lightning-input type="number" label="Amount" value={amount} class="custom-input" name="amount"
+                        <lightning-input type="number" label="Amount" value={amount} class="custom-input" name="amount" step="0.01" message-when-step-mismatch="Amount can have up to 2 decimal places."
                             onchange={handleInputChange} required></lightning-input>
                     </div>
                     <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
@@ -59,7 +59,7 @@
                 <!-- EFT Mode -->
                 <template if:true={isEFT}>
                     <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
-                        <lightning-input type="number" label="Amount" value={amount} class="custom-input" name="amount"
+                        <lightning-input type="number" label="Amount" value={amount} class="custom-input" name="amount" step="0.01" message-when-step-mismatch="Amount can have up to 2 decimal places."
                             onchange={handleInputChange} required></lightning-input>
                     </div>
                     <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
@@ -80,7 +80,7 @@
                 <!-- DD Mode -->
                 <template if:true={isDD}>
                     <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
-                        <lightning-input type="number" label="Amount" value={amount} class="custom-input" name="amount"
+                        <lightning-input type="number" label="Amount" value={amount} class="custom-input" name="amount" step="0.01" message-when-step-mismatch="Amount can have up to 2 decimal places."
                             onchange={handleInputChange} required></lightning-input>
                     </div>
                     <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
@@ -100,7 +100,7 @@
                 <!-- UPI Mode -->
                 <template if:true={isUPI}>
                     <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
-                        <lightning-input type="number" label="Amount" value={amount} class="custom-input" name="amount"
+                        <lightning-input type="number" label="Amount" value={amount} class="custom-input" name="amount" step="0.01" message-when-step-mismatch="Amount can have up to 2 decimal places."
                             onchange={handleInputChange} required></lightning-input>
                     </div>
                     <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
@@ -120,7 +120,7 @@
                 <!-- TDS Mode -->
                 <template if:true={isTDS}>
                     <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
-                        <lightning-input type="number" label="TDS Amount" value={tdsAmount} class="custom-input"
+                        <lightning-input type="number" label="TDS Amount" value={tdsAmount} class="custom-input" step="0.01" message-when-step-mismatch="TDS Amount can have up to 2 decimal places."
                             name="tdsAmount" onchange={handleInputChange} required></lightning-input>
                     </div>
                     <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
@@ -149,7 +149,7 @@
                 <!-- JV Mode -->
                 <template if:true={isJV}>
                     <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
-                        <lightning-input type="number" label="Amount" value={amount} class="custom-input" name="amount"
+                        <lightning-input type="number" label="Amount" value={amount} class="custom-input" name="amount" step="0.01" message-when-step-mismatch="Amount can have up to 2 decimal places."
                             onchange={handleInputChange} required></lightning-input>
                     </div>
                     <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
@@ -165,7 +165,7 @@
                 <!-- fundtransfer -->
                 <template if:true={isFundTransfer}>
                     <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
-                        <lightning-input type="number" label="Amount" value={amount} class="custom-input" name="amount"
+                        <lightning-input type="number" label="Amount" value={amount} class="custom-input" name="amount" step="0.01" message-when-step-mismatch="Amount can have up to 2 decimal places."
                             onchange={handleInputChange} required></lightning-input>
                     </div>
                     <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">

@@ -413,7 +413,48 @@ private class digioRepositoryTest {
         digioRepository.docwrpperClass result = digioRepository.generateSerenityReceipt(receipt.Id);
         Test.stopTest();
     }
-    
+
+    // RC-8: the final (approved) receipt is marked as generated the first time...
+    @isTest
+    static void testFinalReceiptMarkedGenerated() {
+        Receipt__c receipt = [SELECT Id FROM Receipt__c LIMIT 1];
+        update new Receipt__c(Id = receipt.Id, Approval_Status__c = 'Approved');
+        Test.setMock(HttpCalloutMock.class, new MockHttpResponseGenerator());
+        Test.startTest();
+        digioRepository.generateSerenityReceipt(receipt.Id);
+        Test.stopTest();
+        System.assertEquals(true, [SELECT Final_Receipt_Generated__c FROM Receipt__c WHERE Id = :receipt.Id].Final_Receipt_Generated__c,
+            'The final receipt is marked as generated');
+    }
+
+    // ...and cannot be generated a second time
+    @isTest
+    static void testFinalReceiptOnlyOnce() {
+        Receipt__c receipt = [SELECT Id FROM Receipt__c LIMIT 1];
+        update new Receipt__c(Id = receipt.Id, Approval_Status__c = 'Approved', Final_Receipt_Generated__c = true);
+        String msg;
+        Test.startTest();
+        try {
+            digioRepository.generateSerenityReceipt(receipt.Id);
+        } catch (AuraHandledException e) {
+            msg = e.getMessage();
+        }
+        Test.stopTest();
+        System.assert(msg != null && msg.contains('only once'), 'Expected the generate-once error, got: ' + msg);
+    }
+
+    // The provisional receipt (not approved) is not restricted
+    @isTest
+    static void testProvisionalReceiptNotRestricted() {
+        Receipt__c receipt = [SELECT Id, Approval_Status__c FROM Receipt__c LIMIT 1];
+        System.assertNotEquals('Approved', receipt.Approval_Status__c, 'test data: receipt starts unapproved');
+        update new Receipt__c(Id = receipt.Id, Final_Receipt_Generated__c = true);
+        Test.setMock(HttpCalloutMock.class, new MockHttpResponseGenerator());
+        Test.startTest();
+        digioRepository.generateSerenityReceipt(receipt.Id);   // no exception
+        Test.stopTest();
+    }
+
     @isTest
     static void testgenerateDemandLetter() {
         Opportunity testOpp = [SELECT Id FROM Opportunity LIMIT 1];
@@ -459,22 +500,101 @@ private class digioRepositoryTest {
         //System.assert(true, 'No exception should occur');
     }
     
+    // Opportunity whose customer Account has an email, so document emails can be sent
+    private static Opportunity oppWithCustomerEmail() {
+        Opportunity testOpp = [SELECT Id, AccountId FROM Opportunity WHERE AccountId != null LIMIT 1];
+        update new Account(Id = testOpp.AccountId, Email__c = 'customer@example.com');
+        return testOpp;
+    }
+
     @isTest
     static void testSendigioDetails() {
-        Opportunity testOpp = [SELECT Id FROM Opportunity LIMIT 1];
-        Receipt__c rec = [SELECT Id FROM Receipt__c WHERE Opportunity__c = :testOpp.Id LIMIT 1];
+        Opportunity testOpp = oppWithCustomerEmail();
+        Test.setMock(HttpCalloutMock.class, new MockHttpResponseGenerator());
         Test.startTest();
-        digioRepository.sendigiodetails('dummyDocId', testOpp.Id, 'Test Doc');
+        digioRepository.sendigiodetails('dummyDocId', testOpp.Id, 'BookingForm');
+        System.assertEquals(1, Limits.getEmailInvocations(), 'The booking form email should be sent');
         Test.stopTest();
     }
-    
+
+    @isTest
+    static void testSendigioDetailsShowsError() {
+        Opportunity testOpp = oppWithCustomerEmail();
+        Test.setMock(HttpCalloutMock.class, new MockHttpResponseGenerator());
+        String msg;
+        Test.startTest();
+        try {
+            digioRepository.sendigiodetails('dummyDocId', testOpp.Id, 'Test Doc');
+        } catch (AuraHandledException e) {
+            msg = e.getMessage();
+        }
+        Test.stopTest();
+        System.assert(msg != null && msg.contains('no email template'), 'Expected a no-template error, got: ' + msg);
+    }
+
+    @isTest
+    static void testSendigioDetailsNoCustomerEmail() {
+        Opportunity testOpp = [SELECT Id, AccountId FROM Opportunity WHERE AccountId != null LIMIT 1];
+        update new Account(Id = testOpp.AccountId, Email__c = null);
+        Test.setMock(HttpCalloutMock.class, new MockHttpResponseGenerator());
+        String msg;
+        Test.startTest();
+        try {
+            digioRepository.sendigiodetails('dummyDocId', testOpp.Id, 'BookingForm');
+        } catch (AuraHandledException e) {
+            msg = e.getMessage();
+        }
+        Test.stopTest();
+        System.assert(msg != null && msg.contains('no email address'), 'Expected a no-email error, got: ' + msg);
+    }
+
+    @isTest
+    static void testSendigioDetailsDemandLetter() {
+        Opportunity testOpp = oppWithCustomerEmail();
+        Test.setMock(HttpCalloutMock.class, new MockHttpResponseGenerator());
+        Test.startTest();
+        digioRepository.sendigiodetailsDemadLetter('dummyDocId', testOpp.Id, 'DemandLetter');
+        System.assertEquals(1, Limits.getEmailInvocations(), 'The demand letter email should be sent');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void testSendigioDetailsDemandLetterNotGenerated() {
+        Opportunity testOpp = oppWithCustomerEmail();
+        String msg;
+        Test.startTest();
+        try {
+            digioRepository.sendigiodetailsDemadLetter(null, testOpp.Id, 'DemandLetter');
+        } catch (AuraHandledException e) {
+            msg = e.getMessage();
+        }
+        Test.stopTest();
+        System.assert(msg != null && msg.contains('not been generated'), 'Expected a not-generated error, got: ' + msg);
+    }
+
     @isTest
     static void testSendigioDetails1() {
-        Opportunity testOpp = [SELECT Id FROM Opportunity LIMIT 1];
-        Receipt__c rec = [SELECT Id FROM Receipt__c WHERE Opportunity__c = :testOpp.Id LIMIT 1];
+        Receipt__c rec = [SELECT Id, Opportunity__c, Opportunity__r.AccountId FROM Receipt__c WHERE Opportunity__c != null AND Opportunity__r.AccountId != null LIMIT 1];
+        update new Account(Id = rec.Opportunity__r.AccountId, Email__c = 'customer@example.com');
+        Test.setMock(HttpCalloutMock.class, new MockHttpResponseGenerator());
         Test.startTest();
-        digioRepository.sendigiodetails1('dummyDocId', testOpp.Id, 'Test Doc');
+        digioRepository.sendigiodetails1('dummyDocId', rec.Id, 'Receipt');
+        System.assertEquals(1, Limits.getEmailInvocations(), 'The receipt email should be sent');
         Test.stopTest();
+    }
+
+    @isTest
+    static void testSendigioDetails1WrongRecord() {
+        Opportunity testOpp = oppWithCustomerEmail();
+        String msg;
+        Test.startTest();
+        try {
+            digioRepository.sendigiodetails1('dummyDocId', testOpp.Id, 'Receipt');
+        } catch (AuraHandledException e) {
+            msg = e.getMessage();
+        }
+        Test.stopTest();
+        System.assert(msg != null && msg.contains('not linked to an Opportunity'), 'Expected a receipt error, got: ' + msg);
     }
     
 }

@@ -1,0 +1,45 @@
+<template>
+    <lightning-quick-action-panel header={header}>
+        <template lwc:if={loading}>
+            <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+        </template>
+        <template lwc:elseif={summary}>
+            <dl class="slds-list_horizontal slds-wrap slds-m-bottom_small">
+                <dt class="slds-item_label slds-text-color_weak">Entry Number</dt>
+                <dd class="slds-item_detail">{summary.entryNumber}</dd>
+                <dt class="slds-item_label slds-text-color_weak">Entry Type</dt>
+                <dd class="slds-item_detail">{summary.entryType}</dd>
+                <dt class="slds-item_label slds-text-color_weak">Instalment</dt>
+                <dd class="slds-item_detail">{summary.paymentSchedule}</dd>
+                <dt class="slds-item_label slds-text-color_weak">Pricing Element</dt>
+                <dd class="slds-item_detail">{summary.pricingElement}</dd>
+                <dt class="slds-item_label slds-text-color_weak">Amount</dt>
+                <dd class="slds-item_detail"><lightning-formatted-number value={summary.amount} format-style="currency" currency-code="INR"></lightning-formatted-number></dd>
+                <dt class="slds-item_label slds-text-color_weak">Tax</dt>
+                <dd class="slds-item_detail"><lightning-formatted-number value={summary.tax} format-style="currency" currency-code="INR"></lightning-formatted-number></dd>
+                <dt class="slds-item_label slds-text-color_weak">Status</dt>
+                <dd class="slds-item_detail">{summary.status}</dd>
+            </dl>
+
+            <template lwc:if={summary.canCancel}>
+                <div class="slds-text-title_bold slds-m-bottom_xx-small">What cancelling does</div>
+                <ul class="slds-list_dotted slds-m-bottom_small">
+                    <template for:each={summary.effects} for:item="effect">
+                        <li key={effect}>{effect}</li>
+                    </template>
+                </ul>
+                <lightning-textarea label="Reason for cancelling" required max-length="255" value={reason} onchange={handleReason}></lightning-textarea>
+            </template>
+            <template lwc:else>
+                <div class="slds-notify slds-notify_alert slds-alert_warning" role="alert">{summary.message}</div>
+            </template>
+        </template>
+
+        <div slot="footer">
+            <lightning-button label="Close" onclick={close}></lightning-button>
+            <template lwc:if={canCancel}>
+                <lightning-button class="slds-m-left_x-small" variant="destructive" label="Cancel Note" onclick={handleCancel} disabled={saving}></lightning-button>
+            </template>
+        </div>
+    </lightning-quick-action-panel>
+</template>

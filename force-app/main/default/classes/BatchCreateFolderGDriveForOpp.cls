@@ -3,7 +3,7 @@ public without sharing class BatchCreateFolderGDriveForOpp implements Database.B
     public String query;
 
     public BatchCreateFolderGDriveForOpp() {
-        this.query = 'SELECT Id FROM Opportunity WHERE CreatedDate = TODAY';
+        this.query = 'SELECT Id FROM Opportunity WHERE CreatedDate = YESTERDAY';
     }
 
     public BatchCreateFolderGDriveForOpp(String query) {

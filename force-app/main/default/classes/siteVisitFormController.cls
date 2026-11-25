@@ -326,6 +326,11 @@ public without sharing class siteVisitFormController {
                 Database.LeadConvert lc = new database.LeadConvert();
                 lc.setLeadId(leadId);
                 lc.setConvertedStatus('Converted');
+                // Create the Account/Contact/Opportunity already owned by the sales team member chosen on the form,
+                // so the "Generate Cost Sheet" task (created by the Opportunity flow on insert) goes to that person.
+                if (!String.isBlank(salesTeamMemberId)) {
+                    lc.setOwnerId(salesTeamMemberId);
+                }
                 //Pass the lead convert object to convertlead object so it can be converted.
                 Database.LeadConvertResult lcr = Database.convertLead(lc);
                 System.debug('lcr====>'+lcr);
@@ -346,6 +351,25 @@ public without sharing class siteVisitFormController {
                     convAcc[0].Name = parts.isEmpty() ? '' : String.join(parts, ' ');
                     if (!String.isBlank(salesTeamMemberId)) {
                         convAcc[0].OwnerId = salesTeamMemberId;
+                    }
+                    // contact details from the lead
+                    if (!String.isBlank(updatedLead.Phone)) {
+                        convAcc[0].Phone = updatedLead.Phone;
+                        convAcc[0].Primary_Contact_Number__c = updatedLead.Phone;
+                    }
+                    if (!String.isBlank(updatedLead.Email)) {
+                        convAcc[0].Email__c = updatedLead.Email;
+                    }
+                    // residential details captured on the visit form -> Permanent Address
+                    if (!String.isBlank(visitRecord.Residential_Address__c)) {
+                        String street = visitRecord.Residential_Address__c.stripHtmlTags().trim();
+                        convAcc[0].Permanent_Address__Street__s = street.left(255);
+                    }
+                    if (!String.isBlank(visitRecord.City__c)) {
+                        convAcc[0].Permanent_Address__City__s = visitRecord.City__c;
+                    }
+                    if (visitRecord.Pincode__c != null) {
+                        convAcc[0].Permanent_Address__PostalCode__s = String.valueOf(visitRecord.Pincode__c.longValue());
                     }
                     update convAcc;
                 }
@@ -377,6 +401,9 @@ public without sharing class siteVisitFormController {
                         newOpp.Sales_Team_Member__c = salesTeamMemberId;
                     }
                     update newOpp;
+                    if (!String.isBlank(salesTeamMemberId)) {
+                        assignSalesTasks(newOpp.Id, salesTeamMemberId);
+                    }
                     System.debug('New Opportunity Owner updated: ' + newOpp.OwnerId);
                     // LeadHandler.copyNotesToOpportunity(new List<Lead>{updatedLead});
                     
@@ -565,6 +592,11 @@ public without sharing class siteVisitFormController {
                     projOpp.Project__c = projectId;
                     projOpp.CloseDate = System.today().addDays(30);
                     projOpp.StageName = defaultOpportunityStage();
+                    // owned by the chosen sales team member from the start (the cost sheet task is created on insert)
+                    if (!String.isBlank(salesTeamMemberId)) {
+                        projOpp.OwnerId = salesTeamMemberId;
+                        projOpp.Sales_Team_Member__c = salesTeamMemberId;
+                    }
                     insert projOpp;
                     List<OpportunityContactRole> newRoles = new List<OpportunityContactRole>();
                     for(OpportunityContactRole r : [SELECT ContactId, Role, IsPrimary FROM OpportunityContactRole WHERE OpportunityId = :Opp.Id]){
@@ -768,6 +800,28 @@ public without sharing class siteVisitFormController {
         }
     }
     
+    // Tasks on a new Opportunity that belong to the sales team member chosen on the site visit form:
+    //  - "Generate Cost Sheet" (created by the Opportunity flow when the Opportunity is inserted), and
+    //  - the follow-up tasks ("Take First Follow Up with Customer - Within 4/24 Hours", "Take Follow Up with Customer"),
+    //    which the Lead flow creates on the Lead while it is still owned by the default owner and which move to the
+    //    Opportunity when the Lead is converted.
+    // Move the open ones to the chosen person (client, 21 Nov). Best effort: it must never stop the site visit from being saved.
+    @TestVisible
+    private static void assignSalesTasks(Id oppId, Id ownerId) {
+        try {
+            if (oppId == null || ownerId == null || String.valueOf(ownerId).left(3) != '005') return;
+            List<Task> tasks = [SELECT Id, OwnerId FROM Task
+                                WHERE WhatId = :oppId AND IsClosed = false AND OwnerId != :ownerId
+                                AND (Subject = 'Generate Cost Sheet' OR Subject LIKE 'Take%Follow Up with Customer%')];
+            for (Task t : tasks) {
+                t.OwnerId = ownerId;
+            }
+            if (!tasks.isEmpty()) update tasks;
+        } catch (Exception e) {
+            System.debug('assignSalesTasks: ' + e.getMessage());
+        }
+    }
+
     @RemoteAction
     public static string updateGREDetails(Visit__c visitRecord, String leadId){ //Boolean leadCreated, 
         try{
@@ -778,6 +832,7 @@ public without sharing class siteVisitFormController {
                     opp.OwnerId = visitRecord.Sales_Manager__c;
                     opp.Sales_Team_Member__c = visitRecord.Sales_Manager__c;
                     update opp;
+                    assignSalesTasks(opp.Id, visitRecord.Sales_Manager__c);
                 }
                 List<User> salesUserList = [SELECT Id,Name,Profile.Name FROM User WHERE Id =: visitRecord.Sales_Manager__c];
                 visitRecord.Sales_Manager__c = salesUserList[0].Name;

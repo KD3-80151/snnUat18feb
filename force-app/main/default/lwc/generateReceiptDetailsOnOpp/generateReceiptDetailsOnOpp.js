@@ -281,6 +281,19 @@ export default class GenerateReceiptDetailsOnOpp extends LightningElement {
         this.showDebitScheduleModal = false;
     }
 
+
+    // Client (21 Nov): show a clear error when the amount is missing
+    missingAmountMessage() {
+        if (!this.modeOfPayment) {
+            return 'Please select the Mode of Payment and enter the Amount.';
+        }
+        const value = this.modeOfPayment === 'TDS' ? this.tdsAmount : this.amount;
+        if (value === undefined || value === null || value === '' || isNaN(parseFloat(value)) || parseFloat(value) <= 0) {
+            return this.modeOfPayment === 'TDS' ? 'Please enter the TDS Amount.' : 'Please enter the Amount.';
+        }
+        return null;
+    }
+
     async handleSubmit() {
         debugger;
         console.log('Form Submit initiated');
@@ -309,6 +322,12 @@ export default class GenerateReceiptDetailsOnOpp extends LightningElement {
             jvReferenceNumber: this.jvReferenceNumber,
             modeOfPayment: this.modeOfPayment
         });
+
+        const amountError = this.missingAmountMessage();
+        if (amountError) {
+            this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: amountError, variant: 'error' }));
+            return;
+        }
 
         switch (this.modeOfPayment) {
             case 'Cheque':

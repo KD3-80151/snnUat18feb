@@ -1,5 +1,23 @@
 public without sharing class opportunityTriggerHandler {
 
+    public static final String NEXT_ACTION_NOT_INTERESTED = 'Not Interested';
+    public static final String STAGE_CLOSED_LOST = 'Closed Lost';
+
+    /**
+     * Before insert/update: when Next Action (Customer_Response__c) becomes "Not Interested",
+     * move the Opportunity straight to Closed Lost.
+     */
+    public static void closeLostWhenNotInterested(List<Opportunity> newList, Map<Id, Opportunity> oldMap) {
+        for (Opportunity opp : newList) {
+            Opportunity oldOpp = (oldMap != null) ? oldMap.get(opp.Id) : null;
+            Boolean becameNotInterested = opp.Customer_Response__c == NEXT_ACTION_NOT_INTERESTED
+                && (oldOpp == null || oldOpp.Customer_Response__c != NEXT_ACTION_NOT_INTERESTED);
+            if (becameNotInterested && opp.StageName != STAGE_CLOSED_LOST) {
+                opp.StageName = STAGE_CLOSED_LOST;
+            }
+        }
+    }
+
     public static void afterInsert(List<Opportunity> oppList){
         try{
             List<Id> oppIds = new List<Id>();
@@ -210,7 +228,7 @@ public without sharing class opportunityTriggerHandler {
                 oppsToUpdate.add(new Opportunity(
                     Id = oppId,
                     Unit__c = null,
-                    StageName = 'New', Cost_Sheet_Template__c = null, Payment_Scheme__c = null , Cost_Sheet_Approval_Status__c = 'Pending', Sales_Head_approval_Status__c = 'Pending', CRM_Approval_Status__c = 'Pending'
+                    StageName = 'New', Cost_Sheet_Template__c = null, Payment_Scheme__c = null , Cost_Sheet_Approval_Status__c = 'Pending', Sales_Head_approval_Status__c = 'Pending', CRM_Approval_Status__c = 'Pending', Selected_Cost_Sheet__c = null
                 ));
             }
 
@@ -298,7 +316,7 @@ public without sharing class opportunityTriggerHandler {
             List<Opportunity> oppsToUpdate = new List<Opportunity>();
             for (Id oppId : approvedOppIds) {
                 oppsToUpdate.add(new Opportunity(
-                    Id = oppId, Unit__c = null, StageName = 'Cost Sheet Generated', Cost_Sheet_Template__c = null, Payment_Scheme__c = null, Cost_Sheet_Finalised__c = false
+                    Id = oppId, Unit__c = null, StageName = 'Cost Sheet Generated', Cost_Sheet_Template__c = null, Payment_Scheme__c = null, Cost_Sheet_Finalised__c = false, Selected_Cost_Sheet__c = null
                 ));
             }
 
@@ -335,23 +353,32 @@ public without sharing class opportunityTriggerHandler {
             }
 
             Map<Id, Opportunity> approvedOpps = new Map<Id, Opportunity>();
+            Set<Id> oppIdsDone = new Set<Id>();
+            List<Cost_Sheet__c> costSheetsToUpdate = new List<Cost_Sheet__c>();
             for (Opportunity opp : newList) {
                 Opportunity oldOpp = oldMap.get(opp.Id);
-                if (oldOpp != null
-                    && opp.Cost_Sheet_Approval_Status__c == 'Approved'
-                    && oldOpp.Cost_Sheet_Approval_Status__c != 'Approved'
-                    && opp.Cost_Sheet_Template__c != null
-                    && opp.Payment_Scheme__c != null) {
+                if (oldOpp == null
+                    || opp.Cost_Sheet_Approval_Status__c != 'Approved'
+                    || oldOpp.Cost_Sheet_Approval_Status__c == 'Approved') {
+                    continue;
+                }
+                if (opp.Selected_Cost_Sheet__c != null) {
+                    // Finalise exactly the cost sheet the user selected in Finalise Cost Sheet
+                    costSheetsToUpdate.add(new Cost_Sheet__c(Id = opp.Selected_Cost_Sheet__c, finalize_CostSheet__c = true));
+                    oppIdsDone.add(opp.Id);
+                } else if (opp.Cost_Sheet_Template__c != null && opp.Payment_Scheme__c != null) {
+                    // Fallback for approvals submitted before Selected_Cost_Sheet__c was populated
                     approvedOpps.put(opp.Id, opp);
                 }
             }
 
             if (approvedOpps.isEmpty()) {
+                if (!costSheetsToUpdate.isEmpty()) {
+                    update costSheetsToUpdate;
+                }
                 return;
             }
 
-            Set<Id> oppIdsDone = new Set<Id>();
-            List<Cost_Sheet__c> costSheetsToUpdate = new List<Cost_Sheet__c>();
             // Newest first, so if two cost sheets match, the latest one is finalised
             for (Cost_Sheet__c costSheet : [SELECT Id, Opportunity__c, Unit__c, finalize_CostSheet__c,
                                                    Cost_Scheme_Linking__r.Cost_Sheet_Template__c,

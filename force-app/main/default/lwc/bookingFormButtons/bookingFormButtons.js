@@ -409,26 +409,44 @@ export default class BookingFormButtons extends LightningElement {
             console.log('primaryApplicant ==> ' + JSON.stringify(this.primaryApplicant));
             console.log('contactNamesJson ==> ' + contactNamesJson);
             
-        createApplicants({ applicantList : this.applicantList, 
+        const coApplicantsPayload = this.applicantList;
+        // Keep the form's own list as it was (the server saves nothing on an error), so the user
+        // can correct the same applicants and submit again without creating extra co-applicants.
+        this.applicantList = this.mainApplicantList;
+
+        createApplicants({ applicantList : coApplicantsPayload, 
             oppId : this.recordId, 
             profileDataList : JSON.stringify(this.profileDataList), 
             accId : this.accountId, 
             primaryApplicant : this.primaryApplicant, 
             contactNamesJson : contactNamesJson, deletedAccountIds: this.deletedAccountIds })
         .then(result => {
-            if(result.accNumberByIdMap != null){
+            if(result && result.accNumberByIdMap != null){
                 console.log('this.applicantList ===>  ' + this.applicantList);
                 this.contactIds = result.contactIds != null ? result.contactIds : null;
                 setTimeout(() => {
                     this.processDocumentUpload(result.accNumberByIdMap, this.mainApplicantList, this.applicantDocumentsList);
                 },10000);
                 
+            } else {
+                this.handleSubmitError(null);
             }
         })
         .catch(error => {
-            this.showToast('Error', error, 'error');
-            this.nextText = 'Error Processing Applicant Details!!!!';
+            this.handleSubmitError(error && error.body ? error.body.message : null);
         });
+    }
+
+    // Nothing was saved: show the form again with the entered data so it can be corrected and resubmitted
+    handleSubmitError(message) {
+        this.applicantList = this.mainApplicantList;
+        this.showToast('Error', (message || 'Error Processing Applicant Details!!!') + ' Nothing was saved; please correct the details and submit again.', 'error');
+        this.nextText = 'Creating Applicant Records....';
+        this.showSpinner = false;
+    }
+
+    get formContainerClass() {
+        return this.showSpinner ? 'slds-hide' : '';
     }
 
     async processDocumentUpload(result, applicantList, applicantDocumentsList){
@@ -589,6 +607,7 @@ export default class BookingFormButtons extends LightningElement {
     @track passportNo;
     @track countryOfResidence;
     @track panNo;
+    @track aadhaarNo;
     @track aadharNo;
     @track permanentStreet;
     @track permanentCity;
@@ -636,9 +655,9 @@ export default class BookingFormButtons extends LightningElement {
             this.projectName    = result.oppRec.Project__r && result.oppRec.Project__r.Name ? result.oppRec.Project__r.Name : null;
             this.SuperBuiltUpArea = result.oppRec.Unit__r && result.oppRec.Unit__r.Super_Built_Up_Area_sq_ft__c != null
                                     ? result.oppRec.Unit__r.Super_Built_Up_Area_sq_ft__c : null;
-            this.RERA_No        = (result.oppRec.Project__r && result.oppRec.Project__r.Company__r
-                                    && result.oppRec.Project__r.Company__r.Registration_Number__c)
-                                    ? result.oppRec.Project__r.Company__r.Registration_Number__c : null;
+            // RERA number belongs to the Project (client, 21 Nov)
+            this.RERA_No        = (result.oppRec.Project__r && result.oppRec.Project__r.RERA_Number__c)
+                                    ? result.oppRec.Project__r.RERA_Number__c : null;
             this.unitAndTypeValue = [unit, result.oppRec.Type].filter(value => value).join(',');
 
             const applicantRec = {
@@ -881,6 +900,7 @@ if (result.coappDocUrlsByAccount || result.coappDocNamesByAccount) {
             Passport_Number__c: dv['Passport_Number__c'] || base.Passport_Number__c || null,
             Country_of_Residence__c: dv['Country_of_Residence__c'] || base.Country_of_Residence__c || null,
             PAN__c: dv['PAN__c'] || base.PAN__c || null,
+            Aadhaar_Number__c: dv['Aadhaar_Number__c'] || base.Aadhaar_Number__c || null,
 
             Permanent_Address__Street__s: dv['Permanent_Address__Street__s'] || base.Permanent_Address__Street__s || null,
             Permanent_Address__City__s: dv['Permanent_Address__City__s'] || base.Permanent_Address__City__s || null,
@@ -948,6 +968,7 @@ if (result.coappDocUrlsByAccount || result.coappDocNamesByAccount) {
         this.passportNo              = dv['Passport_Number__c'] || null;
         this.countryOfResidence      = dv['Country_of_Residence__c'] || null;
         this.panNo                   = dv['PAN__c'] || null;
+        this.aadhaarNo               = dv['Aadhaar_Number__c'] || null;
 
         // permanent address
         this.permanentStreet         = dv['Permanent_Address__Street__s'] || null;

@@ -1,6 +1,7 @@
 <template>
     <lightning-card>
-        <template if:false={showSpinner}>
+        <!-- Hidden (not removed) while saving, so the entered data is still there if saving fails -->
+        <div class={formContainerClass}>
         <div class="mainCSSContener slds-p-bottom_large">
             <div class="slds-grid slds-wrap">
                 <div class="slds-col slds-size_9-of-12 slds-align-bottom headerCss">
@@ -235,12 +236,28 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="slds-grid slds-gutters" style="margin-top: -10px;">
-                                    <div class="slds-col slds-size_3-of-12 slds-align-bottom unitLabels height0px" style="padding-left: 45px;">
-                                        <span class="panPadding">PAN</span><span class="">:</span>
+                                <!-- PAN and Aadhaar side by side, laid out like the Passport No / Country of Residence row -->
+                                <div class="slds-grid slds-gutters slds-size_12-of-12 twoCol" style="padding: 0 0 0 13px;margin-top: -14px;">
+                                    <div class="slds-col slds-size_6-of-12">
+                                        <div class="slds-grid slds-gutters ">
+                                            <div class=" twoColLabelWidth slds-col slds-size_4-of-12 unitLabels slds-align-bottom">
+                                                <span>PAN</span><span class="slds-float_right">:</span>
+                                            </div>
+                                            <div class="slds-col slds-size_8-of-12">
+                                                <lightning-input style="width: 213px;" name="PAN__c" type="text" class="input-no-border" value={applicantRec.PAN__c} onchange={handleChange} data-number={acc.Number}></lightning-input>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="slds-col slds-size_9-of-12 height35px">
-                                        <span><lightning-input type="text" name="PAN__c" class="input-no-border" style="margin-left: 34px;" value={applicantRec.PAN__c} onchange={handleChange} data-number={acc.Number}></lightning-input></span>
+                                    <div class="slds-col slds-size_6-of-12">
+                                        <div class="slds-grid slds-gutters twoColGutter">
+                                            <div class="twoColLabelWidth2 slds-col slds-size_6-of-12 unitLabels slds-align-bottom">
+                                                <span class="slds-float_right">Aadhaar Number:</span>
+                                            </div>
+                                            <div class="slds-col slds-size_6-of-12">
+                                                <lightning-input type="text" name="Aadhaar_Number__c" class="input-no-border twoColInputWidth" value={applicantRec.Aadhaar_Number__c} onchange={handleChange} data-number={acc.Number}
+                                                    max-length="12" pattern="[0-9]{12}" message-when-pattern-mismatch="Aadhaar Number must be 12 digits."></lightning-input>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 
@@ -727,7 +744,7 @@
                 <lightning-button variant="brand" label="Add Another Applicant" onclick={addAnotherApplicant} class="slds-m-left_x-small newButtonCss"></lightning-button>
             </div>
         </div>
-    </template>
+    </div>
     <template if:true={showSpinner}>
         <div class="slds-p-around_large" style="height: 450px;">
             <c-custom-spinner spinner-text="Creating Applicant Records...." second-text={nextText}></c-custom-spinner>

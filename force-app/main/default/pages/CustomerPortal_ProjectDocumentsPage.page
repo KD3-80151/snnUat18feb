@@ -71,7 +71,7 @@
                                             </h2>  
                                             <div id="collapseDoc-{{ $parent.$index }}-{{ $index }}" class="accordion-collapse collapse" aria-labelledby="headingDoc-{{ $parent.$index }}-{{ $index }}" data-bs-parent="#docAccordian-{{ $parent.$index }}">
                                                 <div class="accordion-body" style="background-color:#fafafa !important;">
-                                                    <div class="d-flex justify-content-between mb-3" ng-repeat="subDoc in doc.Sub_Documents__r">
+                                                    <div class="d-flex justify-content-between mb-3" ng-repeat="subDoc in doc.files">
                                                         <p>{{subDoc.Name}}</p>
                                                         <button class="btn btn-danger btn-sm" ng-click="openPreview(subDoc.File_URL__c)"><i class="fa fa-eye"></i></button>
                                                     </div>

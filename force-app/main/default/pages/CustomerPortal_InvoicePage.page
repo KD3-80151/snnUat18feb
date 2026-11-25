@@ -206,30 +206,61 @@
                     opacity: 0;
                     cursor: pointer;
                 }
+                /* TDS Challan upload (per booking) */
+                .tds-challan-bar {
+                    display: flex;
+                    flex-wrap: wrap;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 12px;
+                    padding: 12px 16px;
+                    margin-bottom: 12px;
+                    border: 1px solid #e0d6c6;
+                    border-radius: 8px;
+                    background: #fbf7f0;
+                }
+                .tds-challan-text {
+                    flex: 1 1 260px;
+                    min-width: 0;
+                }
+                .tds-challan-text p {
+                    margin: 2px 0 0;
+                    font-size: 14px;
+                    color: #555;
+                }
+                .tds-challan-btn {
+                    background-color: #9D6200 !important;
+                    border-color: #9D6200 !important;
+                    color: #fff !important;
+                    font-weight: 500;
+                    white-space: nowrap;
+                }
+                .tds-challan-btn:hover {
+                    background-color: #7d4e00 !important;
+                }
+                .tds-challan-list {
+                    margin-bottom: 12px;
+                    padding: 0 4px;
+                    font-size: 14px;
+                }
+                .tds-challan-list ul {
+                    margin: 6px 0 0;
+                    padding-left: 0;
+                    list-style: none;
+                }
+                .tds-challan-list li {
+                    padding: 3px 0;
+                    overflow-wrap: anywhere;
+                }
+                .tds-challan-date {
+                    color: #777;
+                    margin-left: 6px;
+                }
             </style>
             <body>
                 <div class="container-fluid">
                     <h2 class="mb-4 title-color">Receipts</h2>
                     <p>Manage your receipts with SNN Estates Pvt. Ltd. by viewing or downloading them below. Stay informed on your financial records, access detailed billing information, and take necessary actions promptly. Our team is committed to providing you with efficient receipt management. For any questions or assistance, please don't hesitate to contact our support team.</p>
-                    <!-- Popup Template -->
-                    <div class="modal fade" id="filePreviewModal" tabindex="-1" role="dialog" aria-labelledby="filePreviewModalLabel" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title text-center w-100" id="filePreviewModalLabel">File Preview</h5>
-                                    <button type="button" class="close" data-dismiss="modal" ng-click="closeModal()" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <iframe id="filePreviewFrame" style="width: 100%; height: 500px;" frameborder="0"></iframe>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-dismiss="modal" ng-click="closeModal()">Close</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                     <div  ng-if = "opportunities.length != 0" class="accordion" id="oppInvAccordian">
                         <div class="accordion-item" ng-repeat="opp in opportunities">
                             <h2 class="accordion-header" id="heading-{{ $index }}">
@@ -249,44 +280,46 @@
                                 aria-labelledby="heading-{{ $index }}" 
                                 data-bs-parent="#oppInvAccordian">
                                 <div class="accordion-body">
+                                    <!-- TDS Challan: one upload per booking (replaces the per-receipt TDS upload) -->
+                                    <div class="tds-challan-bar">
+                                        <div class="tds-challan-text">
+                                            <strong>TDS Challan</strong>
+                                            <p>Paid TDS for this booking? Upload the challan here. Our team will verify it and create your TDS receipt.</p>
+                                        </div>
+                                        <button type="button" class="btn tds-challan-btn" ng-click="showChallanUpload(opp)">
+                                            <i class="fa fa-upload"></i> Upload TDS Challan
+                                        </button>
+                                    </div>
+                                    <div ng-if="hasChallans(opp)" class="tds-challan-list">
+                                        <strong>Uploaded TDS Challans</strong>
+                                        <ul>
+                                            <li ng-repeat="challan in tdsChallans[opp.Id]">
+                                                <i class="fa fa-file-lines"></i> {{challan.Name}}
+                                                <span class="tds-challan-date">uploaded on {{challan.CreatedDate | date:'dd-MM-yyyy'}}</span>
+                                            </li>
+                                        </ul>
+                                    </div>
                                     <div ng-if = "opp.Receipts__r" class="table-responsive1 table-container" style="padding:0;">
                                         <table class="table mb-0">
                                             <thead class="table-header-custom">
                                                 <tr>
                                                     <th scope="col" style="width: 5%; text-align: center;">Sr.</th>
-                                                    <th scope="col" style="width: 10%; ">Description</th>
-                                                    <th scope="col" style="width: 10%; ">Receipt ID</th>
-                                                    <th scope="col" style="width: 10%;">Created On</th>
-                                                    <th scope="col" style="width: 10%; ">Amount</th>
-                                                    <th scope="col" style="width: 10%; text-align: center;">Status</th>
-                                                    <th scope="col" style="width: 20%;">TDS Submission</th>
-                                                    <th scope="col" style="width: 10%; text-align: center;">TDS Approval Status</th>
-                                                    <!-- <th scope="col" style="width: 15%; text-align: center;">Action</th> -->
+                                                    <th scope="col" style="width: 25%; ">Description</th>
+                                                    <th scope="col" style="width: 20%; ">Receipt Number</th>
+                                                    <th scope="col" style="width: 15%;">Created On</th>
+                                                    <th scope="col" style="width: 15%; ">Amount</th>
+                                                    <th scope="col" style="width: 20%; text-align: center;">Status</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 <tr ng-repeat="invoice in opp.Receipts__r">
-                                                    <td>{{$index+1}}</td>
+                                                    <td style="text-align: center;">{{$index+1}}</td>
                                                     <td ng-if = "invoice.Demand_Letter__r.Payment_Schedule__r.Name">{{invoice.Demand_Letter__r.Payment_Schedule__r.Name}}</td>
                                                     <td ng-if = "!invoice.Demand_Letter__r.Payment_Schedule__r.Name">Booking Amount</td>
-                                                    <td>{{invoice.Name}}</td>
+                                                    <td>{{invoice.Receipt_Number__c || invoice.Name}}</td>
                                                     <td>{{invoice.CreatedDate | date:'shortDate'}}</td>
                                                     <td>{{invoice.Total_Amount__c || 0 | currency}}</td>
-                                                    <td><span class="invoice-stage {{statusClassMapping[invoice.Approval_Status__c]}}">{{invoice.Approval_Status__c}}</span></td>
-                                                    <td ng-if="nameXreceipt[invoice.Name] && nameXreceipt[invoice.Name].Sub_Documents__r">{{nameXreceipt[invoice.Name].Sub_Documents__r[0].Name}}</td>
-                                                    <td ng-if="!nameXreceipt[invoice.Name] || !nameXreceipt[invoice.Name].Sub_Documents__r" ng-click="showUpload(invoice)" class="uploadFileLink"> Upload File</td>
-                                                    <td><span class="invoice-stage {{statusClassMapping[invoice.TDS_Approval_Status__c]}}">{{invoice.TDS_Approval_Status__c}}</span></td>
-                                                    <!-- Button to open popup -->
-                                                    <td ng-if = "nameXreceipt[invoice.Name] && nameXreceipt[invoice.Name].Sub_Documents__r" style="text-align: center;">
-                                                        <button type="button" class="btn btn-icon view" 
-                                                            ng-click="openPreview(invoice.Name)">
-                                                        <i class="fa fa-eye"></i>
-                                                        </button>
-                                                        <button type="button" class="btn btn-icon download" 
-                                                        ng-click="download(invoice.Name)">
-                                                        <i class="fa fa-download"></i>
-                                                        </button>
-                                                    </td>
+                                                    <td style="text-align: center;"><span class="invoice-stage {{statusClassMapping[invoice.Approval_Status__c]}}">{{invoice.Approval_Status__c}}</span></td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -300,31 +333,10 @@
                                                 <div class="card-body">
                                                     <p ng-if = "invoice.Demand_Letter__r.Payment_Schedule__r.Name"><strong>Description: </strong>{{invoice.Demand_Letter__r.Payment_Schedule__r.Name}}</p>
                                                     <p ng-if = "!invoice.Demand_Letter__r.Payment_Schedule__r.Name"><strong>Description: </strong>Booking Amount</p>
-                                                    <p><strong>Receipt Id: </strong>{{invoice.Name}}</p>
+                                                    <p><strong>Receipt Number: </strong>{{invoice.Receipt_Number__c || invoice.Name}}</p>
                                                     <p><strong>Created On: </strong>{{invoice.CreatedDate | date:'shortDate'}}</p>
                                                     <p><strong>Amount: </strong>{{invoice.Total_Amount__c || 0 | currency}}</p>
                                                     <p><strong>Status: </strong><span class="invoice-stage {{statusClassMapping[invoice.Approval_Status__c]}}">{{invoice.Approval_Status__c}}</span></p>
-                                                    <p>
-                                                        <strong>TDS Submission: </strong>
-                                                        <span ng-if="nameXreceipt[invoice.Name] && nameXreceipt[invoice.Name].Sub_Documents__r" class="uploadFileLink">
-                                                            {{nameXreceipt[invoice.Name].Sub_Documents__r[0].Name}}
-                                                        </span>
-                                                        <span ng-if="!nameXreceipt[invoice.Name] || !nameXreceipt[invoice.Name].Sub_Documents__r" ng-click="showUpload(invoice)" class="uploadFileLink">
-                                                            Upload File
-                                                        </span>
-                                                    </p>
-                                                    <p><strong>TDS Approval Status: </strong><span class="invoice-stage {{statusClassMapping[invoice.TDS_Approval_Status__c]}}">{{invoice.TDS_Approval_Status__c}}</span></p>
-                                                    <!-- Button to open popup -->
-                                                    <p style="text-align: center;">
-                                                        <button type="button" class="btn btn-icon view" 
-                                                            ng-click="openPreview(invoice.Name)">
-                                                        <i class="fa fa-eye"></i>
-                                                        </button>
-                                                        <button type="button" class="btn btn-icon download" 
-                                                        ng-click="download(invoice.Name)">
-                                                        <i class="fa fa-download"></i>
-                                                        </button>
-                                                    </p>    
                                                 </div>
                                             </div>
                                         </div>
@@ -333,7 +345,7 @@
                             </div>
                         </div>
                     </div>
-                    <div ng-if="opportunities.lenght == 0" class="no-payment-card">
+                    <div ng-if="showNoReceipts()" class="no-payment-card">
                             <div class="card-body">
                                 <h5 class="card-title">Receipts Not Found</h5>
                                 <p class="card-text">No Receipts are available. Please contact support for further assistance.</p>
@@ -348,23 +360,23 @@
                                     <span aria-hidden="true">&times;</span>
                                 </button>
                                 <div class="content-wrapper">
-                                    <h5 class="modal-title mb-3 modal-title-custom" id="uploadModalLabel">Upload TDS Document</h5>
-                                    <p>Upload your TDS documents here!</p>
+                                    <h5 class="modal-title mb-3 modal-title-custom" id="uploadModalLabel">Upload TDS Challan</h5>
+                                    <p>Upload the TDS Challan for <strong>{{challanOpp.Name}}</strong>. PDF, JPG or PNG, up to 3 MB.</p>
                                     <div class="upload-container">
-                                        <img style="padding:inherit;" src="{!URLFOR($Resource.FileUpload)}" alt="My Image"/>
+                                        <img style="padding:inherit;" src="{!URLFOR($Resource.FileUpload)}" alt="Upload"/>
                                         <div style="padding:inherit;" class="drag-drop-container">
                                             <p style="font-family: SF Pro Display;font-size: 16px;font-weight: 500;line-height: 20px; height: 21px;gap: 0px;opacity: 0px;color: #1A1A1A;">
                                                 Click to Browse file</p>
                                         </div>
                                         <div class="custom-file-input">
-                                            <input type="file" id="tdsDoc" file-change="onFileChange(file)" class="file-input" /> 
+                                            <input type="file" id="tdsDoc" accept=".pdf,.jpg,.jpeg,.png" file-change="onFileChange(file)" class="file-input" />
                                         </div>
                                         <div>
                                             <p>Selected File: {{fileName}}</p>
                                         </div>
                                     </div>
                                     <div style="justify-items:center;">
-                                        <button type="submit" class="btn btn-custom" style="margin:10px;" ng-click="uploadTDS()">Upload</button>
+                                        <button type="button" class="btn tds-challan-btn" style="margin:10px;" ng-click="uploadChallan()" ng-disabled="uploading">{{ uploading ? 'Uploading...' : 'Upload' }}</button>
                                     </div>
                                 </div>
                             </div>

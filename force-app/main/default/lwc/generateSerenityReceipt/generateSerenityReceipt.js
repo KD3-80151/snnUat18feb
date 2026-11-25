@@ -50,6 +50,16 @@ export default class GenerateSerenityReceipt extends LightningElement {
         })
         .catch(error => {
             console.log(error);
+            // e.g. "The final receipt for this payment has already been generated. It can be generated only once."
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Receipt not generated',
+                    message: (error && error.body && error.body.message) ? error.body.message : 'The receipt could not be generated. Please try again.',
+                    variant: 'error',
+                    mode: 'sticky'
+                })
+            );
+            this.dispatchEvent(new CloseActionScreenEvent());
         });
     }
     sendEmailtoCustomerwithAttachment() {
@@ -58,7 +68,7 @@ export default class GenerateSerenityReceipt extends LightningElement {
             //this.showSpinner = true;
 
             // Call Apex method to download the document using digioID
-            sendigiodetails1({ digiDocId: this.digioID ,recieptId : this.recordId, docname : 'VettedReceipt' })
+            sendigiodetails1({ digiDocId: this.digioID ,recieptId : this.recordId, docname : 'Receipt' })
                 .then(() => {
                     //this.showSpinner = false;
                     console.log('Document downloaded successfully');
@@ -74,6 +84,14 @@ export default class GenerateSerenityReceipt extends LightningElement {
                     // You can add additional logic to send email or notify the user
                 })
                 .catch(error => {
+                    this.dispatchEvent(
+                        new ShowToastEvent({
+                            title: 'Email not sent',
+                            message: (error && error.body && error.body.message) ? error.body.message : 'The email could not be sent. Please try again.',
+                            variant: 'error',
+                            mode: 'sticky'
+                        })
+                    );
                     this.showSpinner = false;
                     console.error('Error downloading document: ', error);
                 });

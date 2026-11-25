@@ -1,7 +1,12 @@
 trigger TriggerOnOpportunity on Opportunity (before insert,before update,after insert,after update) {
     
     DocumentCreationHandler dCH = new DocumentCreationHandler();
-    
+
+    if (Trigger.isBefore && (Trigger.isInsert || Trigger.isUpdate)) {
+        // Next Action = Not Interested -> Closed Lost
+        opportunityTriggerHandler.closeLostWhenNotInterested(Trigger.new, Trigger.oldMap);
+    }
+
     if(Trigger.isAfter && Trigger.isInsert) {
         
         // dCH.CreateDocuments(Trigger.new);

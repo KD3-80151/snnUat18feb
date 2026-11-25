@@ -6,6 +6,8 @@ import { loadStyle } from "lightning/platformResourceLoader";
 import modal from "@salesforce/resourceUrl/custommodalcss";
 import { CloseActionScreenEvent } from 'lightning/actions';
 
+
+const FUTURE_DATE_MSG = "Demand Date cannot be a future date. Please select today's date or a past date.";
 export default class UpdatePaymentSchedule extends LightningElement {
     @api recordId; // Opportunity Id
     @track paymentSchedules = [];
@@ -55,17 +57,48 @@ export default class UpdatePaymentSchedule extends LightningElement {
             });
     }
 
+
+    // Today's date in the user's local time (toISOString() would give the UTC date, i.e. yesterday in IST before 05:30)
+    get todayIso() {
+        const d = new Date();
+        const pad = (n) => String(n).padStart(2, '0');
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    }
+
+    isFutureDate(value) {
+        return !!value && value > this.todayIso;
+    }
+
     // Handle change in date fields (Pay Date and Due Date)
     handleDateChange(event) {
         const scheduleId = event.target.dataset.id; // Retrieve the ID of the schedule
         const field = event.target.dataset.field;  // Retrieve the field name (Pay_Date or Due_Date)
         const value = event.target.value;          // Retrieve the updated value (new date)
 
-        // Ensure that scheduleId, field, and value are correct
-        if (!scheduleId || !field || !value) {
-            console.error('Missing required values. scheduleId:', scheduleId, 'field:', field, 'value:', value);
+        // Ensure that scheduleId and field are correct
+        if (!scheduleId || !field) {
+            console.error('Missing required values. scheduleId:', scheduleId, 'field:', field);
             return;
         }
+
+        // Date was cleared: clear Demand Date and the derived Due Date so the blank value is saved
+        if (!value) {
+            event.target.setCustomValidity('');
+            event.target.reportValidity();
+            this.paymentSchedules = this.paymentSchedules.map(item =>
+                item.Id === scheduleId ? { ...item, [field]: null, Due_Date__c: null } : item
+            );
+            return;
+        }
+
+        if (field === 'Pay_Date__c' && this.isFutureDate(value)) {
+            event.target.setCustomValidity(FUTURE_DATE_MSG);
+            event.target.reportValidity();
+            this.showToast('Error', FUTURE_DATE_MSG, 'error');
+            return;
+        }
+        event.target.setCustomValidity('');
+        event.target.reportValidity();
 
         // Find the schedule record in the paymentSchedules array by ID
         const scheduleIndex = this.paymentSchedules.findIndex(item => item.Id === scheduleId);
@@ -93,10 +126,16 @@ export default class UpdatePaymentSchedule extends LightningElement {
         // Filter the modified payment schedules by comparing with original values
         const modifiedSchedules = this.paymentSchedules.filter(schedule => {
             const originalSchedule = this.originalPaymentSchedules.find(s => s.Id === schedule.Id);
-            return (originalSchedule && 
-                    (originalSchedule.Pay_Date__c !== schedule.Pay_Date__c || 
-                     originalSchedule.Due_Date__c !== schedule.Due_Date__c));
+            // Normalize: Apex omits null fields (undefined) while cleared fields are null
+            return (originalSchedule &&
+                    ((originalSchedule.Pay_Date__c || null) !== (schedule.Pay_Date__c || null) ||
+                     (originalSchedule.Due_Date__c || null) !== (schedule.Due_Date__c || null)));
         });
+
+        if (modifiedSchedules.some(schedule => this.isFutureDate(schedule.Pay_Date__c))) {
+            this.showToast('Error', FUTURE_DATE_MSG, 'error');
+            return;
+        }
 
         if (modifiedSchedules.length > 0) {
             // If there are modified schedules, save them

@@ -1,13 +1,18 @@
 angular.module('cp_app').controller('invoice_ctrl', function($scope, $rootScope, $sce) {
-    debugger;
-    console.log($rootScope);
-    // $rootScope.activeTab = 0;
+    // Receipts tab of the Customer Portal.
+    // Nov 2026 (client): only Tax Invoice receipts are listed, the receipt number is shown instead of the
+    // record id, the per-receipt TDS upload / TDS approval columns are removed, and each booking has its own
+    // "Upload TDS Challan" button (stored in the booking's "TDS Uploaded Docs" folder; the booking owner is notified).
     $scope.cpbaseUrl = window.origin + '/CustomerPortal';
-    $scope.receipt = {};
     $scope.fileName = 'No file selected';
+    $scope.receiptsLoaded = false;
+    $scope.tdsChallans = {};
+    $scope.challanOpp = null;
+    $scope.uploading = false;
 
-    // Hide the modal initially
-    $('#filePreviewModal').modal('hide');
+    var MAX_CHALLAN_BYTES = 3 * 1024 * 1024;               // same limit as CustomerPortalController.TDS_CHALLAN_MAX_BYTES
+    var ALLOWED_EXTENSIONS = ['pdf', 'jpg', 'jpeg', 'png'];
+    var UPLOAD_FAILED = 'The file could not be uploaded. Please try again.';
 
     $scope.statusClassMapping = {
         'Sent': 'stage-sent',
@@ -16,175 +21,125 @@ angular.module('cp_app').controller('invoice_ctrl', function($scope, $rootScope,
         'Rejected': 'stage-rejected'
     };
 
-    $scope.fetchOppWithInvoices = function () {
-        debugger;
+    function applyScope() {
+        if (!$scope.$$phase && !$rootScope.$$phase) {
+            $scope.$apply();
+        }
+    }
+
+    // challansOnly: after an upload only the challan lists are refreshed, so the open booking stays open.
+    $scope.fetchOppWithInvoices = function (challansOnly) {
         CustomerPortalController.getInvoiceDetails($rootScope.userId, function (result, event) {
-            debugger;
-            if (event.status) {
-                // console.log('Apex Result:', result);
-                $scope.opportunities = result.oppList;
-                $scope.nameXreceipt = result.nameXreceipt;
+            if (event.status && result && challansOnly) {
+                $scope.tdsChallans = result.oppIdXTdsChallans || {};
+            } else if (event.status && result) {
+                $scope.opportunities = result.oppList || [];
+                $scope.tdsChallans = result.oppIdXTdsChallans || {};
+            } else if (challansOnly) {
+                console.error('Error in Apex call:', event.message);
             } else {
                 console.error('Error in Apex call:', event.message);
+                $scope.opportunities = [];
+                $scope.tdsChallans = {};
             }
-            $scope.$apply(); // Update the scope
-            console.log('Fetched opportunities with invoices:', JSON.stringify($scope.opportunities));
+            $scope.receiptsLoaded = true;
+            applyScope();
         });
     };
     $scope.fetchOppWithInvoices();
 
-    // Function to open the file preview
-    $scope.openPreview = function (attachmentId) {
-        console.log('Opening preview for attachment:', attachmentId);
-        console.log('Sub Documents:', JSON.stringify($scope.nameXreceipt[attachmentId]));
-        if ($scope.nameXreceipt[attachmentId] && $scope.nameXreceipt[attachmentId].Sub_Documents__r) {
-            // Set the URL for the file preview
-            $scope.filesrec = $scope.nameXreceipt[attachmentId].Sub_Documents__r[0].File_URL__c;
-            console.log('File URL for preview:', $scope.filesrec);
-            // Set the iframe source to the file URL
-            $('#filePreviewFrame').attr('src', $scope.filesrec);
-            // Show the modal using Bootstrap
-            var myModal = new bootstrap.Modal(document.getElementById('filePreviewModal'));
-            myModal.show();
-        } else {
-            swal('Info', 'No document uploded yet for this record.', 'info');
-            console.error('No attachment ID provided');
-        }
+    // Kept in script: Visualforce turns && and > in page attributes into entities that Angular cannot parse.
+    $scope.showNoReceipts = function () {
+        return $scope.receiptsLoaded && (!$scope.opportunities || $scope.opportunities.length === 0);
+    };
+    $scope.hasChallans = function (opp) {
+        var list = opp && $scope.tdsChallans ? $scope.tdsChallans[opp.Id] : null;
+        return !!(list && list.length > 0);
     };
 
-    $scope.download = function (attachmentId) {
-        debugger;
-        console.log('Downloading file with ID:', attachmentId);
-        console.log('Sub Documents:', JSON.stringify($scope.nameXreceipt[attachmentId]));
-        if ($scope.nameXreceipt[attachmentId] && $scope.nameXreceipt[attachmentId].Sub_Documents__r) {
-            const fileIdMatch = $scope.nameXreceipt[attachmentId].Sub_Documents__r[0].File_URL__c.match(/\/d\/([a-zA-Z0-9_-]+)/);
-            var fileId;
-            if (fileIdMatch && fileIdMatch[1]) {
-                fileId = fileIdMatch[1];
-            }
-            var fileDownloadUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
-            window.open(fileDownloadUrl, '_self');
-        } else {
-            swal('Info', 'No document uploded yet for this record.', 'info');
-            console.error('No attachment ID provided');
+    function resetFileInput() {
+        $scope.fileName = 'No file selected';
+        var input = document.getElementById('tdsDoc');
+        if (input) {
+            input.value = '';
         }
     }
 
-    // $scope.downloadFile = function (attachmentId) {
-    //     debugger;
-    //     if (attachmentId) {
-    //         var downloadUrl = $scope.cpbaseUrl + '/servlet/servlet.FileDownload?file=' + attachmentId;
-    //         console.log('Downloading file from URL:', downloadUrl);
-    //         // Create a temporary anchor element
-    //         var link = document.createElement('a');
-    //         link.href = downloadUrl;
-    //         link.download = 'Tridasa'; // Optional: Specify the filename here if needed
-    //         // Append the anchor to the body (required for Firefox)
-    //         document.body.appendChild(link);
-    //         // Trigger the download by simulating a click
-    //         link.click();
-    //         // Clean up by removing the anchor
-    //         document.body.removeChild(link);
-    //     } else {
-    //         console.error('No attachment ID provided for download.');
-    //     }
-    // };
-
-    // Function to close the modal
+    // Close the upload popup
     $scope.closeModal = function () {
-        debugger;
-        $('#filePreviewModal').modal('hide');
         $('#uploadModal').modal('hide');
-        $scope.receipt = {};
+        $scope.challanOpp = null;
+        resetFileInput();
     };
 
-    $scope.showUpload = function (value) {
-        debugger;
-        $scope.receipt = value;
+    // Open the upload popup for one booking
+    $scope.showChallanUpload = function (opp) {
+        $scope.challanOpp = opp;
+        resetFileInput();
         var myModal = new bootstrap.Modal(document.getElementById('uploadModal'));
         myModal.show();
-    }
-
-    $scope.uploadTDS = function () {
-        debugger;
-        return new Promise((resolve, reject) => {
-            $scope.saveFile()
-            .then(() => {
-                CustomerPortalController.submitTDSApproval($scope.receipt.Id, function (result, event) {
-                    if(event.status && result.includes('success')){
-                        swal("Success", "File uploaded successfully.", "success");
-                        $scope.fetchOppWithInvoices();
-                        $scope.closeModal();
-                        resolve(result);
-                    } else {
-                        reject(result);
-                    }
-                });
-            })
-            .catch((error) => {
-                reject(error);
-            });
-        })
-    }
-
-    $scope.onFileChange = function(file) {
-        if (file) {
-            $scope.fileName = file.name;
-        } else {
-            $scope.fileName = 'No file selected';
-        }
     };
 
-    $scope.saveFile = function () {
-        return new Promise((resolve, reject) => {
-            debugger;
-            var file = document.getElementById('tdsDoc').files[0];
-            // If no file is uploaded throw an error
-            if (file == undefined) {
-                swal('Error', 'Please select a file to upload.', 'error');
-                return reject('No file selected');
-            } else {
-                // If a file is uploaded then proceed with the upload
-                fileName = file.name;
-                debugger;
-                attachmentName = file.name;
-                var fileReader = new FileReader();
-                fileReader.onloadend = function (e) {
-                    attachment = window.btoa(this.result);  // Base 64 encode the file before sending it
-                    positionIndex = 0;
-                    fileSize = attachment.length;
-                    attachmentBody = attachment.substring(positionIndex);
-                    // $scope.showSpinnereditProf = false;
-                    debugger;
-                    if (fileSize < maxStringSize) {
-                        // Call the function to upload the attachment
-                        CustomerPortalController.uploadDocuments($scope.receipt.Id, attachmentName, attachmentBody, fileSize, $scope.receipt.Name, file.type, function (result, event) {
-                            debugger;
-                            if (event.status && result.subDocUrl) {
-                                return resolve(result);
-                            } else {
-                                console.log('Error while uploading ' + type + ' ---> ' + event.result);
-                                return reject('Error while uploading');
-                            }
-                            $scope.$apply();
-                        });
-                    } else {
-                        swal("info", "Base 64 Encoded file is too large. Maximum size is " + maxStringSize + " your file is " + fileSize + ".", "info");
-                        return reject('File too large');
-                    }
-                };
-                fileReader.onerror = function () {
-                    swal("info", "There was an error reading the file. Please try again.", "info");
-                    return reject('Error reading file');
-                };
-                fileReader.onabort = function () {
-                    swal("info", "There was an error reading the file. Please try again.", "info");
-                    return  reject('Error reading file');
-                };
-                fileReader.readAsBinaryString(file);  // Read the body of the file
-            }
-        });
-    }
+    $scope.onFileChange = function (file) {
+        $scope.fileName = file ? file.name : 'No file selected';
+    };
+
+    $scope.uploadChallan = function () {
+        // Ignore repeated clicks while an upload is in progress
+        if ($scope.uploading) {
+            return;
+        }
+        if (!$scope.challanOpp) {
+            swal('Error', 'Please close this window and click "Upload TDS Challan" on the booking again.', 'error');
+            return;
+        }
+        var input = document.getElementById('tdsDoc');
+        var file = input && input.files ? input.files[0] : null;
+        if (!file) {
+            swal('Error', 'Please select the TDS Challan file to upload.', 'error');
+            return;
+        }
+        var extension = (file.name.indexOf('.') > -1 ? file.name.split('.').pop() : '').toLowerCase();
+        if (ALLOWED_EXTENSIONS.indexOf(extension) === -1) {
+            swal('Error', 'Please upload the TDS Challan as a PDF, JPG or PNG file.', 'error');
+            return;
+        }
+        if (file.size === 0) {
+            swal('Error', 'The selected file is empty. Please choose another file.', 'error');
+            return;
+        }
+        if (file.size > MAX_CHALLAN_BYTES) {
+            swal('Error', 'The file is too large. Please upload a file of up to 3 MB.', 'error');
+            return;
+        }
+
+        $scope.uploading = true;
+        var oppId = $scope.challanOpp.Id;
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            var dataUrl = e.target.result || '';
+            var base64 = dataUrl.indexOf(',') > -1 ? dataUrl.substring(dataUrl.indexOf(',') + 1) : '';
+            CustomerPortalController.uploadTdsChallan($rootScope.userId, oppId, file.name, base64, file.type || '', function (result, event) {
+                $scope.uploading = false;
+                if (event.status && result && result.success) {
+                    swal(result.alreadyUploaded ? 'Already uploaded' : 'Uploaded', result.message, result.alreadyUploaded ? 'info' : 'success');
+                    $scope.closeModal();
+                    $scope.fetchOppWithInvoices(true);
+                } else {
+                    console.log('TDS Challan upload: ' + ((result && result.message) || event.message));
+                    swal('Error', (result && result.message) ? result.message : UPLOAD_FAILED, 'error');
+                }
+                applyScope();
+            }, { escape: false, timeout: 120000 });
+        };
+        reader.onerror = reader.onabort = function () {
+            $scope.uploading = false;
+            swal('Error', 'There was an error reading the file. Please try again.', 'error');
+            applyScope();
+        };
+        reader.readAsDataURL(file);
+        applyScope();
+    };
 });
 
 app.directive('fileChange', function() {

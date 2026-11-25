@@ -371,7 +371,7 @@ public without Sharing class digioRepository {
                 List<Payment_Schedule__c> paymentSchList = [SELECT Id,Name,Opportunity__c, Installment_Sequence__c from Payment_Schedule__c where Id =: paymentSchId[0] LIMIT 1];
                 List<Opportunity> oppDetails = [SELECT Id,Name,Unit__r.Floor__r.Blocks__r.Tower_Code__c,AccountId,Account.Name,Account.Salutation__c,Account.Address_for_Communication__PostalCode__s ,Unit__r.Name,Project__r.Name,(SELECT Id,Document_Id__c from Documents__r where Name = 'Post Sales' LIMIT 1) from Opportunity where Id =: paymentSchList[0].Opportunity__c LIMIT 1];
                 List<Contact> contactList = [SELECT Id,Email,accountId from Contact where AccountId =: oppDetails[0].AccountId order by createddate desc LIMIT 1];
-                List<Receipt__c> debitReceipt = [SELECT Id,Debit_Note_Reminder_Sent__c,Opportunity__c,Type__c,Description__c,Amount__c from Receipt__c where Opportunity__c =: paymentSchList[0].Opportunity__c and Type__c = 'Debit' and Debit_Note_Reminder_Sent__c = false order by CreatedDate Desc LIMIT 1];
+                List<Receipt__c> debitReceipt = [SELECT Id,Debit_Note_Reminder_Sent__c,Opportunity__c,Type__c,Description__c,Amount__c from Receipt__c where Opportunity__c =: paymentSchList[0].Opportunity__c and Type__c = 'Debit' and Debit_Note_Reminder_Sent__c = false and Status__c != 'Cancelled' order by CreatedDate Desc LIMIT 1];
                 System.debug(' debitReceipt ===> ' + debitReceipt);
                 System.debug(' paymentSchList ===> ' + paymentSchList);
                 if(!debitReceipt.isEmpty() && !paymentSchList.isEmpty()){
@@ -496,23 +496,28 @@ public without Sharing class digioRepository {
             String docId;
             String subDocUrl = '';
             docwrpperClass wrapperRec = new docwrpperClass();
-            List<Applicant__c> allApplicants = [select id,Name,Permanent_Address__c,Permanent_Address__PostalCode__s,Email__c,Primary_Contact_Number__c,Opportunity__r.Unit__r.Super_Built_Up_Area_sq_ft__c,Opportunity__r.Unit__c,Opportunity__r.Unit__r.Name,Opportunity__r.Unit__r.Unit_Type__c,Opportunity__r.Unit__r.Floor__c,Opportunity__r.Unit__r.Floor__r.Name,Opportunity__r.Unit__r.Floor__r.Blocks__c,Opportunity__r.Unit__r.Floor__r.Blocks__r.Name,Opportunity__r.Project__c,Opportunity__r.Project__r.Name,Primary_Applicant__c,Opportunity__r.Opportunity_Unique_Id__c,Permanent_Address__City__s,Account__r.Name from Applicant__c where Opportunity__c  =: oppId];
+            List<Applicant__c> allApplicants = [select id,Name,Permanent_Address__c,Permanent_Address__PostalCode__s,Email__c,Primary_Contact_Number__c,Opportunity__r.Unit__r.Super_Built_Up_Area_sq_ft__c,Opportunity__r.Unit__c,Opportunity__r.Unit__r.Name,Opportunity__r.Unit__r.Unit_Type__c,Opportunity__r.Unit__r.Floor__c,Opportunity__r.Unit__r.Floor__r.Name,Opportunity__r.Unit__r.Floor__r.Blocks__c,Opportunity__r.Unit__r.Floor__r.Blocks__r.Name,Opportunity__r.Project__c,Opportunity__r.Project__r.Name,Primary_Applicant__c,Opportunity__r.Opportunity_Unique_Id__c,Permanent_Address__City__s,Account__c,Account__r.Name,Account__r.Permanent_Address__c from Applicant__c where Opportunity__c  =: oppId ORDER BY CreatedDate ASC];
             System.debug('allApplicants==>'+allApplicants);
             List<Payment_Schedule__c>paymentScheduleRelatedToOpp = [select id,Name,Installment__c,Agreement_Value__c,Installment_Sequence__c, Total_Amount_Inclusive_Of_Tax__c from Payment_Schedule__c where Opportunity__c =: oppId];
             System.debug('paymentScheduleRelatedToOpp==>'+paymentScheduleRelatedToOpp);
             List<Cost_Sheet__c>  finalizeCostSheet =[select id,finalize_CostSheet__c from Cost_Sheet__c Where finalize_CostSheet__c =: True and Opportunity__c =: oppId Limit 1];
             List<Pricing_Element__c> carParkingDetailList = [select id,Pricing_Element_Master__r.Name,Quantity__c,parking_Element__c from Pricing_Element__c Where Cost_Sheet__c =: finalizeCostSheet[0].Id AND parking_Element__c =: True];
-            List<Opportunity> oppDetails = [SELECT Id,Name,AccountId,Unit__r.Unit_Name__c,Booking_Date__c,Project__r.Name,Unit__r.Floor__r.Blocks__r.Name,Unit__r.Floor__r.Name,Unit__r.Floor__r.Floor_No__c,Unit__r.Unit_Type__c,Unit__r.Super_Built_Up_Area_sq_ft__c,Allotment_Letter_Generated__c, Allotment_Letter_Generated_Date_Time__c,OwnerId,(SELECT Id,Document_Id__c from Documents__r where Name = 'Post Sales' LIMIT 1) from Opportunity where Id =: oppId LIMIT 1];
+            List<Opportunity> oppDetails = [SELECT Id,Name,AccountId,Unit__r.Unit_Name__c,Booking_Date__c,Project__c,Project__r.Name,Unit__r.Floor__r.Blocks__r.Name,Unit__r.Floor__r.Name,Unit__r.Floor__r.Floor_No__c,Unit__r.Unit_Type__c,Unit__r.Super_Built_Up_Area_sq_ft__c,Allotment_Letter_Generated__c, Allotment_Letter_Generated_Date_Time__c,OwnerId,(SELECT Id,Document_Id__c from Documents__r where Name = 'Post Sales' LIMIT 1) from Opportunity where Id =: oppId LIMIT 1];
             if(!oppDetails.isEmpty() && oppDetails[0].Documents__r != null){
                 parentFolderId = oppDetails[0].Documents__r[0].Document_Id__c;
                 docId = oppDetails[0].Documents__r[0].Id;
             }
             List<Account> mainApplicant = [select id,Name,W_o_S_o_D_o__c,Date_Of_Birth__c,PAN__c,Email__c,Permanent_Address__c,Phone from Account where Id =:oppDetails[0].AccountId Limit 1];
+            // Co-applicants: de-duplicated by Account and never repeating the primary applicant,
+            // so a single co-applicant is printed once and an absent 2nd co-applicant stays blank.
+            DocumentDataHelper.ApplicantNames applicantNames = DocumentDataHelper.getApplicantNames(oppId);
+            DocumentDataHelper.CompanyDetails company = DocumentDataHelper.getCompanyDetails(oppDetails[0].Project__c);
+            coApplicantNames = applicantNames.allCoApplicantNames;
+            Map<Id, Applicant__c> applicantByAccount = new Map<Id, Applicant__c>();
             for(Applicant__c applicant : allApplicants){
-                if (String.isNotBlank(coApplicantNames)) {
-                    coApplicantNames += ' ; ';
+                if(applicant.Account__c != null && !applicantByAccount.containsKey(applicant.Account__c)){
+                    applicantByAccount.put(applicant.Account__c, applicant);
                 }
-                coApplicantNames += applicant.Account__r.Name;
             }
             System.debug('coApplicantNames==>'+coApplicantNames);
             Digio_Integration__c customData = Digio_Integration__c.getValues('Digio');
@@ -546,6 +551,26 @@ public without Sharing class digioRepository {
                 templateVariables.loginUserName       = UserInfo.getName();
                 templateVariables.applicantName       = mainApplicant[0].Name != null ? mainApplicant[0].Name : '';
                 templateVariables.coApplicantName       = coApplicantNames != null ? coApplicantNames: '';
+                templateVariables.coApplicant1Name      = applicantNames.coApplicant1Name;
+                templateVariables.coApplicant2Name      = applicantNames.coApplicant2Name;
+                templateVariables.primaryWithCoApplicant = applicantNames.primaryWithCoApplicant;
+                List<String> coAddresses = new List<String>();
+                for(Account coAcc : applicantNames.coApplicantAccounts){
+                    Applicant__c coApp = applicantByAccount.get(coAcc.Id);
+                    coAddresses.add(coApp != null ? formatAddress(coApp.Account__r.Permanent_Address__c) : '');
+                }
+                templateVariables.coApplicant1Address   = coAddresses.size() > 0 ? coAddresses[0] : '';
+                templateVariables.coApplicant2Address   = coAddresses.size() > 1 ? coAddresses[1] : '';
+                templateVariables.allotmentLetterDate   = DocumentDataHelper.formatDate(Date.today());
+                templateVariables.companyName           = company.companyName;
+                templateVariables.companyShortName      = company.companyShortName;
+                templateVariables.companyAddress        = company.companyAddress;
+                templateVariables.bankAccountName       = company.bankAccountName;
+                templateVariables.companyBankName       = company.bankName;
+                templateVariables.bankBranch            = company.bankBranch;
+                templateVariables.bankAccountNumber     = company.bankAccountNumber;
+                templateVariables.bankIfscCode          = company.bankIfscCode;
+                templateVariables.bankAccountType       = company.bankAccountType;
                 if (mainApplicant[0].Permanent_Address__c != null) {
                     System.Address address = mainApplicant[0].Permanent_Address__c;
                     templateVariables.addressName =
@@ -650,8 +675,21 @@ public without Sharing class digioRepository {
     }
     
     //Serenity Receipt Template
+    @TestVisible
+    private static List<Receipt__c> finalReceiptAlreadyGenerated(String receiptId) {
+        return [SELECT Id FROM Receipt__c WHERE Id = :receiptId AND Approval_Status__c = 'Approved' AND Final_Receipt_Generated__c = true LIMIT 1];
+    }
+
     @AuraEnabled
     public static docwrpperClass generateSerenityReceipt(String recorId){
+        // RC-8 (client, 21 Nov): the FINAL receipt (approved receipt) can be generated only once, for every profile.
+        // The provisional receipt is not restricted. An administrator can untick Final Receipt Generated to allow it again.
+        if (String.isNotBlank(recorId) && !finalReceiptAlreadyGenerated(recorId).isEmpty()) {
+            String msg = 'The final receipt for this payment has already been generated. It can be generated only once.';
+            AuraHandledException ae = new AuraHandledException(msg);
+            ae.setMessage(msg);
+            throw ae;
+        }
         try{
             System.debug('recorId=>'+recorId);
             if(recorId != null){
@@ -661,7 +699,7 @@ public without Sharing class digioRepository {
                 docwrpperClass wrapperRec = new docwrpperClass();
                 List<Receipt__c> receiptRecord = [select id,Name,Drawn_On_Bank__c,JV_Reference_Number__c,Approval_Status__c, Transaction_Reference_Number__c, CIN__c, UPI_Provider__c,Receipt_Date__c,Opportunity__r.Project__r.Name,Opportunity__c,Mode_Of_Payment__c,Reference_Number__c,Cheque_Date__c,Bank__c,
                                                   Opportunity__r.Unit__r.Unit_Type__c,Amount__c, TDS_Amount__c, Opportunity__r.Unit__r.Floor__r.Blocks__r.Name,Opportunity__r.Unit__r.Unit_Name__c,Opportunity__r.Unit__r.Name,Opportunity__r.Opportunity_Unique_Id__c,Receipt_Number__c, BSR_Code__c,
-                                                  JV_Date__c,DD_Date__c,Paid_Date__c,Challan_Date__c,Fund_Transfer_Date__c, Cheque_Number__c, DD_Number__c,  Opportunity__r.Project__r.Company__r.Name,Opportunity__r.Project__r.Company__r.Address__c,Opportunity__r.Project__r.Company__r.Email__c  from Receipt__c Where Id =: recorId Limit 1];
+                                                  JV_Date__c,DD_Date__c,Paid_Date__c,Challan_Date__c,Fund_Date__c,Fund_Transfer_Date__c, Cheque_Number__c, DD_Number__c,  Opportunity__r.Project__r.Company__r.Name,Opportunity__r.Project__r.Company__r.Address__c,Opportunity__r.Project__r.Company__r.Email__c  from Receipt__c Where Id =: recorId Limit 1];
                 
                 List<Opportunity> oppDetails = [SELECT Id,Name,AccountId,Unit__r.Name,Booking_Date__c,(SELECT Id,Document_Id__c from Documents__r where Name = 'Receipts' LIMIT 1) from Opportunity where Id =: receiptRecord[0].Opportunity__c LIMIT 1];
                 if(!oppDetails.isEmpty() && oppDetails[0].Documents__r != null){
@@ -670,24 +708,9 @@ public without Sharing class digioRepository {
                 }
                 
                 List<Account> mainAccount = [select id,Name,Permanent_Address__c,Salutation__c from Account where Id =: oppDetails[0].AccountId Limit 1];
-                List<Applicant__c> coApplicantDetails;
-                List<String> firstApplicantName = new List<String>();
-                firstApplicantName.add(mainAccount[0].Salutation__c);
-                firstApplicantName.add(mainAccount[0].Name);
-                
-                if(!receiptRecord.isEmpty() && receiptRecord[0].Opportunity__c != null){
-                    coApplicantDetails = [SELECT Id,Name,Primary_Applicant__c,Account__r.Salutation__c,Permanent_Address__c,Permanent_Address__City__s,Account__r.Name from Applicant__c where Opportunity__c =: receiptRecord[0].Opportunity__c];
-                }
-                
-                List<String> coApplicantList = new List<String>();
-                if(!coApplicantDetails.isEmpty()){
-                    for(Applicant__c app : coApplicantDetails){
-                        List<String> coAppName = new List<String>();
-                        coAppName.add(app.Account__r.Salutation__c);
-                        coAppName.add(app.Account__r.Name);
-                        coApplicantList.add(String.join(coAppName, '. '));
-                    }
-                }
+                // Names with salutation ("Mr. Ravi Kumar"); a missing salutation no longer prints "null. ".
+                DocumentDataHelper.ApplicantNames applicantNames = DocumentDataHelper.getApplicantNames(receiptRecord[0].Opportunity__c, true);
+                DocumentDataHelper.CompanyDetails company = DocumentDataHelper.getCompanyDetailsForOpportunity(receiptRecord[0].Opportunity__c);
                 
                 Digio_Integration__c customData = Digio_Integration__c.getValues('Digio');
                 if(customData.Authorization__c != null && customData.Endpoint_URL__c != null){
@@ -707,13 +730,16 @@ public without Sharing class digioRepository {
                     generateDoc.signers = new List<DigioWrapperClass.signersList>{signer};
                     DigioWrapperClass.serenityReceiptTemplateList tempList = new DigioWrapperClass.serenityReceiptTemplateList();
                     tempList.template_key = receiptRecord[0].Approval_Status__c == 'Approved' ? customData.Serenity_Receipt_Template_Key__c : customData.Provisional_Receipt__c;
-                    system.debug('firstApplicantNmae ::' + firstApplicantName);
                     DigioWrapperClass.serenityReceiptTemplateValues templateVariables = new DigioWrapperClass.serenityReceiptTemplateValues();
                     templateVariables.receiptNo             = receiptRecord[0].Receipt_Number__c != null ? receiptRecord[0].Receipt_Number__c : '';
-                    templateVariables.receiptDate           = receiptRecord[0].Receipt_Date__c != null ? String.valueOf(receiptRecord[0].Receipt_Date__c) : '';
+                    templateVariables.receiptDate           = DocumentDataHelper.formatDate(receiptRecord[0].Receipt_Date__c);
+                    templateVariables.paymentDate           = DocumentDataHelper.formatDate(DocumentDataHelper.paymentMadeDate(receiptRecord[0]));
                     templateVariables.projectName           = receiptRecord[0].Opportunity__r.Project__r.Name != null ? receiptRecord[0].Opportunity__r.Project__r.Name : '';
-                    templateVariables.customerName          = !firstApplicantName.isEmpty() ? String.join(firstApplicantName, '. ') : '';
-                    templateVariables.coApplicantName       = coApplicantList != null && !coApplicantList.isEmpty() ? String.join(coApplicantList, ', '): '';
+                    templateVariables.customerName          = applicantNames.primaryName;
+                    templateVariables.coApplicantName       = applicantNames.allCoApplicantNames;
+                    templateVariables.coApplicant1Name      = applicantNames.coApplicant1Name;
+                    templateVariables.coApplicant2Name      = applicantNames.coApplicant2Name;
+                    templateVariables.primaryWithCoApplicant = applicantNames.primaryWithCoApplicant;
                     templateVariables.modeOfPayment         = receiptRecord[0].Mode_Of_Payment__c != null ? receiptRecord[0].Mode_Of_Payment__c : '';
                     
                     
@@ -757,12 +783,20 @@ public without Sharing class digioRepository {
                     templateVariables.flatNo                = receiptRecord[0].Opportunity__r.Unit__r.Name != null ? receiptRecord[0].Opportunity__r.Unit__r.Name : '';
                     templateVariables.unitNo                = receiptRecord[0].Opportunity__r.Unit__r.Unit_Name__c != null ? receiptRecord[0].Opportunity__r.Unit__r.Unit_Name__c : '';
                     templateVariables.blockName             = receiptRecord[0].Opportunity__r.Unit__r.Floor__r.Blocks__r.Name != null ? receiptRecord[0].Opportunity__r.Unit__r.Floor__r.Blocks__r.Name : '';
-                    templateVariables.companyName           = receiptRecord[0].Opportunity__r.Project__r.Company__r.Name != null ? receiptRecord[0].Opportunity__r.Project__r.Company__r.Name : '';
-                    templateVariables.companyAddress        = receiptRecord[0].Opportunity__r.Project__r.Company__r.Address__c != null ? receiptRecord[0].Opportunity__r.Project__r.Company__r.Address__c : '';
-                    templateVariables.companyEmail          = receiptRecord[0].Opportunity__r.Project__r.Company__r.Email__c != null ? receiptRecord[0].Opportunity__r.Project__r.Company__r.Email__c : '';
-                    templateVariables.amountValues          = receiptRecord[0].Amount__c != null  ? String.valueOf(receiptRecord[0].Amount__c) : receiptRecord[0].TDS_Amount__c != null ? String.valueOf(receiptRecord[0].TDS_Amount__c) : '0';
+                    templateVariables.companyName           = company.companyName;
+                    templateVariables.companyShortName      = company.companyShortName;
+                    templateVariables.companyAddress        = company.companyAddress;
+                    templateVariables.companyEmail          = company.companyEmail;
+                    templateVariables.bankAccountName       = company.bankAccountName;
+                    templateVariables.companyBankName       = company.bankName;
+                    templateVariables.bankBranch            = company.bankBranch;
+                    templateVariables.bankAccountNumber     = company.bankAccountNumber;
+                    templateVariables.bankIfscCode          = company.bankIfscCode;
+                    templateVariables.bankAccountType       = company.bankAccountType;
+                    // Indian digit grouping: 1,35,67,543
+                    templateVariables.amountValues          = receiptRecord[0].Amount__c != null ? DocumentDataHelper.formatIndianAmount(receiptRecord[0].Amount__c) : receiptRecord[0].TDS_Amount__c != null ? DocumentDataHelper.formatIndianAmount(receiptRecord[0].TDS_Amount__c) : '0';
                     templateVariables.loginUserName         = UserInfo.getName();
-                    templateVariables.amount                = receiptRecord[0].Amount__c != null ? receiptRecord[0].Amount__c : receiptRecord[0].TDS_Amount__c != null ? receiptRecord[0].TDS_Amount__c : 0;
+                    templateVariables.amount                = templateVariables.amountValues; // "THE SUM OF Rs.…" also with Indian commas
                     templateVariables.amountInWords         = receiptRecord[0].Amount__c != null ? NumberToWordsHelper.numberToEnglish(Integer.valueOf(receiptRecord[0].Amount__c)) : receiptRecord[0].TDS_Amount__c != null ? NumberToWordsHelper.numberToEnglish(Integer.valueOf(receiptRecord[0].TDS_Amount__c)) : '';
                     system.debug('templateVariables.amountInWords::>>' + templateVariables.amountInWords );
                     templateVariables.exactTime             = System.now().format('HH:mm:ss');
@@ -783,6 +817,9 @@ public without Sharing class digioRepository {
                     if(digiDocId != null && fileName != null){
                         subDocUrl = digioCalloutUtility.downloadDocument(digiDocId, fileName, parentFolderId, docId);
                         wrapperRec.subDocUrl = subDocUrl;
+                    }
+                    if (digiDocId != null && receiptRecord[0].Approval_Status__c == 'Approved') {
+                        update new Receipt__c(Id = receiptRecord[0].Id, Final_Receipt_Generated__c = true);
                     }
                     return wrapperRec;
                 }
@@ -839,21 +876,15 @@ public without Sharing class digioRepository {
             }
             
             List<Account> mainApplicant = [select id,Name,W_o_S_o_D_o__c,Date_Of_Birth__c,PAN__c,Email__c,Permanent_Address__c,Phone from Account where Id =:oppDetails[0].AccountId Limit 1];
-            for(Applicant__c applicant : allApplicants){
-                
-                if (String.isNotBlank(coApplicantNames)) {
-                    coApplicantNames += ' ; ';
-                }
-                coApplicantNames += applicant.Name;
-                
-            }
-            
-            
+            // Previously used Applicant__c.Name (an auto-number such as "AP-0006") and never sent it to the template.
+            DocumentDataHelper.ApplicantNames applicantNames = DocumentDataHelper.getApplicantNames(oppId);
+            DocumentDataHelper.CompanyDetails company = DocumentDataHelper.getCompanyDetailsForOpportunity(oppId);
+            coApplicantNames = applicantNames.allCoApplicantNames;
             System.debug('coApplicantNames==>'+coApplicantNames);
             Digio_Integration__c customData = Digio_Integration__c.getValues('Digio');
             
             List<Receipt__c > receiptsRelatedToOpp = [select id,Name,Receipt_Date__c,Mode_Of_Payment__c, UPI_Provider__c, Paid_Date__c, Cheque_Number__c,Cheque_Date__c,Drawn_on_Bank__c,Amount__c,Opportunity__c,DD_Number__c,DD_Date__c,Transaction_Reference_Number__c, Type__c, Description__c, Pricing_Element_Master__r.Name, Reference_Number__c, Fund_Date__c,
-                                                      Fund_Transfer_Date__c,JV_Date__c, Total_GST__c, Amount_Paid_Excluding_TAX__c,JV_Reference_Number__c, Challan_Date__c, Bank__c, TDS_Amount__c, CIN__c, Receipt_Number__c, Credit_Debit_SGST__c, Credit_Debit_CGST__c  from Receipt__c where Opportunity__c =: oppId and Approval_Status__c = 'Approved'];
+                                                      Fund_Transfer_Date__c,JV_Date__c, Total_GST__c, Amount_Paid_Excluding_TAX__c,JV_Reference_Number__c, Challan_Date__c, Bank__c, TDS_Amount__c, CIN__c, Receipt_Number__c, Credit_Debit_SGST__c, Credit_Debit_CGST__c  from Receipt__c where Opportunity__c =: oppId and Approval_Status__c = 'Approved' and Status__c != 'Cancelled'];
             System.debug('receiptsRelatedToOpp==>'+receiptsRelatedToOpp + 'size==>'+receiptsRelatedToOpp.size());
             Boolean hasCreditDebit = false;
             for (Receipt__c rec : receiptsRelatedToOpp) {
@@ -892,7 +923,21 @@ public without Sharing class digioRepository {
                 
                 DigioWrapperClass.accountTemplateValues templateVariables = new DigioWrapperClass.accountTemplateValues();
                 templateVariables.todayDate             = String.valueOf(Date.today().format());
-                templateVariables.customerName          = mainApplicant[0].Name != null ? mainApplicant[0].Name: '';
+                // Primary applicant together with the 1st co-applicant, e.g. "Ravi Kumar & Asha Rao"
+                templateVariables.customerName          = applicantNames.primaryWithCoApplicant;
+                templateVariables.coApplicantName       = applicantNames.allCoApplicantNames;
+                templateVariables.coApplicant1Name      = applicantNames.coApplicant1Name;
+                templateVariables.coApplicant2Name      = applicantNames.coApplicant2Name;
+                templateVariables.primaryWithCoApplicant = applicantNames.primaryWithCoApplicant;
+                templateVariables.companyName           = company.companyName;
+                templateVariables.companyShortName      = company.companyShortName;
+                templateVariables.companyAddress        = company.companyAddress;
+                templateVariables.bankAccountName       = company.bankAccountName;
+                templateVariables.companyBankName       = company.bankName;
+                templateVariables.bankBranch            = company.bankBranch;
+                templateVariables.bankAccountNumber     = company.bankAccountNumber;
+                templateVariables.bankIfscCode          = company.bankIfscCode;
+                templateVariables.bankAccountType       = company.bankAccountType;
                 templateVariables.projectName           = oppDetails[0].Project__r.Name != null ? oppDetails[0].Project__r.Name : '';
                 templateVariables.unitNo                = oppDetails[0].Unit__r.Unit_Name__c != null ? oppDetails[0].Unit__r.Unit_Name__c : '';
                 // templateVariables.blockNo               = oppDetails[0].Unit__r.Floor__r.Blocks__r.Name != null ? oppDetails[0].Unit__r.Floor__r.Blocks__r.Name : '';
@@ -1027,7 +1072,7 @@ public without Sharing class digioRepository {
                         creditCount++;
                         DigioWrapperClass.statementOfReceiptCreditDebit receiptsCD  = new DigioWrapperClass.statementOfReceiptCreditDebit();
                         receiptsCD.receiptNoCD                                      = receipt.Receipt_Number__c != null ? receipt.Receipt_Number__c : '';
-                        receiptsCD.receiptTypeCD                                    = receipt.Type__c != null ? receipt.Type__c : '';
+                        receiptsCD.receiptTypeCD                                    = CreditDebitNoteService.entryType(receipt);
                         receiptsCD.receiptDescCD                                    = receipt.Pricing_Element_Master__r.Name != null ? receipt.Pricing_Element_Master__r.Name : '';
                         receiptsCD.receiptAmountCD                                  = receipt.Amount__c != null ? receipt.Amount__c : 0;
                         receiptsCD.receiptTaxCD                                     = (receipt.Credit_Debit_CGST__c != null && receipt.Credit_Debit_SGST__c != null) ? receipt.Credit_Debit_CGST__c + receipt.Credit_Debit_SGST__c : 0;
@@ -1125,7 +1170,7 @@ public without Sharing class digioRepository {
         try{
             System.debug('oppId==>'+oppId);
             
-            Opportunity oppRecord = [SELECT Id, AccountId, Phone__c, Opportunity_Unique_Id__c, Total_TDS_Amount_till_date__c, Project__r.Name, Unit__r.Floor__r.Blocks__r.Project__r.Name, Unit__r.Floor__r.Blocks__r.Name, Unit__r.Name,
+            Opportunity oppRecord = [SELECT Id, AccountId, Phone__c, Opportunity_Unique_Id__c, Total_TDS_Amount_till_date__c, Project__c, Project__r.Name, Unit__r.Floor__r.Blocks__r.Project__r.Name, Unit__r.Floor__r.Blocks__r.Name, Unit__r.Name,
                                      Unit__r.Floor__r.Blocks__r.Tower_Code__c, Unit__r.Unit_Name__c, (SELECT Id, Document_Id__c FROM Documents__r WHERE Name = 'Demand Letters' LIMIT 1)
                                      FROM Opportunity
                                      WHERE Id = :oppId
@@ -1171,7 +1216,7 @@ public without Sharing class digioRepository {
             DigioWrapperClass.demandLetterTemplateValuesList tempList = new DigioWrapperClass.demandLetterTemplateValuesList();
             
             List<Receipt__c> cdReceipts = [SELECT Id, Type__c, Description__c, Pricing_Element_Master__c, Pricing_Element_Master__r.Name, Amount__c, Credit_Debit_CGST__c, Credit_Debit_SGST__c, Amount_Paid_Excluding_TAX__c FROM Receipt__c WHERE Opportunity__c = :oppRecord.Id
-                                           AND Type__c IN ('Credit', 'Debit') AND Approval_Status__c = 'Approved' ORDER BY CreatedDate ASC];
+                                           AND Type__c IN ('Credit', 'Debit') AND Approval_Status__c = 'Approved' AND Status__c != 'Cancelled' ORDER BY CreatedDate ASC];
             Boolean hasCreditDebit = (cdReceipts != null && !cdReceipts.isEmpty());
             
             tempList.template_key = hasCreditDebit ? customData.Demand_Letter_Credit_Debit_Template_Key__c : customData.Demand_Letter_Template_Key__c;
@@ -1212,13 +1257,32 @@ public without Sharing class digioRepository {
             
             templateVariables.totalTdsPaidTillDate = oppRecord.Total_TDS_Amount_till_date__c != null ? oppRecord.Total_TDS_Amount_till_date__c : 0;
             
-            List<SNN_Bank_Details__c> bankDetailsList = [SELECT Account_Number__c, Bank_Name__c, IFSC_Code__c FROM SNN_Bank_Details__c LIMIT 1
-                                                        ];
-            if(!bankDetailsList.isEmpty()){
-                templateVariables.bankName = bankDetailsList[0].Bank_Name__c != null ? bankDetailsList[0].Bank_Name__c : '';
-                templateVariables.accountNo = bankDetailsList[0].Account_Number__c != null ? bankDetailsList[0].Account_Number__c : '';
-                templateVariables.ifscCode = bankDetailsList[0].IFSC_Code__c != null ? bankDetailsList[0].IFSC_Code__c : '';
+            // Payment account is project specific (Project__c account details), not one global SNN_Bank_Details__c row.
+            DocumentDataHelper.CompanyDetails company = DocumentDataHelper.getCompanyDetails(oppRecord.Project__c);
+            templateVariables.bankName          = company.bankName;
+            templateVariables.accountNo         = company.bankAccountNumber;
+            templateVariables.ifscCode          = company.bankIfscCode;
+            templateVariables.companyBankName   = company.bankName;
+            templateVariables.bankAccountName   = company.bankAccountName;
+            templateVariables.bankBranch        = company.bankBranch;
+            templateVariables.bankAccountNumber = company.bankAccountNumber;
+            templateVariables.bankIfscCode      = company.bankIfscCode;
+            templateVariables.bankAccountType   = company.bankAccountType;
+            templateVariables.companyName       = company.companyName;
+            templateVariables.companyShortName  = company.companyShortName;
+            templateVariables.companyAddress    = company.companyAddress;
+
+            // The Digio demand letter prints customerName and, on the next line, coApplicantNames.
+            // Keep customerName as the primary applicant only so co-applicants are not printed twice.
+            DocumentDataHelper.ApplicantNames applicantNames = DocumentDataHelper.getApplicantNames(oppRecord.Id, true);
+            if (String.isBlank(templateVariables.customerName)) {
+                templateVariables.customerName = applicantNames.primaryName;
             }
+            templateVariables.coApplicantName        = applicantNames.allCoApplicantNames;
+            templateVariables.coApplicantNames       = applicantNames.allCoApplicantNames;
+            templateVariables.coApplicant1Name       = applicantNames.coApplicant1Name;
+            templateVariables.coApplicant2Name       = applicantNames.coApplicant2Name;
+            templateVariables.primaryWithCoApplicant = applicantNames.primaryWithCoApplicant;
             
             templateVariables.exactTime = System.now().format('HH:mm:ss');
             templateVariables.currentUser = UserInfo.getName();
@@ -1295,7 +1359,7 @@ public without Sharing class digioRepository {
             if(hasCreditDebit){
                 for(Receipt__c r : cdReceipts){
                     DigioWrapperClass.creditDebitTableRow cdr = new DigioWrapperClass.creditDebitTableRow();
-                    cdr.ReceiptType = (String)r.Type__c;
+                    cdr.ReceiptType = CreditDebitNoteService.entryType(r);
                     cdr.Description = (String)r.Pricing_Element_Master__r.Name;
                     cdr.Amount = (r.Amount__c != null) ? r.Amount__c : 0;
                     cdr.Tax = (r.Credit_Debit_CGST__c != null && r.Credit_Debit_SGST__c != null) ? r.Credit_Debit_CGST__c + r.Credit_Debit_SGST__c : 0;
@@ -1401,7 +1465,7 @@ public without Sharing class digioRepository {
             }
             System.debug('costSheetId==>'+costSheetId);
             if(costSheetId != null){
-                List<Cost_Sheet__c> selectedCostSheetList = [select id,Name,Opportunity__r.Project__r.Name, Opportunity__r.Unit__r.Unit_Name__c, Opportunity__r.Name,Opportunity__c,Unit__r.Unit_Type__c,Unit__r.Floor__r.Floor_No__c,Unit__r.Super_Built_Up_Area_sq_ft__c,Unit__r.Total__c,Total_Pricing_Value__c,Cost_Scheme_Linking__c,Unit__r.Unit_Name__c,Unit__r.Base_Price_per_sqft__c, Unit__r.Terrace_Area__c, Opportunity__r.Project__r.Company__r.Name from Cost_Sheet__c where id=:costSheetId Limit 1];
+                List<Cost_Sheet__c> selectedCostSheetList = [select id,Name,Opportunity__r.Project__c,Opportunity__r.Project__r.Name, Opportunity__r.Unit__r.Unit_Name__c, Opportunity__r.Name,Opportunity__c,Unit__r.Unit_Type__c,Unit__r.Floor__r.Floor_No__c,Unit__r.Super_Built_Up_Area_sq_ft__c,Unit__r.Total__c,Total_Pricing_Value__c,Cost_Scheme_Linking__c,Unit__r.Unit_Name__c,Unit__r.Base_Price_per_sqft__c, Unit__r.Terrace_Area__c, Opportunity__r.Project__r.Company__r.Name from Cost_Sheet__c where id=:costSheetId Limit 1];
                 List<Opportunity>  oppRecord  = [SELECT Id,SGST_Tax_Amount__c,CGST_Tax_Amount__c,Total_Outstanding_Amount__c ,Unit__r.Unit_Type__c,Unit__r.Floor__r.Floor_No__c,Unit__r.Super_Built_Up_Area_sq_ft__c,Unit__r.Floor__r.Blocks__r.Parking_Availability__c,Unit__r.Total__c,Opportunity_Unique_Id__c,Cost_Sheet_Template__c ,(SELECT Id,Document_Id__c from Documents__r where Name = 'Sales' LIMIT 1)
                                                  From Opportunity WHERE Id =: selectedCostSheetList[0].Opportunity__c LIMIT 1];
                 String parentFolderId;
@@ -1438,12 +1502,33 @@ public without Sharing class digioRepository {
                     costSheetTable.superBuiltupArea = selectedCostSheetList[0].Unit__r.Super_Built_Up_Area_sq_ft__c != null ?  selectedCostSheetList[0].Unit__r.Super_Built_Up_Area_sq_ft__c : 0;
                     costSheetTable.basicPrice       = selectedCostSheetList[0].Unit__r.Base_Price_per_sqft__c != null ? (Integer) selectedCostSheetList[0].Unit__r.Base_Price_per_sqft__c : 0;
                     costSheetTable.terraceArea      = selectedCostSheetList[0].Unit__r.Terrace_Area__c != null ? (String) selectedCostSheetList[0].Unit__r.Terrace_Area__c : '';
-                    costSheetTable.companyName      = selectedCostSheetList[0].Opportunity__r.Project__r.Name != null ? selectedCostSheetList[0].Opportunity__r.Project__r.Name : '';
+                    // Company, address and "DD in favour of" account details are project specific
+                    DocumentDataHelper.CompanyDetails company = DocumentDataHelper.getCompanyDetails(selectedCostSheetList[0].Opportunity__r.Project__c);
+                    DocumentDataHelper.ApplicantNames applicantNames = DocumentDataHelper.getApplicantNames(selectedCostSheetList[0].Opportunity__c);
+                    // Cost sheet template: header = companyName, 'All Cheque's or DD's should be in favor of "bankAccountName"'.
+                    // bankAccountName is the Project's bank Account Name (falls back to the company name, then the project name).
+                    costSheetTable.companyName       = String.isNotBlank(company.companyName) ? company.companyName : costSheetTable.projectName;
+                    costSheetTable.companyShortName  = company.companyShortName;
+                    costSheetTable.companyAddress    = company.companyAddress;
+                    costSheetTable.bankAccountName   = String.isNotBlank(company.bankAccountName) ? company.bankAccountName : costSheetTable.projectName;
+                    costSheetTable.companyBankName   = company.bankName;
+                    costSheetTable.bankBranch        = company.bankBranch;
+                    costSheetTable.bankAccountNumber = company.bankAccountNumber;
+                    costSheetTable.bankIfscCode      = company.bankIfscCode;
+                    costSheetTable.bankAccountType   = company.bankAccountType;
+                    costSheetTable.customerName      = applicantNames.primaryWithCoApplicant;
+                    costSheetTable.coApplicant1Name  = applicantNames.coApplicant1Name;
+                    costSheetTable.coApplicant2Name  = applicantNames.coApplicant2Name;
+                    costSheetTable.primaryWithCoApplicant = applicantNames.primaryWithCoApplicant;
                     Integer unitTotal = selectedCostSheetList[0].Unit__r.Total__c != null ?  (Integer) selectedCostSheetList[0].Unit__r.Total__c : 0;
                     Decimal totalAmount = selectedCostSheetList[0].Total_Pricing_Value__c != null ? selectedCostSheetList[0].Total_Pricing_Value__c : 0;
-                    SNN_JP_Nagar_Details__c addressDetail = [SELECT Name,JP_Nagar_Address__c FROM SNN_JP_Nagar_Details__c Where Name =:'JP Nagar Address'  LIMIT 1];
-                    if (addressDetail != null) {
-                        costSheetTable.addressDetail = addressDetail.JP_Nagar_Address__c;
+                    if (String.isNotBlank(company.companyAddress)) {
+                        costSheetTable.addressDetail = company.companyAddress;
+                    } else {
+                        List<SNN_JP_Nagar_Details__c> addressDetail = [SELECT Name,JP_Nagar_Address__c FROM SNN_JP_Nagar_Details__c Where Name =:'JP Nagar Address'  LIMIT 1];
+                        if (!addressDetail.isEmpty()) {
+                            costSheetTable.addressDetail = addressDetail[0].JP_Nagar_Address__c;
+                        }
                     }
                     DigioWrapperClass.costSheetPaymentTable tableValues = new DigioWrapperClass.costSheetPaymentTable();
                     list<DigioWrapperClass.costSheetAssociationTable> costPaymentAssociationList = new List<DigioWrapperClass.costSheetAssociationTable>();
@@ -1549,12 +1634,17 @@ public without Sharing class digioRepository {
     
     @AuraEnabled(cacheable=false)
     public static void sendigiodetails(String digiDocId ,string oppId,string docname){
+        // Send the email first; any failure goes back to the screen as an error (no false "Email sent").
         try{
-            if(oppId != null && digiDocId != null && docname != null){
-                Opportunity oppRec = [Select Id ,Email__c from Opportunity where Id =: oppId ];
-                digioCalloutUtility.downloadDigioDocWithoutGDrive (digiDocId,oppRec.Id,docname);
+            if(String.isBlank(oppId) || String.isBlank(digiDocId) || String.isBlank(docname)){
+                throw new digioCalloutUtility.DocumentEmailException('The email was not sent: the document has not been generated yet. Please generate it again.');
             }
-            
+            digioCalloutUtility.downloadDigioDocWithoutGDrive(digiDocId, Id.valueOf(oppId), docname);
+        }catch(Exception e){
+            system.debug('Error ==> ' + e.getMessage() + ' line ' + e.getLineNumber());
+            throw digioCalloutUtility.toAuraError(e);
+        }
+        try{
             list<Payment_Schedule__c> psList = [select Id, Demand_Letter_Sent__c from Payment_Schedule__c where Opportunity__c = :oppId and Pay_Date__c = :Date.today() and Demand_Letter_Sent__c = false];
             
             if(psList.isEmpty()) return;
@@ -1573,12 +1663,17 @@ public without Sharing class digioRepository {
     
     @AuraEnabled(cacheable=false)
     public static void sendigiodetailsDemadLetter(String digiDocId ,string oppId,string docname){
+        // Send the email first; any failure goes back to the screen as an error and nothing is marked as sent.
         try{
-            if(oppId != null && digiDocId != null && docname != null){
-                Opportunity oppRec = [Select Id ,Email__c from Opportunity where Id =: oppId ];
-                digioCalloutUtility.downloadDigioDocWithoutGDrive (digiDocId,oppRec.Id,docname);
+            if(String.isBlank(oppId) || String.isBlank(digiDocId) || String.isBlank(docname)){
+                throw new digioCalloutUtility.DocumentEmailException('The email was not sent: the document has not been generated yet. Please generate it again.');
             }
-            
+            digioCalloutUtility.downloadDigioDocWithoutGDrive(digiDocId, Id.valueOf(oppId), docname);
+        }catch(Exception e){
+            system.debug('Error ==> ' + e.getMessage() + ' line ' + e.getLineNumber());
+            throw digioCalloutUtility.toAuraError(e);
+        }
+        try{
             list<Payment_Schedule__c> psList = [select Id, Demand_Letter_Sent__c, Opportunity__c, Opportunity__r.AccountId,
                        Agreement_Value__c, Total_Due_Amount__c, Total_Amount_Inclusive_Of_Tax__c,
                        Tax_Amount__c, Tax_Invoice_Created__c from Payment_Schedule__c where Opportunity__c = :oppId and Pay_Date__c = :Date.today() and Demand_Letter_Sent__c = false];
@@ -1639,14 +1734,18 @@ public without Sharing class digioRepository {
     @AuraEnabled(cacheable=false)
     public static void sendigiodetails1(String digiDocId ,string recieptId,string docname){
         try{
-            if(recieptId != null && digiDocId != null && docname != null){
-                Receipt__c  recieptRec = [Select Id ,Opportunity__c  from Receipt__c where Id =: recieptId ];
-                system.debug('recieptRec.Opportunity__c ==> ' +recieptRec.Opportunity__c);
-                digioCalloutUtility.downloadDigioDocWithoutGDrive (digiDocId,recieptRec.Opportunity__c,docname);
+            if(String.isBlank(recieptId) || String.isBlank(digiDocId) || String.isBlank(docname)){
+                throw new digioCalloutUtility.DocumentEmailException('The email was not sent: the document has not been generated yet. Please generate it again.');
             }
+            List<Receipt__c> recieptRecs = [Select Id ,Opportunity__c  from Receipt__c where Id =: recieptId ];
+            if(recieptRecs.isEmpty() || recieptRecs[0].Opportunity__c == null){
+                throw new digioCalloutUtility.DocumentEmailException('The email was not sent: this receipt is not linked to an Opportunity.');
+            }
+            system.debug('recieptRec.Opportunity__c ==> ' +recieptRecs[0].Opportunity__c);
+            digioCalloutUtility.downloadDigioDocWithoutGDrive (digiDocId,recieptRecs[0].Opportunity__c,docname);
         }catch(Exception e){
-            system.debug('Error ==> ' + e.getMessage());
-            system.debug('Error in line ==> ' + e.getLineNumber());
+            system.debug('Error ==> ' + e.getMessage() + ' line ' + e.getLineNumber());
+            throw digioCalloutUtility.toAuraError(e);
         }
     }
     
@@ -2114,10 +2213,10 @@ public without Sharing class digioRepository {
             List<Opportunity> oppList = [
                 SELECT Id, Name, Allotment_Letter_Generated_Date_Time__c, Channel_Partner__r.Name, Unit__r.Carpet_Area__c, Unit__r.Terrace_Area__c, Unit__r.Balcony_Area__c, Agreement_Value__c, Total_Amount_Collected__c, Sales_Team_Member__r.Name, Project__r.Name, Unit__r.Unit_Number_Only__c,  Unit__r.Unit_Type__c, Unit__r.Super_Built_Up_Area_sq_ft__c, Unit__r.Floor__r.Floor_No__c, Unit__r.Floor__r.Blocks__r.Tower_Code__c, Unit__r.Floor__r.Blocks__r.Name, Unit__r.Salable_Area__c, Account.Id, Account.Name, Account.Full_Name__c, Account.Phone, Account.Application_Date__c, Account.RERA_Number__c, Account.Company_Firm_Name__c, Account.Primary_Contact_Number__c, Account.Alternate_Contact_Number__c,
                 Account.Email__c, Account.Official_Email__c, Account.Passport_Number__c, Account.Industry__c, Account.W_o_S_o_D_o__c, Account.Date_of_Birth__c, Account.Spouse_Name__c, Account.Spouse_Date_of_Birth__c, Account.Anniversary_Date__c, Account.Resident_Status__c, Account.Country_of_Residence__c, Account.PAN__c,
-                Account.Location__c, Account.Designation__c, Account.Name_of_Authorised_Signatory__c, Account.Referral_Name__c, Account.Referal_Email__c, Account.Referral_Project_Name__c, Account.Referral_Phone_Number__c, Account.If_Others_Work_Funtion_Role__c, Account.Permanent_Address__Street__s, Account.Permanent_Address__City__s, Account.Permanent_Address__StateCode__s, Account.Permanent_Address__PostalCode__s, Account.Permanent_Address__CountryCode__s,
+                Account.Aadhaar_Number__c, Project__c, Project__r.RERA_Number__c, Account.Location__c, Account.Designation__c, Account.Name_of_Authorised_Signatory__c, Account.Referral_Name__c, Account.Referal_Email__c, Account.Referral_Project_Name__c, Account.Referral_Phone_Number__c, Account.If_Others_Work_Funtion_Role__c, Account.Permanent_Address__Street__s, Account.Permanent_Address__City__s, Account.Permanent_Address__StateCode__s, Account.Permanent_Address__PostalCode__s, Account.Permanent_Address__CountryCode__s,
                 Account.Address_for_Communication__Street__s, Account.Address_for_Communication__City__s, Account.Address_for_Communication__StateCode__s, Account.Address_for_Communication__PostalCode__s, Account.Address_for_Communication__CountryCode__s, Owner.Name,
                 (SELECT Id, Name, Document_Id__c FROM Documents__r WHERE Name = 'Root Folder' LIMIT 1),
-                (SELECT Id, Token_Amount__c, Total_Amount__c, Mode_Of_Payment__c, Cheque_Date__c, Receipt_Date__c, Drawn_on_Bank__c, Bank__c FROM Receipts__r WHERE Token_Amount__c = true ORDER BY CreatedDate ASC) FROM Opportunity WHERE Id = :oppId LIMIT 1];
+                (SELECT Id, Token_Amount__c, Total_Amount__c, Mode_Of_Payment__c, Cheque_Date__c, DD_Date__c, JV_Date__c, Paid_Date__c, Challan_Date__c, Fund_Date__c, Fund_Transfer_Date__c, Receipt_Date__c, Drawn_on_Bank__c, Bank__c FROM Receipts__r WHERE Token_Amount__c = true ORDER BY CreatedDate ASC) FROM Opportunity WHERE Id = :oppId LIMIT 1];
             
             //!need to ask
             //company/firm name should be same from Opportunity or Account
@@ -2138,7 +2237,7 @@ public without Sharing class digioRepository {
             
             System.debug('opp ===> ' + opp);
             List<Applicant__c> applicantList = [SELECT Id, Opportunity__c, Account__r.Id, Account__r.Name, Account__r.Full_Name__c, Account__r.Phone, Account__r.Name_of_Authorised_Signatory__c, Account__r.Company_Firm_Name__c,
-                                                Account__r.W_o_S_o_D_o__c, Account__r.Date_of_Birth__c, Account__r.Spouse_Name__c, Account__r.Spouse_Date_of_Birth__c, Account__r.Annual_Household_Income__c, Account__r.Purpose_of_Purchase__c, Account__r.Source_of_Funding__c, Account__r.Source_of_Information__c, Account__r.Work_Function_Role__c,  Account__r.Anniversary_Date__c, Account__r.Resident_Status__c, Account__r.Country_of_Residence__c, Account__r.PAN__c,
+                                                Account__r.W_o_S_o_D_o__c, Account__r.Date_of_Birth__c, Account__r.Spouse_Name__c, Account__r.Spouse_Date_of_Birth__c, Account__r.Annual_Household_Income__c, Account__r.Purpose_of_Purchase__c, Account__r.Source_of_Funding__c, Account__r.Source_of_Information__c, Account__r.Work_Function_Role__c,  Account__r.Anniversary_Date__c, Account__r.Resident_Status__c, Account__r.Country_of_Residence__c, Account__r.PAN__c, Account__r.Aadhaar_Number__c,
                                                 Account__r.Primary_Contact_Number__c, Account__r.Alternate_Contact_Number__c, Account__r.Email__c, Account__r.Official_Email__c, Account__r.Passport_Number__c, Account__r.Industry__c, Account__r.Location__c, Account__r.Designation__c,
                                                 Account__r.Referral_Name__c, Account__r.Referal_Email__c, Account__r.Referral_Project_Name__c, Account__r.Referral_Phone_Number__c, Account__r.If_Others_Work_Funtion_Role__c, Account__r.Permanent_Address__Street__s, Account__r.Permanent_Address__City__s,
                                                 Account__r.Permanent_Address__StateCode__s, Account__r.Permanent_Address__PostalCode__s, Account__r.Permanent_Address__CountryCode__s, Account__r.Address_for_Communication__Street__s, Account__r.Address_for_Communication__City__s,
@@ -2180,7 +2279,8 @@ public without Sharing class digioRepository {
             
             tv.applicationDate              = (opp.Account.Application_Date__c != null) ? NumbersToWordsConversionClass.formattedDate(opp.Account.Application_Date__c) : '';
             tv.projectName                  = (opp.Project__r != null) ? opp.Project__r.Name : '';
-            tv.reraNo                       = (opp.Account.RERA_Number__c != null) ? opp.Account.RERA_Number__c : '';
+            // RERA number belongs to the project (Account RERA kept only as a fallback)
+            tv.reraNo                       = (opp.Project__r != null && String.isNotBlank(opp.Project__r.RERA_Number__c)) ? opp.Project__r.RERA_Number__c : ((opp.Account.RERA_Number__c != null) ? opp.Account.RERA_Number__c : '');
             tv.unitNo                       = (opp.Unit__r != null && opp.Unit__r.Unit_Number_Only__c != null) ? String.valueOf(opp.Unit__r.Unit_Number_Only__c) : '';
             tv.unitType                     = (opp.Unit__r != null) ? opp.Unit__r.Unit_Type__c : '';
             tv.superBuiltArea               = (opp.Unit__r != null && opp.Unit__r.Super_Built_Up_Area_sq_ft__c != null) ? String.valueOf(opp.Unit__r.Super_Built_Up_Area_sq_ft__c) : '';
@@ -2195,7 +2295,9 @@ public without Sharing class digioRepository {
             tv.firstAnniDate                = (opp.Account.Anniversary_Date__c != null) ? NumbersToWordsConversionClass.formattedDate(opp.Account.Anniversary_Date__c) : '';
             tv.firstResidentStatus          = (opp.Account.Resident_Status__c != null) ? opp.Account.Resident_Status__c : '';
             tv.firstCOR                     = (opp.Account.Country_of_Residence__c != null) ? opp.Account.Country_of_Residence__c : '';
-            tv.firstPan                     = (opp.Account.PAN__c != null) ? opp.Account.PAN__c : '';
+            // Aadhaar is printed next to PAN (the Digio template has no separate Aadhaar slot)
+            tv.firstPan                     = DocumentDataHelper.panWithAadhaar(opp.Account.PAN__c, opp.Account.Aadhaar_Number__c);
+            tv.firstAadhaar                 = (opp.Account.Aadhaar_Number__c != null) ? opp.Account.Aadhaar_Number__c : '';
             
             tv.firstPrimaryCont             = (opp.Account.Primary_Contact_Number__c != null) ? opp.Account.Primary_Contact_Number__c : '';
             tv.firstAltCont                 = (opp.Account.Alternate_Contact_Number__c != null) ? opp.Account.Alternate_Contact_Number__c : '';
@@ -2216,7 +2318,8 @@ public without Sharing class digioRepository {
             tv.firstAddComm                 = buildAddress(opp.Account.Address_for_Communication__Street__s, opp.Account.Address_for_Communication__City__s, opp.Account.Address_for_Communication__StateCode__s, opp.Account.Address_for_Communication__CountryCode__s, opp.Account.Address_for_Communication__PostalCode__s);
             
             
-            tv.totalAgreementValues         = (opp.Total_Amount_Collected__c != null) ? String.valueOf(opp.Total_Amount_Collected__c) : '';
+            // Total Agreement Value = the Opportunity's Agreement Value (client, 21 Nov), with Indian digit grouping
+            tv.totalAgreementValues         = (opp.Agreement_Value__c != null) ? DocumentDataHelper.formatIndianAmount(opp.Agreement_Value__c) : '';
             System.debug('tv.totalAgreementValues::: ' + tv.totalAgreementValues );
             tv.firstCommPinCode             = (opp.Account.Address_for_Communication__PostalCode__s != null) ? opp.Account.Address_for_Communication__PostalCode__s : '';
             // tv.totalReciptAmount            = (opp.Receipts__r != null && !opp.Receipts__r.isEmpty() && opp.Receipts__r[0].Total_Amount__c != null) ? String.valueOf(opp.Receipts__r[0].Total_Amount__c) : '';
@@ -2276,7 +2379,8 @@ public without Sharing class digioRepository {
                         tv.secAnniDate                  = (a.Anniversary_Date__c != null) ? NumbersToWordsConversionClass.formattedDate(a.Anniversary_Date__c) : '';
                         tv.secondResidentStatus         = (a.Resident_Status__c != null) ? a.Resident_Status__c : '';
                         tv.secondCOR                    = (a.Country_of_Residence__c != null) ? a.Country_of_Residence__c : '';
-                        tv.secondPan                    = (a.PAN__c != null) ? a.PAN__c : '';
+                        tv.secondPan                    = DocumentDataHelper.panWithAadhaar(a.PAN__c, a.Aadhaar_Number__c);
+                        tv.secondAadhaar = (a.Aadhaar_Number__c != null) ? a.Aadhaar_Number__c : '';
                         tv.secondPermanAdd              = (permAddr != null) ? permAddr : '';
                         tv.secondPermPinCode            = (a.Permanent_Address__PostalCode__s != null) ? a.Permanent_Address__PostalCode__s : '';
                         tv.secondAddComm                = (commAddr != null) ? commAddr : '';
@@ -2309,7 +2413,8 @@ public without Sharing class digioRepository {
                         tv.thirdSpouseName         = (a.Spouse_Name__c != null) ? a.Spouse_Name__c : '';
                         tv.thirdSpouseDob          = (a.Spouse_Date_of_Birth__c != null) ? NumbersToWordsConversionClass.formattedDate(a.Spouse_Date_of_Birth__c) : '';
                         tv.thirdResidentStatus     = (a.Resident_Status__c != null) ? a.Resident_Status__c : '';
-                        tv.thirdPan                = (a.PAN__c != null) ? a.PAN__c : '';
+                        tv.thirdPan                = DocumentDataHelper.panWithAadhaar(a.PAN__c, a.Aadhaar_Number__c);
+                        tv.thirdAadhaar = (a.Aadhaar_Number__c != null) ? a.Aadhaar_Number__c : '';
                         tv.thirdPermanAdd          = (permAddr != null) ? permAddr : '';
                         tv.thirdPermPinCode        = (a.Permanent_Address__PostalCode__s != null) ? a.Permanent_Address__PostalCode__s : '';
                         tv.thirdAddComm            = (commAddr != null) ? commAddr : '';
@@ -2338,7 +2443,8 @@ public without Sharing class digioRepository {
                         tv.fourthAnnivDate         = (a.Anniversary_Date__c != null) ? NumbersToWordsConversionClass.formattedDate(a.Anniversary_Date__c) : '';
                         tv.fourthResidentStatus    = (a.Resident_Status__c != null) ? a.Resident_Status__c : '';
                         tv.fourthCOR               = (a.Country_of_Residence__c != null) ? a.Country_of_Residence__c : '';
-                        tv.fourthPan               = (a.PAN__c != null) ? a.PAN__c : '';
+                        tv.fourthPan               = DocumentDataHelper.panWithAadhaar(a.PAN__c, a.Aadhaar_Number__c);
+                        tv.fourthAadhaar = (a.Aadhaar_Number__c != null) ? a.Aadhaar_Number__c : '';
                         tv.fourthPermanAdd         = (permAddr != null) ? permAddr : '';
                         tv.fourthPermPinCode       = (a.Permanent_Address__PostalCode__s != null) ? a.Permanent_Address__PostalCode__s : '';
                         tv.fourthAddComm           = (commAddr != null) ? commAddr : '';
@@ -2368,7 +2474,8 @@ public without Sharing class digioRepository {
                         tv.fifthAnniDate           = (a.Anniversary_Date__c != null) ? NumbersToWordsConversionClass.formattedDate(a.Anniversary_Date__c) : '';
                         tv.fifthResidentStatus     = (a.Resident_Status__c != null) ? a.Resident_Status__c : '';
                         tv.fifthCOR                = (a.Country_of_Residence__c != null) ? a.Country_of_Residence__c : '';
-                        tv.fifthPan                = (a.PAN__c != null) ? a.PAN__c : '';
+                        tv.fifthPan                = DocumentDataHelper.panWithAadhaar(a.PAN__c, a.Aadhaar_Number__c);
+                        tv.fifthAadhaar = (a.Aadhaar_Number__c != null) ? a.Aadhaar_Number__c : '';
                         tv.fifthPermanAdd          = (permAddr != null) ? permAddr : '';
                         tv.fifthPermPinCode        = (a.Permanent_Address__PostalCode__s != null) ? a.Permanent_Address__PostalCode__s : '';
                         tv.fifthAddComm            = (commAddr != null) ? commAddr : '';
@@ -2398,7 +2505,8 @@ public without Sharing class digioRepository {
                         tv.sixthAnnivDate          = (a.Anniversary_Date__c != null) ? NumbersToWordsConversionClass.formattedDate(a.Anniversary_Date__c) : '';
                         tv.sixthResidentStatus     = (a.Resident_Status__c != null) ? a.Resident_Status__c : '';
                         tv.sixthCOR                = (a.Country_of_Residence__c != null) ? a.Country_of_Residence__c : '';
-                        tv.sixthPan                = (a.PAN__c != null) ? a.PAN__c : '';
+                        tv.sixthPan                = DocumentDataHelper.panWithAadhaar(a.PAN__c, a.Aadhaar_Number__c);
+                        tv.sixthAadhaar = (a.Aadhaar_Number__c != null) ? a.Aadhaar_Number__c : '';
                         tv.sixthPermanAdd          = (permAddr != null) ? permAddr : '';
                         tv.sixthPermPinCode        = (a.Permanent_Address__PostalCode__s != null) ? a.Permanent_Address__PostalCode__s : '';
                         tv.sixthAddComm            = (commAddr != null) ? commAddr : '';
@@ -2455,13 +2563,32 @@ public without Sharing class digioRepository {
             
             if (tokenRec != null) {
                 tv.receiptPayment               = tokenRec.Mode_Of_Payment__c;
-                Date dt                         = (tokenRec.Mode_Of_Payment__c == 'Cheque') ? tokenRec.Cheque_Date__c : tokenRec.Receipt_Date__c;
+                // Show the date the customer actually paid (cheque/DD/transfer/UPI date), not the receipt date.
+                Date dt                         = DocumentDataHelper.paymentMadeDate(tokenRec);
                 tv.receiptDate                  = (dt != null) ? NumbersToWordsConversionClass.formattedDate(dt) : '';
-                tv.receiptBank                  = tokenRec.Drawn_on_Bank__c;
-                tv.totalReciptAmount            = (opp.Receipts__r != null && !opp.Receipts__r.isEmpty() && opp.Receipts__r[0].Total_Amount__c != null) ? String.valueOf(opp.Receipts__r[0].Total_Amount__c) : '';
-                tv.totalReciptAmountWords     = (opp.Receipts__r != null && !opp.Receipts__r.isEmpty() && opp.Receipts__r[0].Total_Amount__c != null) ? NumbersToWordsConversionClass.numberToEnglishDecimal(opp.Receipts__r[0].Total_Amount__c) : '';
+                tv.paymentDate                  = tv.receiptDate;
+                tv.receiptBank                  = (tokenRec.Mode_Of_Payment__c == 'Cheque' || tokenRec.Mode_Of_Payment__c == 'DD') ? tokenRec.Drawn_on_Bank__c : (String.isNotBlank(tokenRec.Bank__c) ? tokenRec.Bank__c : tokenRec.Drawn_on_Bank__c);
+                // Amount, mode and date now all come from the same token receipt (previously amount used the first, mode/date the last).
+                tv.totalReciptAmount            = (tokenRec.Total_Amount__c != null) ? DocumentDataHelper.formatIndianAmount(tokenRec.Total_Amount__c) : '';
+                tv.totalReciptAmountWords       = (tokenRec.Total_Amount__c != null) ? NumbersToWordsConversionClass.numberToEnglishDecimal(tokenRec.Total_Amount__c) : '';
                 System.debug('tv.totalReciptAmountWords::: ' + tv.totalReciptAmountWords );
             }
+
+            // Terms & Conditions: company name / short name / address are project specific.
+            DocumentDataHelper.CompanyDetails company = DocumentDataHelper.getCompanyDetails(opp.Project__c);
+            DocumentDataHelper.ApplicantNames applicantNames = DocumentDataHelper.getApplicantNames(opp.Id);
+            tv.companyName              = company.companyName;
+            tv.companyShortName         = company.companyShortName;
+            tv.companyAddress           = company.companyAddress;
+            tv.bankAccountName          = company.bankAccountName;
+            tv.companyBankName          = company.bankName;
+            tv.bankBranch               = company.bankBranch;
+            tv.bankAccountNumber        = company.bankAccountNumber;
+            tv.bankIfscCode             = company.bankIfscCode;
+            tv.bankAccountType          = company.bankAccountType;
+            tv.coApplicant1Name         = applicantNames.coApplicant1Name;
+            tv.coApplicant2Name         = applicantNames.coApplicant2Name;
+            tv.primaryWithCoApplicant   = applicantNames.primaryWithCoApplicant;
             
             payload.templates = new List<DigioWrapperClass.bookingFormTemplateList>{ tmpl };
             
@@ -2504,6 +2631,15 @@ public without Sharing class digioRepository {
     private static String formatDate(Date d) {
         if (d == null) return '';
         return DateTime.newInstance(d.year(), d.month(), d.day()).format('dd/MM/yyyy');
+    }
+
+    private static String formatAddress(System.Address address) {
+        if (address == null) return '';
+        List<String> parts = new List<String>();
+        for (String part : new List<String>{ address.getStreet(), address.getCity(), address.getState(), address.getCountry(), address.getPostalCode() }) {
+            if (String.isNotBlank(part)) parts.add(part);
+        }
+        return String.join(parts, ', ');
     }
 
 }

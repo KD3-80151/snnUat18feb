@@ -1,4 +1,4 @@
-public with sharing class DeleteOppApprovalController {
+public without sharing class DeleteOppApprovalController {
     private static final String APPROVAL_PROCESS_NAME = 'Delete_Related_To_Opportunity';
 
     @AuraEnabled

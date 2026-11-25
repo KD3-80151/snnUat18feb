@@ -2,6 +2,8 @@ public without sharing class bookingFormController {
     
     @AuraEnabled
     public static String createApplicants(List<Account> applicantList, Id oppId, String profileDataList, String accId, Account primaryApplicant){
+        // Savepoint so that any failure rolls back ALL DML done in this call (no partial records)
+        Savepoint sp = Database.setSavepoint();
         try {
             system.debug('applicantList ===> ' + applicantList);
             system.debug('primaryApplicant ===> ' + primaryApplicant);
@@ -204,10 +206,6 @@ public without sharing class bookingFormController {
                 } */
             }
 
-            if (!emailsToSend.isEmpty()) {
-                Messaging.sendEmail(emailsToSend);
-            }
-            
             List<Opportunity> oppList = [SELECT Id,StageName from Opportunity where Id =: oppId LIMIT 1];
             if(!oppList.isEmpty()){
                 List<Task> taskRec = [SELECT Id,Status,Subject,WhatId from Task where Subject = 'Fill Applicant Details' AND WhatId =: oppId LIMIT 1];
@@ -218,10 +216,18 @@ public without sharing class bookingFormController {
                 oppList[0].StageName = 'Allotment Letter Generated';
                 oppList[0].Booking_Date__c = System.Today();
                 update oppList[0];
+
+                // Send emails only after all DML has succeeded
+                if (!emailsToSend.isEmpty()) {
+                    Messaging.sendEmail(emailsToSend);
+                }
                 return 'Success: Applicant Details Created Successfully!!!';
             }
+            Database.rollback(sp);
             return 'Error Creating Applicant';
         } catch (Exception e) {
+            // Undo every insert/update done above so a retry does not create duplicates
+            Database.rollback(sp);
             System.debug('Error ==> ' + e.getMessage());
             System.debug('Line ==> ' + e.getLineNumber());
             return e.getMessage();
@@ -248,7 +254,7 @@ public without sharing class bookingFormController {
             Map<String, List<String>> picklistValByField;
             Map<String, List<Map<String, String>>> picklistValForAddress;
             if(oppId != null){
-                oppRec = [SELECT Id,AccountId, Project__c, Project__r.Name, Project__r.Company__r.Registration_Number__c, Type,Unit__c,Unit__r.Unit_Name__c, Unit__r.Super_Built_Up_Area_sq_ft__c from Opportunity where Id =: oppId];
+                oppRec = [SELECT Id,AccountId, Project__c, Project__r.Name, Project__r.RERA_Number__c, Type,Unit__c,Unit__r.Unit_Name__c, Unit__r.Super_Built_Up_Area_sq_ft__c from Opportunity where Id =: oppId];
                 System.debug('oppRec::'+oppRec);
             }
             if(ObjectByField != null){

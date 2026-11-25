@@ -47,7 +47,7 @@
                         </div>
                     </div>
                     <div class="row mt-5" ng-show="errorMsg">
-                        <h3 style="color: red; text-align:center;">No such record available ! Try Again.....</h3>
+                        <h3 style="color: red; text-align:center;">No such record available ! Create New Lead</h3>
                     </div>
                     <div class="row mt-5" ng-show="showLeadDetails">
                         <hr class="border" />
@@ -209,7 +209,7 @@
                             </div>
                             <div class="col-md-6 mt-3">
                                 <label class="label pe-3 text-nowrap">Phone No.<span class="required-asterisk" style="color:red;">*</span></label>
-                                <input type="text" class="form-control" ng-model="leadDetails.Phone" />
+                                <input type="text" class="form-control" ng-model="leadDetails.Phone" ng-readonly="createLeadPhoneLocked" ng-class="{'bg-light': createLeadPhoneLocked}" />
                             </div>
                             <div class="col-md-6 mt-3">
                                 <label class="label">Project<span class="required-asterisk" style="color:red;">*</span></label><br/>
@@ -266,7 +266,7 @@
                             </div>
                             <div class="col-md-6 mt-3" ng-if = "leadDetails.Lead_Type__c == 'Referral'">
                                 <label class="label pe-3 text-nowrap">Referral Phone</label>
-                                <input type="text" class="form-control" ng-model="leadDetails.Referred_By_Phone__c" />
+                                <input type="tel" class="form-control" maxlength="10" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'')" ng-model="leadDetails.Referred_By_Phone__c" ng-change="onlyDigits(leadDetails, 'Referred_By_Phone__c')" />
                             </div>
                         </div>
                         <div class="row mt-5">
@@ -352,7 +352,7 @@
                                                         <label class="label">Mobile No.:<span class="required-asterisk" style="color:red;">*</span></label>
                                                     </div>
                                                     <div class="col-md-8">
-                                                        <input type="tel" class="form-control" ng-model="leadDetails.Phone"/>
+                                                        <input type="tel" class="form-control" ng-model="leadDetails.Phone" ng-readonly="mobileLocked" ng-class="{'bg-light': mobileLocked}"/>
                                                     </div>
                                                 </div>
                                             </div>
@@ -398,7 +398,7 @@
                                                         <label class="label">Mobile No.:<span class="required-asterisk" style="color:red;">*</span></label>
                                                     </div>
                                                     <div class="col-md-8">
-                                                        <input type="tel" class="form-control" ng-model="opp.Phone__c"/>
+                                                        <input type="tel" class="form-control" ng-model="opp.Phone__c" ng-readonly="mobileLocked" ng-class="{'bg-light': mobileLocked}"/>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1125,6 +1125,13 @@
                 $scope.createLead = function(){
                     debugger;
                     $scope.leadDetails = {};
+                    // Auto-populate Phone No. with the searched value (only if it is not an email) and freeze it
+                    var searchedPhone = $scope.normalizeSearchedPhone($scope.searchValue);
+                    $scope.createLeadPhoneLocked = false;
+                    if(searchedPhone){
+                        $scope.leadDetails.Phone = searchedPhone;
+                        $scope.createLeadPhoneLocked = true;
+                    }
                     $scope.showCreateLead = true;
                     $scope.errorMsg = false;
                     $scope.showLeadDetails = false;
@@ -1137,9 +1144,23 @@
                     $scope.relVisits = false;
                 }
 
+                // "+91 98765 43210" / "098765 43210" -> "9876543210"; returns '' for an email search
+                $scope.normalizeSearchedPhone = function(value){
+                    var searched = (value || '').trim();
+                    if(!searched || searched.indexOf('@') !== -1){
+                        return '';
+                    }
+                    var digits = searched.replace(/\D/g, '');
+                    if(digits.length > 10 && (digits.indexOf('91') === 0 || digits.indexOf('0') === 0)){
+                        digits = digits.substring(digits.length - 10);
+                    }
+                    return digits || searched;
+                }
+
                 $scope.getleadDet = function(){
                     debugger;
                     $scope.visit = {};
+                    $scope.searchedPhone = $scope.normalizeSearchedPhone($scope.searchValue);
                     if($scope.searchValue != ''){
                         siteVisitFormController.getLeadRecords($scope.searchValue,function(result,event){
                             debugger;
@@ -1325,6 +1346,10 @@
                             return true;
                         }
                     }
+                    if($scope.leadDetails.Lead_Type__c == 'Referral' && $scope.leadDetails.Referred_By_Phone__c && !/^[0-9]{10}$/.test($scope.leadDetails.Referred_By_Phone__c)){
+                        swal('Info','Referral Phone must be a 10 digit number!','info');
+                        return true;
+                    }
                     if($scope.validateEmail($scope.leadDetails.Email)){
                         swal(
                             'Info',
@@ -1357,6 +1382,13 @@
                         return false;
                     }
                 }
+
+                // keep only digits (max 10) in a phone field
+                $scope.onlyDigits = function(obj, field){
+                    if(obj && obj[field] != undefined){
+                        obj[field] = String(obj[field]).replace(/[^0-9]/g, '').substring(0, 10);
+                    }
+                };
 
                 $scope.validatePhone = function(value){
                     if(value != undefined) {
@@ -1398,6 +1430,15 @@
                         $scope.opp = {};
                         $scope.oppId = '';
                     }
+                    // Mobile No. = the phone number that was searched; frozen once populated
+                    if($scope.oppId){
+                        if($scope.searchedPhone){ $scope.opp.Phone__c = $scope.searchedPhone; }
+                        $scope.mobileLocked = !!$scope.opp.Phone__c;
+                    }else{
+                        $scope.leadDetails = $scope.leadDetails || {};
+                        if($scope.searchedPhone){ $scope.leadDetails.Phone = $scope.searchedPhone; }
+                        $scope.mobileLocked = !!$scope.leadDetails.Phone;
+                    }
                     $scope.showVisitSection = true;
                     $scope.showAllLeadDetails = false;
                     $scope.showAllOppDetails = false;
@@ -1407,7 +1448,7 @@
                     $scope.showCreateLead = false;
                     $scope.showVisitAfterCreatn = false;
                     // $scope.showConvertedLead = false;
-                    $scope.$apply();
+                    if(!$scope.$$phase){ $scope.$apply(); }
                 }
 
                 $scope.showRelVisits = function(value){

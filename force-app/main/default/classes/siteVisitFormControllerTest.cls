@@ -486,6 +486,55 @@ public class siteVisitFormControllerTest {
     }
 
     @isTest
+    static void testInsertVisit_CostSheetTaskGoesToSalesTeamMember() {
+        Project__c pr = makeProject('CostTaskProject');
+        User u = makeUser('svcst1');
+        Lead l = makeLead(pr, 'cst1@example.com', '9000000015');
+        // the Lead flow creates the first follow-up task on the Lead under its default owner
+        insert new Task(Subject = 'Take First Follow Up with Customer - Within 4 Hours', WhoId = l.Id, OwnerId = UserInfo.getUserId(), Status = 'Open');
+        Test.startTest();
+        siteVisitFormController.insertVisitRecord(new Visit__c(Alternate_Phone__c = '9000000015'), l.Id, '', u.Id, pr.Id);
+        Test.stopTest();
+        Id oppId = [SELECT ConvertedOpportunityId FROM Lead WHERE Id = :l.Id].ConvertedOpportunityId;
+        Opportunity opp = [SELECT OwnerId, Sales_Team_Member__c FROM Opportunity WHERE Id = :oppId];
+        System.assertEquals(u.Id, opp.OwnerId, 'Opportunity owner is the selected sales team member');
+        System.assertEquals(u.Id, opp.Sales_Team_Member__c);
+        System.assert([SELECT COUNT() FROM Task WHERE WhatId = :oppId AND Subject = 'Generate Cost Sheet'] > 0, 'The Opportunity flow creates the Generate Cost Sheet task');
+        for (Task t : [SELECT OwnerId FROM Task WHERE WhatId = :oppId AND Subject = 'Generate Cost Sheet']) {
+            System.assertEquals(u.Id, t.OwnerId, 'Generate Cost Sheet task goes to the selected sales team member');
+        }
+        List<Task> followUps = [SELECT OwnerId FROM Task WHERE WhatId = :oppId AND Subject LIKE 'Take%Follow Up with Customer%' AND IsClosed = false];
+        System.assert(!followUps.isEmpty(), 'the follow-up task moved to the Opportunity on conversion');
+        for (Task t : followUps) {
+            System.assertEquals(u.Id, t.OwnerId, 'Follow-up task goes to the selected sales team member');
+        }
+    }
+
+    @isTest
+    static void testAssignSalesTasks() {
+        Project__c pr = makeProject('AssignTaskProject');
+        User u = makeUser('svcst2');
+        Opportunity o = makeOpp(pr, '9000000016');
+        insert new List<Task>{
+            new Task(Subject = 'Generate Cost Sheet', WhatId = o.Id, OwnerId = UserInfo.getUserId(), Status = 'Open'),
+            new Task(Subject = 'Take First Follow Up with Customer - Within 4 Hours', WhatId = o.Id, OwnerId = UserInfo.getUserId(), Status = 'Open'),
+            new Task(Subject = 'Take Follow Up with Customer', WhatId = o.Id, OwnerId = UserInfo.getUserId(), Status = 'Open'),
+            new Task(Subject = 'Some other task', WhatId = o.Id, OwnerId = UserInfo.getUserId(), Status = 'Open')
+        };
+        Test.startTest();
+        siteVisitFormController.assignSalesTasks(o.Id, u.Id);
+        siteVisitFormController.assignSalesTasks(null, u.Id);   // ignored
+        Test.stopTest();
+        for (Task t : [SELECT Subject, OwnerId FROM Task WHERE WhatId = :o.Id]) {
+            if (t.Subject == 'Some other task') {
+                System.assertEquals(UserInfo.getUserId(), t.OwnerId, 'unrelated tasks keep their owner');
+            } else {
+                System.assertEquals(u.Id, t.OwnerId, t.Subject + ' goes to the sales team member');
+            }
+        }
+    }
+
+    @isTest
     static void testInsertVisit_LeadWithAssignmentGroupAndNoSalesMember() {
         Project__c pr = makeProject('InsertAssignProject');
         User u = makeUser('svins2');
@@ -524,6 +573,11 @@ public class siteVisitFormControllerTest {
         Test.stopTest();
         System.assertEquals(2, [SELECT COUNT() FROM Opportunity WHERE AccountId = :o.AccountId]);
         System.assertEquals(1, [SELECT COUNT() FROM Opportunity WHERE AccountId = :o.AccountId AND Project__c = :pr2.Id]);
+        Opportunity projOpp = [SELECT Id, OwnerId FROM Opportunity WHERE AccountId = :o.AccountId AND Project__c = :pr2.Id];
+        System.assertEquals(u.Id, projOpp.OwnerId, 'New project Opportunity is owned by the selected sales team member');
+        for (Task t : [SELECT OwnerId FROM Task WHERE WhatId = :projOpp.Id AND Subject = 'Generate Cost Sheet']) {
+            System.assertEquals(u.Id, t.OwnerId);
+        }
     }
 
     @isTest

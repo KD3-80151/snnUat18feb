@@ -55,7 +55,7 @@
             <!-- Cheque Mode -->
             <template if:true={isCheque}>
                 <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
-                    <lightning-input type="number" label="Amount" value={amount} class="custom-input" name="amount" onchange={handleInputChange} required></lightning-input>
+                    <lightning-input type="number" step="0.01" label="Amount" value={amount} class="custom-input" name="amount" onchange={handleInputChange} required></lightning-input>
                 </div>
                 <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
                     <lightning-input type="text" label="Cheque Number" value={chequeNumber} class="custom-input" name="chequeNumber" onchange={handleInputChange} required></lightning-input>
@@ -72,7 +72,7 @@
             <!-- EFT Mode -->
             <template if:true={isEFT}>
                 <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
-                    <lightning-input type="number" label="Amount" value={amount} class="custom-input" name="amount" onchange={handleInputChange} required></lightning-input>
+                    <lightning-input type="number" step="0.01" label="Amount" value={amount} class="custom-input" name="amount" onchange={handleInputChange} required></lightning-input>
                 </div>
                 <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
                     <lightning-input type="date" label="Fund Transfer Date" value={fundTransferDate} class="custom-input" name="fundTransferDate" onchange={handleInputChange} required></lightning-input>
@@ -88,7 +88,7 @@
             <!-- DD Mode -->
             <template if:true={isDD}>
                 <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
-                    <lightning-input type="number" label="Amount" value={amount} class="custom-input" name="amount" onchange={handleInputChange} required></lightning-input>
+                    <lightning-input type="number" step="0.01" label="Amount" value={amount} class="custom-input" name="amount" onchange={handleInputChange} required></lightning-input>
                 </div>
                 <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
                     <lightning-input type="text" label="DD Number" value={ddNumber} class="custom-input" name="ddNumber" onchange={handleInputChange} required></lightning-input>
@@ -105,7 +105,7 @@
             <!-- UPI Mode -->
             <template if:true={isUPI}>
                 <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
-                    <lightning-input type="number" label="Amount" value={amount} class="custom-input" name="amount" onchange={handleInputChange} required></lightning-input>
+                    <lightning-input type="number" step="0.01" label="Amount" value={amount} class="custom-input" name="amount" onchange={handleInputChange} required></lightning-input>
                 </div>
                 <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
                     <lightning-input type="text" label="Reference No" value={referenceNo} class="custom-input" name="referenceNo" onchange={handleInputChange} required></lightning-input>
@@ -121,7 +121,7 @@
             <!-- TDS Mode -->
             <template if:true={isTDS}>
                 <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
-                    <lightning-input type="number" label="TDS Amount" value={tdsAmount} class="custom-input" name="tdsAmount" onchange={handleInputChange} required></lightning-input>
+                    <lightning-input type="number" step="0.01" label="TDS Amount" value={tdsAmount} class="custom-input" name="tdsAmount" onchange={handleInputChange} required></lightning-input>
                 </div>
                 <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
                     <lightning-input type="text" label="CIN" value={cin} class="custom-input" name="cin" onchange={handleInputChange} required></lightning-input>
@@ -146,7 +146,7 @@
             <!-- JV Mode -->
             <template if:true={isJV}>
                 <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
-                    <lightning-input type="number" label="Amount" value={amount} class="custom-input" name="amount" onchange={handleInputChange} required></lightning-input>
+                    <lightning-input type="number" step="0.01" label="Amount" value={amount} class="custom-input" name="amount" onchange={handleInputChange} required></lightning-input>
                 </div>
                 <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
                     <lightning-input type="date" label="JV Date" value={jvDate} class="custom-input" name="jvDate" onchange={handleInputChange} required></lightning-input>
@@ -158,7 +158,7 @@
 
             <template if:true={isFundTransfer}>
                 <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
-                    <lightning-input type="number" label="Amount" value={amount} class="custom-input" name="amount"
+                    <lightning-input type="number" step="0.01" label="Amount" value={amount} class="custom-input" name="amount"
                         onchange={handleInputChange} required></lightning-input>
                 </div>
                 <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">

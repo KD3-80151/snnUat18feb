@@ -15,6 +15,9 @@ public with sharing class bookingFormButtonController {
     
     @AuraEnabled
     public static createApplicantsWrapper createApplicants(List<Account> applicantList, Id oppId, String profileDataList, String accId, Account primaryApplicant, String contactNamesJson, List<Id> deletedAccountIds){
+        // Any failure undoes everything saved in this call, so a corrected resubmission does not
+        // leave the failed co-applicant behind as an extra applicant (client, 21 Nov).
+        Savepoint sp = Database.setSavepoint();
         try {
             system.debug('applicantList ===> ' + applicantList);
             system.debug('primaryApplicant ===> ' + primaryApplicant);
@@ -244,9 +247,16 @@ public with sharing class bookingFormButtonController {
             return wrp;
             
         } catch (Exception e) {
+            Database.rollback(sp);
             System.debug('Error ==> ' + e.getMessage());
             System.debug('Line ==> ' + e.getLineNumber());
-            return null;
+            String msg = e.getMessage();
+            if (e instanceof DmlException && ((DmlException) e).getNumDml() > 0) {
+                msg = ((DmlException) e).getDmlMessage(0);
+            }
+            AuraHandledException ae = new AuraHandledException(msg);
+            ae.setMessage(msg);
+            throw ae;
         }
     }
     
@@ -354,7 +364,7 @@ public with sharing class bookingFormButtonController {
             if (oppId != null) {
                 oppRec = [
                     SELECT Id, AccountId,
-                    Project__c, Project__r.Name, Project__r.Company__r.Registration_Number__c,
+                    Project__c, Project__r.Name, Project__r.RERA_Number__c,
                     Unit__c, Unit__r.Name, Unit__r.Unit_Name__c, Unit__r.Super_Built_Up_Area_sq_ft__c,
                     Channel_Partner__c, Channel_Partner__r.Name, 
                     (SELECT Id, Name, (SELECT Id, Name, Parent_Document__c, (SELECT Id, Name, File_URL__c, CreatedDate FROM Sub_Documents__r ORDER BY CreatedDate DESC) FROM Documents__r
@@ -403,7 +413,7 @@ public with sharing class bookingFormButtonController {
             if (oppRec != null && !oppRec.isEmpty() && oppRec[0].AccountId != null) {
                 accRec = [
                     SELECT Id, Name, Name_of_Authorised_Signatory__c,  W_o_S_o_D_o__c,
-                    Type, Date_Of_Birth__c, Spouse_Name__c, Spouse_Date_of_Birth__c, Anniversary_Date__c, Resident_Status__c, Passport_Number__c, Country_of_Residence__c, PAN__c,
+                    Type, Date_Of_Birth__c, Spouse_Name__c, Spouse_Date_of_Birth__c, Anniversary_Date__c, Resident_Status__c, Passport_Number__c, Country_of_Residence__c, PAN__c, Aadhaar_Number__c,
                     Permanent_Address__Street__s, Permanent_Address__City__s, Permanent_Address__CountryCode__s,
                     Permanent_Address__StateCode__s, Permanent_Address__PostalCode__s,
                     Address_for_Communication__Street__s, Address_for_Communication__City__s,
@@ -443,6 +453,7 @@ public with sharing class bookingFormButtonController {
                     'Passport_Number__c'                        => (accRec != null ? String.valueOf(accRec.get('Passport_Number__c')) : null),
                     'Country_of_Residence__c'                   => (accRec != null ? String.valueOf(accRec.get('Country_of_Residence__c')) : null),
                     'PAN__c'                                    => (accRec != null ? String.valueOf(accRec.get('PAN__c')) : null),
+                    'Aadhaar_Number__c'                         => (accRec != null ? String.valueOf(accRec.get('Aadhaar_Number__c')) : null),
                     'Permanent_Address__Street__s'              => (accRec != null ? String.valueOf(accRec.get('Permanent_Address__Street__s')) : null),
                     'Permanent_Address__City__s'                => (accRec != null ? String.valueOf(accRec.get('Permanent_Address__City__s')) : null),
                     'Permanent_Address__CountryCode__s'         => (accRec != null ? String.valueOf(accRec.get('Permanent_Address__CountryCode__s')) : null),
@@ -490,7 +501,7 @@ public with sharing class bookingFormButtonController {
                     SELECT Id, Opportunity__c, Account__c,
                     Account__r.Id, Account__r.Name,  Account__r.Name_of_Authorised_Signatory__c,
                     Account__r.W_o_S_o_D_o__c, Account__r.Type, Account__r.Date_Of_Birth__c, Account__r.Spouse_Name__c, Account__r.Spouse_Date_of_Birth__c,
-                    Account__r.Anniversary_Date__c,Account__r.Resident_Status__c, Account__r.Passport_Number__c, Account__r.Country_of_Residence__c, Account__r.PAN__c,
+                    Account__r.Anniversary_Date__c,Account__r.Resident_Status__c, Account__r.Passport_Number__c, Account__r.Country_of_Residence__c, Account__r.PAN__c, Account__r.Aadhaar_Number__c,
                     Account__r.Permanent_Address__Street__s, Account__r.Permanent_Address__City__s, Account__r.Permanent_Address__CountryCode__s, Account__r.Permanent_Address__StateCode__s,
                     Account__r.Permanent_Address__PostalCode__s, Account__r.Address_for_Communication__Street__s, Account__r.Address_for_Communication__City__s,
                     Account__r.Address_for_Communication__CountryCode__s, Account__r.Address_for_Communication__StateCode__s, Account__r.Address_for_Communication__PostalCode__s, Account__r.Phone, Account__r.Alternate_Contact_Number__c, Account__r.Email__c, Account__r.Official_Email__c,
@@ -603,6 +614,7 @@ public with sharing class bookingFormButtonController {
                 m.put('Passport_Number__c',           aa != null ? String.valueOf(aa.Passport_Number__c) : null);
                 m.put('Country_of_Residence__c',      aa != null ? String.valueOf(aa.Country_of_Residence__c) : null);
                 m.put('PAN__c',                       aa != null ? String.valueOf(aa.PAN__c) : null);
+                m.put('Aadhaar_Number__c',            aa != null ? String.valueOf(aa.Aadhaar_Number__c) : null);
                 m.put('Permanent_Address__Street__s',     aa != null ? String.valueOf(aa.Permanent_Address__Street__s) : null);
                 m.put('Permanent_Address__City__s',       aa != null ? String.valueOf(aa.Permanent_Address__City__s) : null);
                 m.put('Permanent_Address__CountryCode__s',aa != null ? String.valueOf(aa.Permanent_Address__CountryCode__s) : null);

@@ -1,0 +1,180 @@
+:host {
+    display: block;
+    --receipt-brand: #9d6200;
+    --receipt-brand-dark: #7a4c00;
+    --receipt-brand-soft: #fdf6ea;
+    --receipt-border: #e5d6bd;
+    --receipt-text-muted: #5f5f5f;
+
+    /* Brand button styling hooks */
+    --slds-c-button-brand-color-background: var(--receipt-brand);
+    --slds-c-button-brand-color-border: var(--receipt-brand);
+    --slds-c-button-brand-color-background-hover: var(--receipt-brand-dark);
+    --slds-c-button-brand-color-border-hover: var(--receipt-brand-dark);
+}
+
+/* ---------- Card ---------- */
+.receipt-card {
+    position: relative;
+    max-width: 960px;
+    margin: 0 auto;
+    border: 1px solid var(--receipt-border);
+    border-radius: 0.5rem;
+    /* No overflow:hidden here - it clips combobox / record-picker dropdowns */
+    overflow: visible;
+    background: #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.receipt-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem 0.5rem 0 0;
+    background: var(--receipt-brand);
+    color: #ffffff;
+}
+
+.receipt-card__title {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.receipt-card__icon {
+    --slds-c-icon-color-background: rgba(255, 255, 255, 0.2);
+}
+
+.receipt-card__body {
+    padding: 1rem 1.5rem 0.5rem;
+}
+
+.receipt-card__footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0.75rem 1.5rem;
+    border-top: 1px solid var(--receipt-border);
+    border-radius: 0 0 0.5rem 0.5rem;
+    background: var(--receipt-brand-soft);
+}
+
+/* ---------- Sections ---------- */
+.receipt-section {
+    margin-bottom: 1.25rem;
+}
+
+.receipt-section__title {
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 2px solid var(--receipt-brand);
+    color: var(--receipt-brand-dark);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.field-cell {
+    margin-bottom: 0.75rem;
+}
+
+.field-strong {
+    font-weight: 600;
+}
+
+/* ---------- Against debit ---------- */
+.against-debit {
+    height: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px dashed var(--receipt-border);
+    border-radius: 0.25rem;
+    background: var(--receipt-brand-soft);
+}
+
+.against-debit__help {
+    margin-top: 0.35rem;
+    color: #5c4400;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+/* ---------- Empty state ---------- */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+    padding: 2rem 1rem;
+    border: 1px dashed var(--receipt-border);
+    border-radius: 0.5rem;
+    background: var(--receipt-brand-soft);
+    text-align: center;
+}
+
+.empty-state_error {
+    border-color: #ea001e;
+    background: #fef1f1;
+}
+
+.empty-state_error .empty-state__text {
+    color: #ba0517;
+    font-weight: 600;
+}
+
+.empty-state__icon {
+    --slds-c-icon-color-foreground-default: var(--receipt-brand);
+}
+
+.empty-state__text {
+    color: var(--receipt-text-muted);
+    font-size: 0.9rem;
+}
+
+/* ---------- Debit schedule modal ---------- */
+.debit-modal {
+    z-index: 10000;
+}
+
+.debit-modal__container {
+    width: 90%;
+    max-width: 42rem;
+}
+
+.debit-modal__header {
+    border-bottom: 3px solid var(--receipt-brand);
+}
+
+.debit-modal__title {
+    color: #5c4400;
+    font-weight: 700;
+    text-align: center;
+}
+
+.debit-modal__content {
+    background: #fffdf8;
+}
+
+.debit-modal__subtitle {
+    margin-bottom: 0.75rem;
+    color: var(--receipt-text-muted);
+    font-size: 0.9rem;
+}
+
+/* ---------- Small screens ---------- */
+@media (max-width: 48em) {
+    .receipt-card__body {
+        padding: 0.75rem 1rem 0.25rem;
+    }
+
+    .receipt-card__footer {
+        padding: 0.75rem 1rem;
+    }
+
+    .receipt-card__title {
+        font-size: 1rem;
+    }
+}

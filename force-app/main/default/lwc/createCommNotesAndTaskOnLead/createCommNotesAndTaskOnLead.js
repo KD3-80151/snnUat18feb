@@ -1,9 +1,10 @@
-import { LightningElement, api } from 'lwc';
-import { notifyRecordUpdateAvailable } from 'lightning/uiRecordApi';
+import { LightningElement, api, wire } from 'lwc';
+import { getRecord, getFieldValue, notifyRecordUpdateAvailable } from 'lightning/uiRecordApi';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { CloseActionScreenEvent } from 'lightning/actions';
 import { RefreshEvent } from 'lightning/refresh';
 import createCommNotesAndTask from '@salesforce/apex/CreateCommNotesAndTask.createCommNotesAndTask';
+import NEXT_FOLLOW_UP_FIELD from '@salesforce/schema/Lead.Next_Follow_Up_Date_Time__c';
 
 export default class CreateCommNotesAndTaskOnLead extends LightningElement {
 
@@ -13,6 +14,13 @@ export default class CreateCommNotesAndTaskOnLead extends LightningElement {
     remarks = '';
     nextFollowUpDateTime;
     isLoading = false;
+
+    @wire(getRecord, { recordId: '$recordId', fields: [NEXT_FOLLOW_UP_FIELD] })
+    wiredLead({ data }){
+        if(data && !this.nextFollowUpDateTime){
+            this.nextFollowUpDateTime = getFieldValue(data, NEXT_FOLLOW_UP_FIELD);
+        }
+    }
 
     handleTitleChange(event){
         this.title = event.target.value;
@@ -71,7 +79,6 @@ export default class CreateCommNotesAndTaskOnLead extends LightningElement {
     resetForm(){
         this.title = '';
         this.remarks = '';
-        this.nextFollowUpDateTime = null;
     }
 
     closeAction(){

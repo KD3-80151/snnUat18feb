@@ -42,6 +42,38 @@
         </rules>
     </decisions>
     <decisions>
+        <name>Is_Token_Amount_Receipt</name>
+        <label>Is Token Amount Receipt</label>
+        <locationX>710</locationX>
+        <locationY>431</locationY>
+        <defaultConnector>
+            <targetReference>Check_Demand_Letter_on_Receipt</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
+        <rules>
+            <name>Token_Amount_Receipt</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.Token_Amount__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <booleanValue>true</booleanValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.Opportunity__c</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Update_Opp_Receipt_Date</targetReference>
+            </connector>
+            <label>Token Amount Receipt</label>
+        </rules>
+    </decisions>
+    <decisions>
         <name>Main_Decision</name>
         <label>Main Decision</label>
         <locationX>644</locationX>
@@ -144,7 +176,7 @@
                 </rightValue>
             </conditions>
             <connector>
-                <targetReference>Check_Demand_Letter_on_Receipt</targetReference>
+                <targetReference>Is_Token_Amount_Receipt</targetReference>
             </connector>
             <label>Receipt is Getting Created Tag Opportunity</label>
         </rules>
@@ -159,6 +191,11 @@
         <name>IsNew</name>
         <dataType>Boolean</dataType>
         <expression>IsNew()</expression>
+    </formulas>
+    <formulas>
+        <name>receiptCreatedDate</name>
+        <dataType>Date</dataType>
+        <expression>DATEVALUE({!$Record.CreatedDate})</expression>
     </formulas>
     <interviewLabel>r_Receipt After Insert/Update Sync {!$Flow.CurrentDateTime}</interviewLabel>
     <label>r_Receipt After Insert/Update Sync</label>
@@ -181,6 +218,44 @@
         </value>
     </processMetadataValues>
     <processType>AutoLaunchedFlow</processType>
+    <recordCreates>
+        <name>Create_Rejected_Receipt_Task</name>
+        <label>Create Rejected Receipt Task</label>
+        <locationX>314</locationX>
+        <locationY>431</locationY>
+        <inputAssignments>
+            <field>ActivityDate</field>
+            <value>
+                <elementReference>dueDate</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>OwnerId</field>
+            <value>
+                <elementReference>$Record.Opportunity__r.OwnerId</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Priority</field>
+            <value>
+                <stringValue>High</stringValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Subject</field>
+            <value>
+                <stringValue>Add Receipt Details/Token Amount</stringValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>WhatId</field>
+            <value>
+                <elementReference>$Record.Opportunity__c</elementReference>
+            </value>
+        </inputAssignments>
+        <object>Task</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordCreates>
     <recordCreates>
         <name>Create_task</name>
         <label>Create task</label>
@@ -222,44 +297,6 @@
         <object>Task</object>
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </recordCreates>
-    <recordCreates>
-        <name>Create_Rejected_Receipt_Task</name>
-        <label>Create Rejected Receipt Task</label>
-        <locationX>314</locationX>
-        <locationY>431</locationY>
-        <inputAssignments>
-            <field>ActivityDate</field>
-            <value>
-                <elementReference>dueDate</elementReference>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>OwnerId</field>
-            <value>
-                <elementReference>$Record.Opportunity__r.OwnerId</elementReference>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>Priority</field>
-            <value>
-                <stringValue>High</stringValue>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>Subject</field>
-            <value>
-                <stringValue>Add Receipt Details/Token Amount</stringValue>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>WhatId</field>
-            <value>
-                <elementReference>$Record.Opportunity__c</elementReference>
-            </value>
-        </inputAssignments>
-        <object>Task</object>
-        <storeOutputAutomatically>true</storeOutputAutomatically>
-    </recordCreates>
     <recordLookups>
         <name>Get_opp_of_Opportunity</name>
         <label>Get opp of Opportunity</label>
@@ -288,6 +325,37 @@
         <object>Demand_Letter__c</object>
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </recordLookups>
+    <recordUpdates>
+        <name>Update_Opp_Receipt_Date</name>
+        <label>Update Opp Receipt Date</label>
+        <locationX>578</locationX>
+        <locationY>539</locationY>
+        <connector>
+            <targetReference>Check_Demand_Letter_on_Receipt</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>$Record.Opportunity__c</elementReference>
+            </value>
+        </filters>
+        <filters>
+            <field>Receipt_Date__c</field>
+            <operator>IsNull</operator>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </filters>
+        <inputAssignments>
+            <field>Receipt_Date__c</field>
+            <value>
+                <elementReference>receiptCreatedDate</elementReference>
+            </value>
+        </inputAssignments>
+        <object>Opportunity</object>
+    </recordUpdates>
     <recordUpdates>
         <name>Update_Receipt</name>
         <label>Update Receipt</label>

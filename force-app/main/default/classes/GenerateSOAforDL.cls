@@ -43,7 +43,7 @@ public with sharing class GenerateSOAforDL {
             Digio_Integration__c customData = Digio_Integration__c.getValues('Digio');
             
             List<Receipt__c > receiptsRelatedToOpp = [select id,Name,Receipt_Date__c,Mode_Of_Payment__c, UPI_Provider__c, Paid_Date__c, Cheque_Number__c,Cheque_Date__c,Drawn_on_Bank__c,Amount__c,Opportunity__c,DD_Number__c,DD_Date__c,Transaction_Reference_Number__c, Type__c, Description__c, Reference_Number__c, Fund_Date__c,
-                                                      Fund_Transfer_Date__c,JV_Date__c, Total_GST__c, Amount_Paid_Excluding_TAX__c,JV_Reference_Number__c, Challan_Date__c, Bank__c, TDS_Amount__c, CIN__c, Receipt_Number__c, Credit_Debit_SGST__c, Credit_Debit_CGST__c  from Receipt__c where Opportunity__c =: oppId and Approval_Status__c = 'Approved'];
+                                                      Fund_Transfer_Date__c,JV_Date__c, Total_GST__c, Amount_Paid_Excluding_TAX__c,JV_Reference_Number__c, Challan_Date__c, Bank__c, TDS_Amount__c, CIN__c, Receipt_Number__c, Credit_Debit_SGST__c, Credit_Debit_CGST__c  from Receipt__c where Opportunity__c =: oppId and Approval_Status__c = 'Approved' and Status__c != 'Cancelled'];
             System.debug('receiptsRelatedToOpp==>'+receiptsRelatedToOpp + 'size==>'+receiptsRelatedToOpp.size());
             Boolean hasCreditDebit = false;
             for (Receipt__c rec : receiptsRelatedToOpp) {
@@ -227,7 +227,7 @@ public with sharing class GenerateSOAforDL {
                         creditCount++;
                         DigioWrapperClass.statementOfReceiptCreditDebit receiptsCD  = new DigioWrapperClass.statementOfReceiptCreditDebit();
                         receiptsCD.receiptNoCD                                      = receipt.Receipt_Number__c != null ? receipt.Receipt_Number__c : '';
-                        receiptsCD.receiptTypeCD                                    = receipt.Type__c != null ? receipt.Type__c : '';
+                        receiptsCD.receiptTypeCD                                    = CreditDebitNoteService.entryType(receipt);
                         receiptsCD.receiptDescCD                                    = receipt.Description__c != null ? receipt.Description__c : '';
                         receiptsCD.receiptAmountCD                                  = receipt.Amount__c != null ? receipt.Amount__c : 0;
                         receiptsCD.receiptTaxCD                                     = (receipt.Credit_Debit_CGST__c != null && receipt.Credit_Debit_SGST__c != null) ? receipt.Credit_Debit_CGST__c + receipt.Credit_Debit_SGST__c : 0;

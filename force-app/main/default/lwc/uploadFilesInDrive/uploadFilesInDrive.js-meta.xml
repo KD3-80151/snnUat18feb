@@ -8,4 +8,9 @@
         <target>lightning__RecordPage</target>
         <target>lightning__RecordAction</target>
     </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__RecordAction">
+            <actionType>ScreenAction</actionType>
+        </targetConfig>
+    </targetConfigs>
 </LightningComponentBundle>

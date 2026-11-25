@@ -102,7 +102,7 @@ public without sharing class QueueableToGenerateDemandLetter implements Queueabl
                     System.debug('Opp record ==>'+oppRecord);
                     
                     List<Receipt__c> cdReceipts = [
-                        SELECT Id, Type__c, Description__c, Pricing_Element_Master__r.Name, Amount__c, Credit_Debit_CGST__c, Credit_Debit_SGST__c, Amount_Paid_Excluding_TAX__c FROM Receipt__c WHERE Opportunity__c = :oppRecord.Id AND Type__c IN ('Credit', 'Debit') AND Approval_Status__c = 'Approved' ORDER BY CreatedDate ASC];
+                        SELECT Id, Type__c, Description__c, Pricing_Element_Master__r.Name, Amount__c, Credit_Debit_CGST__c, Credit_Debit_SGST__c, Amount_Paid_Excluding_TAX__c FROM Receipt__c WHERE Opportunity__c = :oppRecord.Id AND Type__c IN ('Credit', 'Debit') AND Approval_Status__c = 'Approved' AND Status__c != 'Cancelled' ORDER BY CreatedDate ASC];
                     Boolean hasCreditDebit = (cdReceipts != null && !cdReceipts.isEmpty());
                     System.debug('hasreditDebit::' + hasCreditDebit);
                     
@@ -152,11 +152,26 @@ public without sharing class QueueableToGenerateDemandLetter implements Queueabl
                             templateVariables.TodayDate = Date.today().format();
                             system.debug('TodayDate ===> ' + templateVariables.TodayDate);
                             
-                            List<String> mainApplicantName = new List<String>();
-                            mainApplicantName.add(oppRecord.Account.Salutation__c);
-                            mainApplicantName.add(oppRecord.Account.Name);
-                            templateVariables.customerName = String.join(mainApplicantName, '.');
-                            templateVariables.coApplicantNames = coApplicantList != null && !coApplicantList.isEmpty() ? String.join(coApplicantList, ', ') : '';
+                            // The Digio demand letter prints customerName and, on the next line, coApplicantNames,
+                            // so customerName is the primary applicant only (no "null." when the salutation is blank;
+                            // co-applicants de-duplicated and never repeating the primary applicant).
+                            DocumentDataHelper.ApplicantNames applicantNames = DocumentDataHelper.getApplicantNames(oppRecord.Id, true);
+                            templateVariables.customerName = applicantNames.primaryName;
+                            templateVariables.coApplicantNames = applicantNames.allCoApplicantNames;
+                            templateVariables.coApplicantName = applicantNames.allCoApplicantNames;
+                            templateVariables.coApplicant1Name = applicantNames.coApplicant1Name;
+                            templateVariables.coApplicant2Name = applicantNames.coApplicant2Name;
+                            templateVariables.primaryWithCoApplicant = applicantNames.primaryWithCoApplicant;
+                            DocumentDataHelper.CompanyDetails company = DocumentDataHelper.getCompanyDetailsForOpportunity(oppRecord.Id);
+                            templateVariables.companyName = company.companyName;
+                            templateVariables.companyShortName = company.companyShortName;
+                            templateVariables.companyAddress = company.companyAddress;
+                            templateVariables.bankAccountName = company.bankAccountName;
+                            templateVariables.companyBankName = company.bankName;
+                            templateVariables.bankBranch = company.bankBranch;
+                            templateVariables.bankAccountNumber = company.bankAccountNumber;
+                            templateVariables.bankIfscCode = company.bankIfscCode;
+                            templateVariables.bankAccountType = company.bankAccountType;
                             templateVariables.mobileNo = oppRecord.Account.Phone != null ? oppRecord.Account.Phone : '';
                             templateVariables.paymentScheduleName = PaymentScheduleRecords[0].Name != null ? PaymentScheduleRecords[0].Name : '';
                             templateVariables.dueDate = PaymentScheduleRecords[0].Pay_Date__c != null ? PaymentScheduleRecords[0].Pay_Date__c : null;
@@ -229,7 +244,7 @@ public without sharing class QueueableToGenerateDemandLetter implements Queueabl
                             if(hasCreditDebit){
                                 for(Receipt__c r : cdReceipts){
                                     DigioWrapperClass.creditDebitTableRow cdr = new DigioWrapperClass.creditDebitTableRow();
-                                    cdr.ReceiptType = (String)r.Type__c;
+                                    cdr.ReceiptType = CreditDebitNoteService.entryType(r);
                                     cdr.Description = (String)r.Pricing_Element_Master__r.Name;
                                     cdr.Amount = (r.Amount__c != null) ? r.Amount__c : 0;
                                     cdr.Tax = (r.Credit_Debit_CGST__c != null && r.Credit_Debit_SGST__c != null)

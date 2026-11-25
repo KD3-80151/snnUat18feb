@@ -59,11 +59,14 @@ public without sharing class QueueableToSendDemandLetterEmails implements Queuea
                 
                 List<String> contentVerIdList = oppIdByContentVersionIds.get(oppId1);
                 if (contentVerIdList != null && !contentVerIdList.isEmpty()) {
+                    Integer letterNo = 0;
                     for (String cntId : contentVerIdList) {
                         ContentVersion contentVersion = cntIdByRecMap.get(cntId);
                         if (contentVersion != null) {
+                            letterNo++;
                             Messaging.EmailFileAttachment attachment = new Messaging.EmailFileAttachment();
-                            attachment.setFileName(contentVersion.Title + '.pdf');
+                            // Customer-facing name (the Title carries a timestamp with ':' which breaks on Windows)
+                            attachment.setFileName(letterNo == 1 ? 'Demand Letter.pdf' : 'Demand Letter (' + letterNo + ').pdf');
                             attachment.setBody(contentVersion.VersionData);
                             attachment.setContentType('application/pdf');
                             attachments.add(attachment);
@@ -247,7 +250,7 @@ public without sharing class QueueableToSendDemandLetterEmails implements Queuea
             }
             
             Messaging.EmailFileAttachment soaAttachment = new Messaging.EmailFileAttachment();
-            soaAttachment.setFileName(latestStatement.Name + '.pdf');
+            soaAttachment.setFileName('Statement of Account.pdf');
             soaAttachment.setBody(statementBlob);
             soaAttachment.setContentType('application/pdf');
             

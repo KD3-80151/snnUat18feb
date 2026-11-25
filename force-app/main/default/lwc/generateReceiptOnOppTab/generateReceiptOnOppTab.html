@@ -1,0 +1,267 @@
+<template>
+    <article class="receipt-card slds-card">
+        <!-- Header -->
+        <header class="receipt-card__header">
+            <lightning-icon icon-name="standard:partner_fund_claim" size="small" alternative-text="Receipt" class="receipt-card__icon"></lightning-icon>
+            <h1 class="receipt-card__title">Generate Tax Invoice Receipt Details</h1>
+        </header>
+
+        <div class="receipt-card__body">
+            <!-- Opportunity selection -->
+            <section class="receipt-section">
+                <h2 class="receipt-section__title">Opportunity</h2>
+                <div class="slds-grid slds-wrap slds-gutters_small">
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                        <lightning-record-picker
+                            label="Opportunity"
+                            placeholder="Search Opportunities..."
+                            object-api-name="Opportunity"
+                            value={selectedOpportunityId}
+                            display-info={opportunityDisplayInfo}
+                            matching-info={opportunityMatchingInfo}
+                            filter={opportunityFilter}
+                            onchange={handleOpportunityChange}
+                            class="field-strong"
+                            required>
+                        </lightning-record-picker>
+                    </div>
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                        <lightning-combobox
+                            label="Receipt Type"
+                            value={receiptType}
+                            placeholder="Select Receipt Type"
+                            options={receiptOptions}
+                            name="receiptType"
+                            class="field-strong"
+                            onchange={handleInputChange}
+                            required
+                            disabled>
+                        </lightning-combobox>
+                    </div>
+                </div>
+            </section>
+
+            <template lwc:if={hasOpportunity}>
+                <!-- Payment details -->
+                <section class="receipt-section">
+                    <h2 class="receipt-section__title">Payment Details</h2>
+                    <div class="slds-grid slds-wrap slds-gutters_small">
+
+                        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 field-cell">
+                            <lightning-input type="date" label="Receipt Date" value={receiptDate} name="receiptDate" onchange={handleInputChange} required></lightning-input>
+                        </div>
+
+                        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 field-cell">
+                            <lightning-combobox
+                                label="Mode of Payment"
+                                value={modeOfPayment}
+                                placeholder="Select Mode of Payment"
+                                options={modeOfPaymentOptions}
+                                name="modeOfPayment"
+                                onchange={handleModeOfPaymentChange}
+                                required>
+                            </lightning-combobox>
+                        </div>
+
+                        <!-- Cheque -->
+                        <template lwc:if={isCheque}>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 field-cell">
+                                <lightning-input type="number" step="0.01" label="Amount" value={amount} name="amount" onchange={handleInputChange} required></lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 field-cell">
+                                <lightning-input type="text" label="Cheque Number" value={chequeNumber} name="chequeNumber" maxlength="6" onchange={handleInputChange} required></lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 field-cell">
+                                <lightning-input type="date" label="Cheque Date" value={chequeDate} name="chequeDate" onchange={handleInputChange} required></lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 field-cell">
+                                <lightning-input type="text" label="Drawn on Bank" value={drawnOnBank} name="drawnOnBank" onchange={handleInputChange} required></lightning-input>
+                            </div>
+                        </template>
+
+                        <!-- EFT -->
+                        <template lwc:if={isEFT}>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 field-cell">
+                                <lightning-input type="number" step="0.01" label="Amount" value={amount} name="amount" onchange={handleInputChange} required></lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 field-cell">
+                                <lightning-input type="date" label="Fund Transfer Date" value={fundTransferDate} name="fundTransferDate" onchange={handleInputChange} required></lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 field-cell">
+                                <lightning-input type="text" label="Bank Name" value={bankName} name="bankName" onchange={handleInputChange} required></lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 field-cell">
+                                <lightning-input type="text" label="Transaction Reference No" value={transactionReferenceNo} name="transactionReferenceNo" onchange={handleInputChange} required></lightning-input>
+                            </div>
+                        </template>
+
+                        <!-- DD -->
+                        <template lwc:if={isDD}>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 field-cell">
+                                <lightning-input type="number" step="0.01" label="Amount" value={amount} name="amount" onchange={handleInputChange} required></lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 field-cell">
+                                <lightning-input type="text" label="DD Number" value={ddNumber} name="ddNumber" maxlength="6" onchange={handleInputChange} required></lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 field-cell">
+                                <lightning-input type="date" label="DD Date" value={ddDate} name="ddDate" onchange={handleInputChange} required></lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 field-cell">
+                                <lightning-input type="text" label="Drawn on Bank" value={drawnOnBank} name="drawnOnBank" onchange={handleInputChange} required></lightning-input>
+                            </div>
+                        </template>
+
+                        <!-- UPI -->
+                        <template lwc:if={isUPI}>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 field-cell">
+                                <lightning-input type="number" step="0.01" label="Amount" value={amount} name="amount" onchange={handleInputChange} required></lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 field-cell">
+                                <lightning-input type="text" label="Reference No" value={referenceNo} name="referenceNo" onchange={handleInputChange} required></lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 field-cell">
+                                <lightning-input type="date" label="Paid Date" value={paidDate} name="paidDate" onchange={handleInputChange} required></lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 field-cell">
+                                <lightning-combobox label="UPI Provider" value={upiProvider} options={upiProviderOptions} name="upiProvider" onchange={handleInputChange} required></lightning-combobox>
+                            </div>
+                        </template>
+
+                        <!-- TDS -->
+                        <template lwc:if={isTDS}>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 field-cell">
+                                <lightning-input type="number" step="0.01" label="TDS Amount" value={tdsAmount} name="tdsAmount" onchange={handleInputChange} required></lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 field-cell">
+                                <lightning-input type="text" label="CIN" value={cin} name="cin" onchange={handleInputChange} required></lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 field-cell">
+                                <lightning-input type="date" label="Challan Date" value={challanDate} name="challanDate" onchange={handleInputChange} required></lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 field-cell">
+                                <lightning-input type="text" label="BSR Code" value={bsrCode} name="bsrCode" onchange={handleInputChange} required></lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 field-cell">
+                                <lightning-input type="text" label="Bank Name" value={bankName} name="bankName" onchange={handleInputChange} required></lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 field-cell">
+                                <lightning-input type="text" label="PAN NO" value={panNo} name="panNo"
+                                    pattern="[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}" maxlength="10"
+                                    message-when-pattern-mismatch="Please enter a valid PAN Number in the format ABCDE1234F."
+                                    onchange={handleInputChange} required></lightning-input>
+                            </div>
+                        </template>
+
+                        <!-- JV -->
+                        <template lwc:if={isJV}>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 field-cell">
+                                <lightning-input type="number" step="0.01" label="Amount" value={amount} name="amount" onchange={handleInputChange} required></lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 field-cell">
+                                <lightning-input type="date" label="JV Date" value={jvDate} name="jvDate" onchange={handleInputChange} required></lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 field-cell">
+                                <lightning-input type="text" label="JV Reference Number" value={jvReferenceNumber} name="jvReferenceNumber" onchange={handleInputChange} required></lightning-input>
+                            </div>
+                        </template>
+
+                        <!-- Fund Transfer -->
+                        <template lwc:if={isFundTransfer}>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 field-cell">
+                                <lightning-input type="number" step="0.01" label="Amount" value={amount} name="amount" onchange={handleInputChange} required></lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 field-cell">
+                                <lightning-input type="date" label="Fund Date" value={fundTransferDate} name="fundTransferDate" onchange={handleInputChange} required></lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 field-cell">
+                                <lightning-input type="text" label="Reference Number" value={referenceNo} name="referenceNo" onchange={handleInputChange} required></lightning-input>
+                            </div>
+                        </template>
+                    </div>
+
+                    <div class="slds-grid slds-wrap slds-gutters_small">
+                    <!-- Token Amount -->
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 field-cell">
+                    <div class="against-debit">
+                        <lightning-input
+                            type="checkbox"
+                            label="Token Amount"
+                            name="tokenAmount"
+                            checked={isTokenAmount}
+                            disabled={isTokenAmountDisabled}
+                            onchange={handleTokenAmountChange}>
+                        </lightning-input>
+                        <template lwc:if={tokenAmountHelpText}>
+                            <p class="against-debit__help">{tokenAmountHelpText}</p>
+                        </template>
+                    </div>
+                    </div>
+
+                    <!-- Against Debit -->
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 field-cell">
+                    <div class="against-debit">
+                        <lightning-input
+                            type="checkbox"
+                            label="Against Debit"
+                            checked={isAgainstDebit}
+                            onchange={handleAgainstDebitChange}>
+                        </lightning-input>
+                        <template lwc:if={againstDebitHelpText}>
+                            <p class="against-debit__help">{againstDebitHelpText}</p>
+                        </template>
+                    </div>
+                    </div>
+                    </div>
+                </section>
+            </template>
+            <template lwc:elseif={isClosedLost}>
+                <div class="empty-state empty-state_error">
+                    <lightning-icon icon-name="utility:error" size="small" variant="error" alternative-text="Closed Lost"></lightning-icon>
+                    <p class="empty-state__text">This Opportunity is Closed Lost. Receipts cannot be created for it. Please select another Opportunity.</p>
+                </div>
+            </template>
+            <template lwc:else>
+                <div class="empty-state">
+                    <lightning-icon icon-name="utility:search" size="small" alternative-text="Select opportunity" class="empty-state__icon"></lightning-icon>
+                    <p class="empty-state__text">Select an Opportunity to enter receipt details.</p>
+                </div>
+            </template>
+        </div>
+
+        <!-- Footer -->
+        <footer class="receipt-card__footer">
+            <lightning-button label="Reset" onclick={handleReset} disabled={isSubmitting}></lightning-button>
+            <lightning-button class="slds-m-left_small" variant="brand" label="Submit" onclick={handleSubmit} disabled={isSubmitDisabled}></lightning-button>
+        </footer>
+
+        <template lwc:if={isSubmitting}>
+            <lightning-spinner alternative-text="Saving receipt" size="medium"></lightning-spinner>
+        </template>
+    </article>
+
+    <!-- Debit Payment Schedule Modal -->
+    <template lwc:if={showDebitScheduleModal}>
+        <section role="dialog" tabindex="-1" aria-modal="true" aria-label="Select Debit Payment Schedule" class="slds-modal slds-fade-in-open debit-modal">
+            <div class="slds-modal__container debit-modal__container">
+                <header class="slds-modal__header debit-modal__header">
+                    <h2 class="slds-text-heading_medium debit-modal__title">Select Debit Payment Schedule</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium debit-modal__content">
+                    <p class="debit-modal__subtitle">Choose one debit payment schedule for this receipt.</p>
+                    <lightning-radio-group
+                        name="debitPaymentSchedule"
+                        label="Debit Payment Schedules"
+                        options={debitPaymentScheduleOptions}
+                        value={selectedDebitPaymentScheduleId}
+                        onchange={handleDebitScheduleSelection}>
+                    </lightning-radio-group>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning-button label="Cancel" onclick={handleDebitModalCancel}></lightning-button>
+                    <lightning-button class="slds-m-left_small" variant="brand" label="Done" onclick={handleDebitModalConfirm}></lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+</template>

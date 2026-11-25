@@ -7,9 +7,6 @@
         <label>On creation</label>
         <locationX>446</locationX>
         <locationY>323</locationY>
-        <defaultConnector>
-            <targetReference>END_ELEMENT_4</targetReference>
-        </defaultConnector>
         <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
         <rules>
             <name>yes</name>
@@ -47,7 +44,7 @@
                 <leftValueReference>$Record.StageName</leftValueReference>
                 <operator>EqualTo</operator>
                 <rightValue>
-                    <stringValue>Booking Accepted</stringValue>
+                    <stringValue>Booking Data Entry</stringValue>
                 </rightValue>
             </conditions>
             <connector>
@@ -85,26 +82,6 @@
             <label>Awaiting Payment Confirmation</label>
         </rules>
     </decisions>
-    <ends>
-        <name>END_ELEMENT_4</name>
-        <locationX>842</locationX>
-        <locationY>431</locationY>
-    </ends>
-    <ends>
-        <name>END_ELEMENT_5</name>
-        <locationX>50</locationX>
-        <locationY>539</locationY>
-    </ends>
-    <ends>
-        <name>END_ELEMENT_6</name>
-        <locationX>314</locationX>
-        <locationY>539</locationY>
-    </ends>
-    <ends>
-        <name>END_ELEMENT_8</name>
-        <locationX>578</locationX>
-        <locationY>539</locationY>
-    </ends>
     <environments>Default</environments>
     <formulas>
         <name>isNew</name>
@@ -137,9 +114,6 @@
         <label>Create Task</label>
         <locationX>50</locationX>
         <locationY>431</locationY>
-        <connector>
-            <targetReference>END_ELEMENT_5</targetReference>
-        </connector>
         <inputAssignments>
             <field>OwnerId</field>
             <value>
@@ -178,9 +152,6 @@
         <label>Update Unit Record</label>
         <locationX>314</locationX>
         <locationY>431</locationY>
-        <connector>
-            <targetReference>END_ELEMENT_6</targetReference>
-        </connector>
         <filterLogic>and</filterLogic>
         <filters>
             <field>Id</field>
@@ -202,9 +173,6 @@
         <label>Update Units</label>
         <locationX>578</locationX>
         <locationY>431</locationY>
-        <connector>
-            <targetReference>END_ELEMENT_8</targetReference>
-        </connector>
         <filterLogic>and</filterLogic>
         <filters>
             <field>Id</field>

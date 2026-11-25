@@ -97,6 +97,14 @@ export default class GenerateVehicleParkingDoc extends LightningElement {
                                     // You can add additional logic to send email or notify the user
                                 })
                                 .catch(error => {
+                                    this.dispatchEvent(
+                                        new ShowToastEvent({
+                                            title: 'Email not sent',
+                                            message: (error && error.body && error.body.message) ? error.body.message : 'The email could not be sent. Please try again.',
+                                            variant: 'error',
+                                            mode: 'sticky'
+                                        })
+                                    );
                                     this.showSpinner = false;
                                     console.error('Error downloading document: ', error);
                                 });

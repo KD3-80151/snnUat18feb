@@ -23,7 +23,8 @@ public without sharing class receiptTransferController {
     @AuraEnabled(cacheable=true)
     public static List<Account> fetchAccDetails(Id blockId){
         try {
-            List<Account> accList = [SELECT Id,Name from Account where Id IN(SELECT AccountId FROM Opportunity WHERE Unit__r.Floor__r.Blocks__c =: blockId)];
+            // Client (21 Nov): only customers with an active (not Closed Lost) booking
+            List<Account> accList = [SELECT Id,Name from Account where Id IN(SELECT AccountId FROM Opportunity WHERE Unit__r.Floor__r.Blocks__c =: blockId AND StageName != 'Closed Lost')];
             return accList.isEmpty() ? null : accList;
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
@@ -65,7 +66,7 @@ public without sharing class receiptTransferController {
         List<Opportunity> oppList = [
             SELECT Id, Name, StageName, CloseDate, Unit__c 
             FROM Opportunity 
-            WHERE Unit__c IN :unitIds
+            WHERE Unit__c IN :unitIds AND StageName != 'Closed Lost'
         ];
 
         return oppList;
@@ -82,7 +83,7 @@ public without sharing class receiptTransferController {
             List<Opportunity> oppList = [
                 SELECT Id, Name
                 FROM Opportunity
-                WHERE AccountId = :accountId
+                WHERE AccountId = :accountId AND StageName != 'Closed Lost'
             ];
             return oppList.isEmpty() ? null : oppList;
         } catch (Exception e) {
@@ -108,7 +109,7 @@ public static oppWrapper fetchOppDetails(Id fromAccountId, Id toAccountId, Id fr
                        (SELECT Id, Receipt_Number__c, Amount__c, Mode_Of_Payment__c, CreatedDate, Opportunity__c 
                         FROM Receipts__r)
                 FROM Opportunity
-                WHERE Id = :fromOpp
+                WHERE Id = :fromOpp AND StageName != 'Closed Lost'
             ];
         } 
      
@@ -118,7 +119,7 @@ public static oppWrapper fetchOppDetails(Id fromAccountId, Id toAccountId, Id fr
                        (SELECT Id, Receipt_Number__c, Amount__c, Mode_Of_Payment__c, CreatedDate, Opportunity__c 
                         FROM Receipts__r)
                 FROM Opportunity
-                WHERE AccountId = :fromAccountId
+                WHERE AccountId = :fromAccountId AND StageName != 'Closed Lost'
                   AND Id IN (SELECT Opportunity__c FROM Receipt__c)
             ];
         }
@@ -127,7 +128,7 @@ public static oppWrapper fetchOppDetails(Id fromAccountId, Id toAccountId, Id fr
             toOppList = [
                 SELECT Id, Name, Project__c, Project__r.Name, Unit__r.Unit_Name__c, Unit__c
                 FROM Opportunity
-                WHERE Id = :toOpp
+                WHERE Id = :toOpp AND StageName != 'Closed Lost'
             ];
         } 
       
@@ -135,7 +136,7 @@ public static oppWrapper fetchOppDetails(Id fromAccountId, Id toAccountId, Id fr
             toOppList = [
                 SELECT Id, Name, Project__c, Project__r.Name, Unit__r.Unit_Name__c, Unit__c
                 FROM Opportunity
-                WHERE AccountId = :toAccountId
+                WHERE AccountId = :toAccountId AND StageName != 'Closed Lost'
             ];
         }
 

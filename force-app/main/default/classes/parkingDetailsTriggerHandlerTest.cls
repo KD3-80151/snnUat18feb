@@ -10,7 +10,7 @@ public class parkingDetailsTriggerHandlerTest {
 
         Parking_Details__c existingParking = new Parking_Details__c(
             BLock__c = tower1.Id,
-            Parking_Type__c = 'Open',
+            Parking_Type__c = 'Stack',
             Total_Parking__c = 5,
             Available_Parking__c = 5
         );
@@ -18,20 +18,20 @@ public class parkingDetailsTriggerHandlerTest {
 
         Parking_Details__c parking1 = new Parking_Details__c(
             Block__c = tower1.Id,
-            Parking_Type__c = 'Open',
+            Parking_Type__c = 'Stack',
             Total_Parking__c = 5,
             Available_Parking__c = null 
         );
         
         Parking_Details__c parking2 = new Parking_Details__c(
             BLock__c = tower1.Id,
-            Parking_Type__c = 'Open',
+            Parking_Type__c = 'Stack',
             Total_Parking__c = 6 
         );
         
         Parking_Details__c parking3 = new Parking_Details__c(
             BLock__c = null, 
-            Parking_Type__c = 'Open',
+            Parking_Type__c = 'Stack',
             Total_Parking__c = 2
         );
         
@@ -58,7 +58,7 @@ public class parkingDetailsTriggerHandlerTest {
 
         Parking_Details__c validParking = new Parking_Details__c(
             BLock__c = validTower.Id,
-            Parking_Type__c = 'Open',
+            Parking_Type__c = 'Back To Back',
             Total_Parking__c = 10,
             Available_Parking__c = 10
         );

@@ -25,14 +25,14 @@ public class CostSheetControllerTest {
 
         Parking_Details__c parkingDetail1 = new Parking_Details__c(
             BLock__c = tower.Id, 
-            Parking_Type__c = 'Independent', 
+            Parking_Type__c = 'Back To Back', 
             Amount__c = 100
         );
         insert parkingDetail1;
         
         Parking_Details__c parkingDetail2 = new Parking_Details__c(
             BLock__c = tower.Id, 
-            Parking_Type__c = 'Open', 
+            Parking_Type__c = 'Stack', 
             Amount__c = 150
         );
         insert parkingDetail2;

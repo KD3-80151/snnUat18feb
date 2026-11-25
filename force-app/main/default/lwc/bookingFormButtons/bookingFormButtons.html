@@ -1,6 +1,7 @@
 <template>
     <lightning-card>
-        <template if:false={showSpinner}>
+        <!-- Hidden (not removed) while saving, so the entered data is still there if saving fails -->
+        <div class={formContainerClass}>
             
                 <div class="mainCSSContener slds-p-bottom_large">
                     <div class="slds-grid slds-wrap">
@@ -248,6 +249,17 @@
                                                     </div>
                                                     <div class="slds-col slds-size_8-of-12">
                                                         <lightning-input style="width: 213px;" name="PAN__c" type="text" class="input-no-border" value={acc.PAN__c} onchange={handleChange} data-number={acc.Number}></lightning-input>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="slds-col slds-size_6-of-12">
+                                                <div class="slds-grid slds-gutters ">
+                                                    <div class=" twoColLabelWidth slds-col slds-size_4-of-12 unitLabels slds-align-bottom">
+                                                        <span>Aadhaar No</span><span class="slds-float_right">:</span>
+                                                    </div>
+                                                    <div class="slds-col slds-size_8-of-12">
+                                                        <lightning-input style="width: 213px;" name="Aadhaar_Number__c" type="text" class="input-no-border" value={acc.Aadhaar_Number__c} onchange={handleChange} data-number={acc.Number}
+                                                            max-length="12" pattern="[0-9]{12}" message-when-pattern-mismatch="Aadhaar Number must be 12 digits."></lightning-input>
                                                     </div>
                                                 </div>
                                             </div>
@@ -650,7 +662,7 @@
                     </div>
                 </div>
             
-        </template>
+        </div>
         <template if:true={showSpinner}>
             <div class="slds-p-around_large" style="height: 450px;">
                 <c-custom-spinner spinner-text="Creating Applicant Records...." second-text={nextText}></c-custom-spinner>

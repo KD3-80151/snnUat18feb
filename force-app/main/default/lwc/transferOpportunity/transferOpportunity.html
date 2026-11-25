@@ -8,25 +8,22 @@
 
             
             <template if:false={isSaving}>
-                <lightning-record-edit-form
-                    object-api-name="Receipt__c"
-                    record-id={recordId}
-                    onsuccess={handleSuccess}
-                    onsubmit={handleSubmit}
-                    onerror={handleError}
-                    onload={handleSaveFinished}
-                >
-                   
-                    <lightning-input-field field-name="Opportunity__c" onchange={handleLookupChange}></lightning-input-field>
+                <!-- Client (21 Nov): only active (not Closed Lost) opportunities can be chosen -->
+                <lightning-record-picker
+                    label="Opportunity"
+                    placeholder="Search active opportunities..."
+                    object-api-name="Opportunity"
+                    filter={activeOpportunityFilter}
+                    onchange={handleLookupChange}
+                    required
+                ></lightning-record-picker>
 
-                    
-                    <lightning-button
-                        class="slds-m-top_medium"
-                        label="Save"
-                        variant="brand"
-                        onclick={handleSave}
-                    ></lightning-button>
-                </lightning-record-edit-form>
+                <lightning-button
+                    class="slds-m-top_medium"
+                    label="Save"
+                    variant="brand"
+                    onclick={handleSave}
+                ></lightning-button>
             </template>
         </div>
     </lightning-card>

@@ -388,6 +388,21 @@ public without sharing class DigioWrapperClass {
         public String carParkingDetails{get;set;}
         public String loginUserName{get;set;}
         public Decimal totalFlatCost{get;set;}
+            // --- Project-wise company & bank details (DocumentDataHelper) ---
+        public String companyShortName{get;set;}
+        public String bankAccountName{get;set;}
+        public String companyBankName{get;set;}
+        public String bankBranch{get;set;}
+        public String bankAccountNumber{get;set;}
+        public String bankIfscCode{get;set;}
+        public String bankAccountType{get;set;}
+        // --- Applicant names ---
+        public String coApplicant1Name{get;set;}
+        public String coApplicant2Name{get;set;}
+        public String primaryWithCoApplicant{get;set;}
+        public String coApplicant1Address{get;set;}
+        public String coApplicant2Address{get;set;}
+        public String allotmentLetterDate{get;set;}
     }
 
     public class allotmentLetterDynamicTable{
@@ -426,7 +441,7 @@ public without sharing class DigioWrapperClass {
         public String coApplicantName{get;set;}
         public String clientAddress{get;set;}
         public String amountInWords{get;set;}
-        public Decimal amount {get; set;}
+        public String amount {get; set;} // Indian grouping, e.g. 1,35,67,543
         public String modeOfPayment{get;set;}
         public String unitName{get;set;}
         public String unitType{get;set;}
@@ -444,6 +459,19 @@ public without sharing class DigioWrapperClass {
         public String companyName{get;set;}
         public String companyAddress{get;set;}
         public String companyEmail{get;set;}
+            // --- Project-wise company & bank details (DocumentDataHelper) ---
+        public String companyShortName{get;set;}
+        public String bankAccountName{get;set;}
+        public String companyBankName{get;set;}
+        public String bankBranch{get;set;}
+        public String bankAccountNumber{get;set;}
+        public String bankIfscCode{get;set;}
+        public String bankAccountType{get;set;}
+        // --- Applicant names ---
+        public String coApplicant1Name{get;set;}
+        public String coApplicant2Name{get;set;}
+        public String primaryWithCoApplicant{get;set;}
+        public String paymentDate{get;set;}
     }
 
     //Generate StatementOfAccount
@@ -483,6 +511,21 @@ public without sharing class DigioWrapperClass {
         public Decimal totalPaidTillDate { get; set; }
         public Decimal totalScheduleAmount{get;set;}
         
+            // --- Project-wise company & bank details (DocumentDataHelper) ---
+        public String companyShortName{get;set;}
+        public String bankAccountName{get;set;}
+        public String companyBankName{get;set;}
+        public String bankBranch{get;set;}
+        public String bankAccountNumber{get;set;}
+        public String bankIfscCode{get;set;}
+        public String bankAccountType{get;set;}
+        // --- Applicant names ---
+        public String coApplicant1Name{get;set;}
+        public String coApplicant2Name{get;set;}
+        public String primaryWithCoApplicant{get;set;}
+        public String companyName{get;set;}
+        public String companyAddress{get;set;}
+        public String coApplicantName{get;set;}
     }
 
     public class accountScheduleDynamicTable{
@@ -581,6 +624,21 @@ public without sharing class DigioWrapperClass {
         public Decimal FinallessTdsAmount{get;set;}
         public Decimal FinalbalancePaybleAmount{get;set;}        
         public Decimal totalAmountInclusiveOfTax{get;set;}
+            // --- Project-wise company & bank details (DocumentDataHelper) ---
+        public String companyShortName{get;set;}
+        public String bankAccountName{get;set;}
+        public String companyBankName{get;set;}
+        public String bankBranch{get;set;}
+        public String bankAccountNumber{get;set;}
+        public String bankIfscCode{get;set;}
+        public String bankAccountType{get;set;}
+        // --- Applicant names ---
+        public String coApplicant1Name{get;set;}
+        public String coApplicant2Name{get;set;}
+        public String primaryWithCoApplicant{get;set;}
+        public String companyName{get;set;}
+        public String companyAddress{get;set;}
+        public String coApplicantName{get;set;}
     }
 
     public class demandLetterPaymentScheduleTable{
@@ -650,6 +708,19 @@ public without sharing class DigioWrapperClass {
         public Decimal basicPriceValue{get; set;}
         
         
+            // --- Project-wise company & bank details (DocumentDataHelper) ---
+        public String companyShortName{get;set;}
+        public String bankAccountName{get;set;}
+        public String companyBankName{get;set;}
+        public String bankBranch{get;set;}
+        public String bankAccountNumber{get;set;}
+        public String bankIfscCode{get;set;}
+        public String bankAccountType{get;set;}
+        // --- Applicant names ---
+        public String coApplicant1Name{get;set;}
+        public String coApplicant2Name{get;set;}
+        public String primaryWithCoApplicant{get;set;}
+        public String companyAddress{get;set;}
     }
 
     public class costSheetPaymentTable{
@@ -1102,6 +1173,27 @@ public without sharing class DigioWrapperClass {
         public String receiptBank { get; set; } 
       
 
+            // --- Project-wise company & bank details (DocumentDataHelper) ---
+        public String companyShortName{get;set;}
+        public String bankAccountName{get;set;}
+        public String companyBankName{get;set;}
+        public String bankBranch{get;set;}
+        public String bankAccountNumber{get;set;}
+        public String bankIfscCode{get;set;}
+        public String bankAccountType{get;set;}
+        // --- Applicant names ---
+        public String coApplicant1Name{get;set;}
+        public String coApplicant2Name{get;set;}
+        public String primaryWithCoApplicant{get;set;}
+        public String companyName { get; set; }
+        public String companyAddress { get; set; }
+        public String firstAadhaar { get; set; }
+        public String secondAadhaar { get; set; }
+        public String thirdAadhaar { get; set; }
+        public String fourthAadhaar { get; set; }
+        public String fifthAadhaar { get; set; }
+        public String sixthAadhaar { get; set; }
+        public String paymentDate { get; set; }
     }
 
     //welcome letter 

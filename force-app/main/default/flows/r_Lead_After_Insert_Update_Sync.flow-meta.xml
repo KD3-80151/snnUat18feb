@@ -1,26 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Flow xmlns="http://soap.sforce.com/2006/04/metadata">
     <actionCalls>
-        <name>Lead_Assignment_Notification_Email_Alert2</name>
-        <label>Lead Assignment Notification Email Alert2</label>
-        <locationX>314</locationX>
-        <locationY>539</locationY>
-        <actionName>Lead.Lead_Assignment_Notification_Email_Alert</actionName>
-        <actionType>emailAlert</actionType>
-        <connector>
-            <targetReference>updateLeadType</targetReference>
-        </connector>
-        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
-        <inputParameters>
-            <name>SObjectRowId</name>
-            <value>
-                <elementReference>$Record.Id</elementReference>
-            </value>
-        </inputParameters>
-        <nameSegment>Lead.Lead_Assignment_Notification_Email_Alert</nameSegment>
-        <offset>0</offset>
-    </actionCalls>
-    <actionCalls>
         <name>Send_Custom_Notification_to_Pre_Sales_Team_Member</name>
         <label>Send Custom Notification to Pre Sales Team Member</label>
         <locationX>842</locationX>
@@ -214,26 +194,9 @@
         <name>Assignment_userManual</name>
         <label>Assignment-userManual</label>
         <locationX>314</locationX>
-        <locationY>863</locationY>
+        <locationY>755</locationY>
         <assignmentItems>
             <assignToReference>userManualAndTaskCreated</assignToReference>
-            <operator>Assign</operator>
-            <value>
-                <booleanValue>false</booleanValue>
-            </value>
-        </assignmentItems>
-        <connector>
-            <isGoTo>true</isGoTo>
-            <targetReference>Main_Decision</targetReference>
-        </connector>
-    </assignments>
-    <assignments>
-        <name>mdv_NextFollowUpFalse</name>
-        <label>mdv_NextFollowUpFalse</label>
-        <locationX>1370</locationX>
-        <locationY>647</locationY>
-        <assignmentItems>
-            <assignToReference>mdv_NextFollowUp</assignToReference>
             <operator>Assign</operator>
             <value>
                 <booleanValue>false</booleanValue>
@@ -247,7 +210,7 @@
     <decisions>
         <name>Main_Decision</name>
         <label>Main Decision</label>
-        <locationX>974</locationX>
+        <locationX>842</locationX>
         <locationY>431</locationY>
         <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
         <rules>
@@ -332,7 +295,7 @@
                 </rightValue>
             </conditions>
             <connector>
-                <targetReference>Lead_Assignment_Notification_Email_Alert2</targetReference>
+                <targetReference>updateLeadType</targetReference>
             </connector>
             <label>userManual</label>
         </rules>
@@ -429,35 +392,6 @@
                 <targetReference>Get_Custom_Notification1</targetReference>
             </connector>
             <label>Sales Team Member Assigned</label>
-        </rules>
-        <rules>
-            <name>Create_follow_up_task</name>
-            <conditionLogic>and</conditionLogic>
-            <conditions>
-                <leftValueReference>$Record.Status</leftValueReference>
-                <operator>EqualTo</operator>
-                <rightValue>
-                    <stringValue>Assigned</stringValue>
-                </rightValue>
-            </conditions>
-            <conditions>
-                <leftValueReference>$Record__Prior.Status</leftValueReference>
-                <operator>NotEqualTo</operator>
-                <rightValue>
-                    <stringValue>Assigned</stringValue>
-                </rightValue>
-            </conditions>
-            <conditions>
-                <leftValueReference>mdv_NextFollowUp</leftValueReference>
-                <operator>EqualTo</operator>
-                <rightValue>
-                    <booleanValue>true</booleanValue>
-                </rightValue>
-            </conditions>
-            <connector>
-                <targetReference>Create_Follow_Up_Task1</targetReference>
-            </connector>
-            <label>Create follow up task</label>
         </rules>
         <rules>
             <name>Update_Stage_to_Qualified</name>
@@ -600,33 +534,10 @@
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </recordCreates>
     <recordCreates>
-        <name>Create_Follow_Up_Task1</name>
-        <label>Create Follow Up Task</label>
-        <locationX>1370</locationX>
-        <locationY>539</locationY>
-        <connector>
-            <targetReference>mdv_NextFollowUpFalse</targetReference>
-        </connector>
-        <inputAssignments>
-            <field>Subject</field>
-            <value>
-                <stringValue>Take Follow Up with Customer</stringValue>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>WhoId</field>
-            <value>
-                <elementReference>$Record.Id</elementReference>
-            </value>
-        </inputAssignments>
-        <object>Task</object>
-        <storeOutputAutomatically>true</storeOutputAutomatically>
-    </recordCreates>
-    <recordCreates>
         <name>create_task2</name>
         <label>create task2</label>
         <locationX>314</locationX>
-        <locationY>755</locationY>
+        <locationY>647</locationY>
         <connector>
             <targetReference>Assignment_userManual</targetReference>
         </connector>
@@ -732,7 +643,7 @@
     <recordUpdates>
         <name>Update_Leads_To_Qualified</name>
         <label>Update Leads To Qualified</label>
-        <locationX>1634</locationX>
+        <locationX>1370</locationX>
         <locationY>539</locationY>
         <inputAssignments>
             <field>Is_Qualified__c</field>
@@ -775,7 +686,7 @@
     <recordUpdates>
         <name>Update_Qualified_date_time</name>
         <label>Update Qualified date time</label>
-        <locationX>974</locationX>
+        <locationX>842</locationX>
         <locationY>323</locationY>
         <connector>
             <targetReference>Main_Decision</targetReference>
@@ -807,7 +718,7 @@
         <name>updateLeadType</name>
         <label>updateLeadType</label>
         <locationX>314</locationX>
-        <locationY>647</locationY>
+        <locationY>539</locationY>
         <connector>
             <targetReference>create_task2</targetReference>
         </connector>
@@ -826,7 +737,7 @@
         <inputReference>$Record</inputReference>
     </recordUpdates>
     <start>
-        <locationX>848</locationX>
+        <locationX>716</locationX>
         <locationY>0</locationY>
         <connector>
             <targetReference>Update_Qualified_date_time</targetReference>

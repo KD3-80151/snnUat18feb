@@ -6,7 +6,7 @@ trigger TriggerOnUnit on Unit__c (before insert,before update,after insert,after
 //        dCH.CreateDocuments(Trigger.new);
 //    }
    if(Trigger.isBefore && Trigger.isUpdate){
-       UnitTriggerHandler.preventEditsOnSoldUnits(Trigger.new, Trigger.oldMap);
+      // UnitTriggerHandler.preventEditsOnSoldUnits(Trigger.new, Trigger.oldMap);
    }
 
 }

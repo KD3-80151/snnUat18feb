@@ -145,7 +145,7 @@ public without sharing class QueueableToGenerateDocDigio implements Queueable, D
                         HttpResponse res = http.send(req);
                         Blob responseBlob = res.getBodyAsBlob();
                         System.debug('responseBlob ==> ' + responseBlob);
-                        downloadDigioDocWithoutGDrive(responseBlob,receiptRecord.Opportunity__c,'VettedReceipt');
+                        downloadDigioDocWithoutGDrive(responseBlob,receiptRecord.Opportunity__c,'Receipt');
                     }
                 }
             }
@@ -319,7 +319,7 @@ public without sharing class QueueableToGenerateDocDigio implements Queueable, D
                 return;
             } 
         }
-        else if ( docName != null && docName == 'VettedReceipt'){
+        else if ( docName != null && docName == 'Receipt'){
             system.debug('docName'+docName);
             template = [SELECT Id, Subject, HtmlValue, Body, DeveloperName FROM EmailTemplate WHERE DeveloperName = 'VettedReceiptDocumentPDFEmailTemplate' LIMIT 1];
 

@@ -39,6 +39,8 @@
                                         <lightning-input 
                                             type="date" 
                                             value={schedule.Pay_Date__c} 
+                                            max={todayIso}
+                                            message-when-range-overflow="Demand Date cannot be a future date."
                                             onchange={handleDateChange} 
                                             data-id={schedule.Id} 
                                             data-field="Pay_Date__c">

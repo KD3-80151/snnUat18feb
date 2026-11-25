@@ -715,7 +715,7 @@ public class ChannelPartner_Controller_Test {
         Test.stopTest();
     }
     
-     @isTest
+    @isTest
     static void testFetchVisitOppRecordsAsTeamHead() {
         RecordType channelPartnerRecordType = [SELECT Id FROM RecordType WHERE DeveloperName = 'Channel_Partner' AND SObjectType = 'Account' LIMIT 1];
         
@@ -726,23 +726,25 @@ public class ChannelPartner_Controller_Test {
         
         Account channelPartnerAccount = new Account(Name = 'Channel Partner Account', RecordTypeId = channelPartnerRecordType.Id);
         insert channelPartnerAccount;
-
+    
         Account teamMemberAccount = new Account(Name = 'Test Account', RecordTypeId = [SELECT Id FROM RecordType WHERE SObjectType = 'Account' LIMIT 1].Id);
         insert teamMemberAccount;
-
+    
+        String uniqueUsername = 'testuser1' + DateTime.now().getTime() + '@' + UserInfo.getOrganizationId() + '.test.com';
+    
         User teamMember = new User(
-            Alias = 'testusr',
+            Alias = 'testusr1',
             LastName = 'test',
             ProfileId = [SELECT Id FROM Profile WHERE Name = 'Standard User' LIMIT 1].Id,
-            Username = 'testuser1@domain.com',
-            Email = 'testuser1@domain.com',
+            Username = uniqueUsername,
+            Email = uniqueUsername,
             TimeZoneSidKey = 'America/Los_Angeles',
             LocaleSidKey = 'en_US',
             EmailEncodingKey = 'UTF-8',
             LanguageLocaleKey = 'en_US'
         );
         insert teamMember;
-
+    
         Opportunity opp = new Opportunity(
             Name = 'Test Opportunity',
             AccountId = teamMemberAccount.Id,
@@ -751,19 +753,19 @@ public class ChannelPartner_Controller_Test {
             Amount = 1000
         );
         insert opp;
-
+    
         Visit__c visit = new Visit__c(
             Opportunity__c = opp.Id,
             Channel_Partner__c = channelPartnerAccount.Id,
             Status__c = 'SV Completed'
         );
         insert visit;
-
+    
         Test.startTest();
         ChannelPartner_Controller.ChannelPartnerWrapper result = ChannelPartner_Controller.FetchVisitOppRecords(true, 'TestHashCode');
         Test.stopTest();
     }
-
+    
     @isTest
     static void testFetchVisitOppRecordsNotTeamHead() {
         RecordType channelPartnerRecordType = [SELECT Id FROM RecordType WHERE DeveloperName = 'Channel_Partner' AND SObjectType = 'Account' LIMIT 1];
@@ -775,23 +777,25 @@ public class ChannelPartner_Controller_Test {
         
         Account channelPartnerAccount = new Account(Name = 'Channel Partner Account', RecordTypeId = channelPartnerRecordType.Id);
         insert channelPartnerAccount;
-
+    
         Account teamMemberAccount = new Account(Name = 'Test Account', RecordTypeId = [SELECT Id FROM RecordType WHERE SObjectType = 'Account' LIMIT 1].Id);
         insert teamMemberAccount;
-
+    
+        String uniqueUsername = 'testuser2' + DateTime.now().getTime() + '@' + UserInfo.getOrganizationId() + '.test.com';
+    
         User teamMember = new User(
-            Alias = 'testusr',
+            Alias = 'testusr2',
             LastName = 'Testing',
             ProfileId = [SELECT Id FROM Profile WHERE Name = 'Standard User' LIMIT 1].Id,
-            Username = 'testuser2@domain.com',
-            Email = 'testuser2@domain.com',
+            Username = uniqueUsername,
+            Email = uniqueUsername,
             TimeZoneSidKey = 'America/Los_Angeles',
             LocaleSidKey = 'en_US',
             EmailEncodingKey = 'UTF-8',
             LanguageLocaleKey = 'en_US'
         );
         insert teamMember;
-
+    
         Opportunity opp = new Opportunity(
             Name = 'Test Opportunity',
             AccountId = teamMemberAccount.Id,
@@ -800,14 +804,14 @@ public class ChannelPartner_Controller_Test {
             Amount = 1000
         );
         insert opp;
-
+    
         Visit__c visit = new Visit__c(
             Opportunity__c = opp.Id,
             Channel_Partner__c = channelPartnerAccount.Id,
             Status__c = 'SV Completed'
         );
         insert visit;
-
+    
         Test.startTest();
         ChannelPartner_Controller.ChannelPartnerWrapper result = ChannelPartner_Controller.FetchVisitOppRecords(false, 'TestHashCode');
         Test.stopTest();

@@ -229,13 +229,13 @@ public without sharing class digioSubRepository {
     @AuraEnabled(cacheable=false)
     public static void sendigiodetails(String digiDocId ,string oppId,string docname){
         try{
-            if(oppId != null && digiDocId != null && docname != null){
-                Opportunity oppRec = [Select Id ,Email__c from Opportunity where Id =: oppId ];
-                digioCalloutUtility.downloadDigioDocWithoutGDrive (digiDocId,oppRec.Id,docname);
+            if(String.isBlank(oppId) || String.isBlank(digiDocId) || String.isBlank(docname)){
+                throw new digioCalloutUtility.DocumentEmailException('The email was not sent: the document has not been generated yet. Please generate it again.');
             }
+            digioCalloutUtility.downloadDigioDocWithoutGDrive(digiDocId, Id.valueOf(oppId), docname);
         }catch(Exception e){
-            system.debug('Error ==> ' + e.getMessage());
-            system.debug('Error in line ==> ' + e.getLineNumber());
+            system.debug('Error ==> ' + e.getMessage() + ' line ' + e.getLineNumber());
+            throw digioCalloutUtility.toAuraError(e);
         }
     }
 }

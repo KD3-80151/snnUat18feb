@@ -1,0 +1,30 @@
+<apex:page standardController="Opportunity" standardStylesheets="true" showHeader="false">
+<apex:includeLightning />    
+<div id="bookingFormButtons" />
+<style>
+    body {
+        background-color: transparent;
+        overflow-y: auto;
+        scrollbar-width: none;
+    }
+    html::-webkit-scrollbar,
+    body::-webkit-scrollbar {
+        display: none;
+    }
+</style>
+<script>
+    document.addEventListener('lightning__showtoast', event => {
+        sforce.one.showToast(event.toastAttributes);
+    });
+        $Lightning.use("c:editApplicationDetailsApp", function() {
+        $Lightning.createComponent("c:bookingFormButtons",
+        {
+            recordId : '{!Opportunity.Id}'
+        },
+        "bookingFormButtons", 
+        function(cmp) {
+            console.log('Calling the LWC Component');
+        });
+    });
+</script>
+</apex:page>

@@ -378,8 +378,8 @@ public class costSheetTemplateController {
 												system.debug('new cost sheet tax linking for existing cost price association');
 												Cost_Sheet_Tax_Linking__c costSheetLink = new Cost_Sheet_Tax_Linking__c(
 													Tax_Master__c 	= tax.get('Id') != null ? (String)tax.get('Id') : null,
-													Amount__c 		= safeDecimal(tax.get('Amount__c')),
-													App__c 			= safeDecimal(tax.get('App__c')),
+													Amount__c 		= tax.get('Amount__c') != null ? Decimal.valueOf(String.valueOf(tax.get('Amount__c'))) : null,
+													App__c 			= tax.get('App__c') != null ? Integer.valueOf(String.valueOf(tax.get('App__c'))) : null,
 													Cost_Pricing_Association__c = costPARec.Id
 												);
 
@@ -420,8 +420,8 @@ public class costSheetTemplateController {
 												Cost_Sheet_Tax_Linking__c costSheetLink = new Cost_Sheet_Tax_Linking__c(
 													Id 				= existingLink.Id,
 													Tax_Master__c 	= tax.get('Id') != null ? (String)tax.get('Id') : null,
-													Amount__c 		= safeDecimal(tax.get('Amount__c')),
-													App__c 			= safeDecimal(tax.get('App__c')),
+													Amount__c 		= tax.get('Amount__c') != null ? Decimal.valueOf(String.valueOf(tax.get('Amount__c'))) : null,
+													App__c 			= tax.get('App__c') != null ? Integer.valueOf(String.valueOf(tax.get('App__c'))) : null,
 													Cost_Pricing_Association__c = existingLink.Cost_Pricing_Association__c
 												);
 												Boolean exists = false;
@@ -449,8 +449,8 @@ public class costSheetTemplateController {
 									if (String.isNotBlank(taxId)) {
 										Cost_Sheet_Tax_Linking__c costSheetLink = new Cost_Sheet_Tax_Linking__c(
 											Tax_Master__c 	= tax.get('Id') != null ? (String)tax.get('Id') : null,
-											Amount__c 		= safeDecimal(tax.get('Amount__c')),
-											App__c 			= safeDecimal(tax.get('App__c'))
+											Amount__c 		= tax.get('Amount__c') != null ? Decimal.valueOf(String.valueOf(tax.get('Amount__c'))) : null,
+											App__c 			= tax.get('App__c') != null && tax.get('App__c') != '' ? Integer.valueOf(String.valueOf(tax.get('App__c'))) : null
 										);
 										costSheetTaxLinkingListToInsert.add(costSheetLink);
 

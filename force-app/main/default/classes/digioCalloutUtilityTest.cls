@@ -54,7 +54,79 @@ private class digioCalloutUtilityTest {
         Test.setMock(HttpCalloutMock.class, new MockHttpResponseGenerator());
         Test.startTest();
         digioCalloutUtility.downloadDigioDocWithoutGDrive('testDocId', opp.Id, docName);
+        System.assertEquals(1, Limits.getEmailInvocations(), 'One email should be sent for ' + docName);
         Test.stopTest();
+    }
+
+    // Runs a send that is expected to fail and returns the error shown to the user
+    private static String sendError(String digiDocId, Id oppId, String docName, HttpCalloutMock mock) {
+        Test.setMock(HttpCalloutMock.class, mock);
+        String msg;
+        Test.startTest();
+        try {
+            digioCalloutUtility.downloadDigioDocWithoutGDrive(digiDocId, oppId, docName);
+        } catch (digioCalloutUtility.DocumentEmailException e) {
+            msg = e.getMessage();
+        }
+        System.assertEquals(0, Limits.getEmailInvocations(), 'No email should be sent when the send fails');
+        Test.stopTest();
+        return msg;
+    }
+
+    @isTest
+    static void testErrorNoCustomerEmail() {
+        Account acc = new Account(Name = 'No Email Account');
+        insert acc;
+        Opportunity opp = new Opportunity(Name = 'No Email Opp', AccountId = acc.Id, StageName = 'Prospecting', CloseDate = Date.today());
+        insert opp;
+        String msg = sendError('testDocId', opp.Id, 'BookingForm', new MockHttpResponseGenerator());
+        System.assert(msg != null && msg.contains('no email address'), 'Got: ' + msg);
+    }
+
+    @isTest
+    static void testErrorNoTemplateForDocument() {
+        Opportunity opp = [SELECT Id FROM Opportunity LIMIT 1];
+        String msg = sendError('testDocId', opp.Id, 'Unknown Document', new MockHttpResponseGenerator());
+        System.assert(msg != null && msg.contains('no email template'), 'Got: ' + msg);
+    }
+
+    @isTest
+    static void testErrorDocumentNotGenerated() {
+        Opportunity opp = [SELECT Id FROM Opportunity LIMIT 1];
+        String msg = sendError(null, opp.Id, 'BookingForm', new MockHttpResponseGenerator());
+        System.assert(msg != null && msg.contains('not been generated'), 'Got: ' + msg);
+    }
+
+    @isTest
+    static void testErrorDigioDownloadFails() {
+        Opportunity opp = [SELECT Id FROM Opportunity LIMIT 1];
+        String msg = sendError('testDocId', opp.Id, 'BookingForm', new FailingDownloadMock());
+        System.assert(msg != null && msg.contains('could not be downloaded'), 'Got: ' + msg);
+    }
+
+    @isTest
+    static void testToAuraError() {
+        AuraHandledException known = digioCalloutUtility.toAuraError(new digioCalloutUtility.DocumentEmailException('Readable reason'));
+        System.assertEquals('Readable reason', known.getMessage());
+        AuraHandledException other = digioCalloutUtility.toAuraError(new DmlException('boom'));
+        System.assert(other.getMessage().startsWith('The email was not sent: '), other.getMessage());
+    }
+
+    @isTest
+    static void testAttachmentNames() {
+        System.assertEquals('Booking Form.pdf', digioCalloutUtility.attachmentFileName('BookingForm'));
+        System.assertEquals('Party Hall Rules.pdf', digioCalloutUtility.attachmentFileName('GeneratePartyHall'));
+        System.assertEquals('Agreement Copy.pdf', digioCalloutUtility.attachmentFileName('Agreement Copy'));
+        System.assertEquals('Other.pdf', digioCalloutUtility.attachmentFileName('Other'));
+    }
+
+    private class FailingDownloadMock implements HttpCalloutMock {
+        public HttpResponse respond(HttpRequest req) {
+            HttpResponse res = new HttpResponse();
+            res.setStatusCode(500);
+            res.setBody('');
+            return res;
+        }
     }
 
     // ---------- sendHttpRequest ----------
@@ -85,7 +157,10 @@ private class digioCalloutUtilityTest {
     @isTest static void testServiceprovider() { testDownloadDoc('Serviceprovider'); }
     @isTest static void testGenerateWelcomKit() { testDownloadDoc('GenerateWelcomKit'); }
     @isTest static void testHandOverFormate() { testDownloadDoc('HandOverFormate'); }
-    @isTest static void testVettedReceipt() { testDownloadDoc('VettedReceipt'); }
+    @isTest static void testVettedReceipt() { testDownloadDoc('Receipt'); }
+    @isTest static void testBookingForm() { testDownloadDoc('BookingForm'); }
+    @isTest static void testDebitNote() { testDownloadDoc('DebitNote'); }
+    @isTest static void testAgreementCopy() { testDownloadDoc('Agreement Copy'); }
 
     // ---------- downloadDocument ----------
     @isTest

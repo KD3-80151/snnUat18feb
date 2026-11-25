@@ -78,10 +78,9 @@ export default class GenerateCreditDebitReceipt extends LightningElement {
         console.log('Loading Picklist Values');
         getPicklistValues({ fieldName: 'Type__c' })
             .then(result => {
-                 const allOptions = result.map(value => ({ label: value, value }));
-                this.receiptOptions = allOptions.filter(option => 
-                option.value === 'Credit' || option.value === 'Debit'
-            );
+                this.receiptOptions = result
+                    .filter(value => value === 'Credit' || value === 'Debit')
+                    .map(value => ({ label: value === 'Credit' ? 'Credit Note' : 'Debit Note', value }));
                 console.log('Receipt Type options loaded:', this.receiptOptions);
             })
             .catch(error => {
@@ -258,7 +257,7 @@ export default class GenerateCreditDebitReceipt extends LightningElement {
 
         if(!this.receiptType){
             isValid = false;
-            errorMessage = 'Please select a receipt type.';
+            errorMessage = 'Please select Credit Note or Debit Note.';
         }
 
         if(!this.creditDebitDate){
@@ -266,9 +265,9 @@ export default class GenerateCreditDebitReceipt extends LightningElement {
             errorMessage = 'Please select a credit/debit date.';
         }
 
-        if(!this.amount){
+        if(!this.amount || parseFloat(this.amount) <= 0){
             isValid = false;
-            errorMessage = 'Please enter an amount.';
+            errorMessage = 'Please enter the Amount.';
         }
 
         // switch (this.modeOfPayment) {
@@ -382,8 +381,8 @@ export default class GenerateCreditDebitReceipt extends LightningElement {
             taxMasterCgst: this.selectedTaxMasterCgst,
             taxMasterSgst: this.selectedTaxMasterSgst,
             description: this.description,
-            hasCgst: this.hasCgst,
-            hasSgst: this.hasSgst
+            hasCgst: hasCgst,
+            hasSgst: hasSgst
         };
 
         console.log('Submitting receipt data to Apex:', receiptData);
@@ -395,7 +394,7 @@ export default class GenerateCreditDebitReceipt extends LightningElement {
                 console.log('Receipt created successfully');
                 this.dispatchEvent(new ShowToastEvent({
                     title: 'Success',
-                    message: 'Receipt created successfully.',
+                    message: (this.receiptType === 'Debit' ? 'Debit Note' : 'Credit Note') + ' created and sent for approval.',
                     variant: 'success'
                 }));
                 this.isDisabled = false;
@@ -442,16 +441,23 @@ export default class GenerateCreditDebitReceipt extends LightningElement {
         console.log('Selected tax master sgst:', this.selectedTaxMasterSgst);
     }
 
-    get taxMasterActiveFilter() {
+    // Client (21 Nov): the CGST box lists only CGST taxes and the SGST box only SGST taxes
+    taxMasterFilter(taxType) {
         return {
             criteria: [
-                {
-                    fieldPath: 'Active__c',
-                    operator: 'eq',
-                    value: true
-                }
-            ]
+                { fieldPath: 'Active__c', operator: 'eq', value: true },
+                { fieldPath: 'Tax_Type__c', operator: 'eq', value: taxType }
+            ],
+            filterLogic: '1 AND 2'
         };
+    }
+
+    get cgstFilter() {
+        return this.taxMasterFilter('CGST');
+    }
+
+    get sgstFilter() {
+        return this.taxMasterFilter('SGST');
     }
 
     checkDuplicateReceipt(oppId, type, uniqueNumber){

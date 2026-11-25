@@ -31,6 +31,11 @@ export default class BookingForm extends LightningElement {
     @track addressForCommCountryOptions = [];
     @track unitAndTypeValue = '';
     @track applicantList = [];
+    isSubmitting = false;
+
+    get formContainerClass() {
+        return this.showSpinner ? 'slds-hide' : '';
+    }
     @track applicantRec = {};
     @track profileDataList = [];
     
@@ -187,8 +192,7 @@ export default class BookingForm extends LightningElement {
         this.applicantList.splice(index, 1);
         console.log('Updated applicantList ==> ' + JSON.stringify(this.applicantList));
 
-        this.applicantDocumentsList.splice(index, 1); 
-        console.log('Updated applicantDocumentsList ==> ' + JSON.stringify(this.applicantDocumentsList));
+        this.applicantList = [...this.applicantList];
     }
 
     @track accountId;
@@ -211,51 +215,62 @@ export default class BookingForm extends LightningElement {
             this.showToast('Error', 'Primary Contact Number has to be added to Primary Applicant Details!!!', 'error');
             return;
         }
+        if (this.isSubmitting) {
+            return;
+        }
+        this.isSubmitting = true;
         this.showSpinner = true;
+        this.nextText = 'Creating Co-Applicant Records....';
 
-        this.applicantList = this.applicantList.map(applicant => {
-            return Object.keys(applicant)
+        // Build what is sent to Salesforce from a copy. The form's own list (this.applicantList) is left
+        // untouched, so after an error the user corrects the same applicants and submits again: the
+        // corrected 2nd applicant stays the 2nd applicant instead of becoming a 3rd (client, 21 Nov).
+        const payload = this.applicantList.map(applicant => {
+            const rec = Object.keys(applicant)
                 .filter(key => key === 'Name' || key === 'Phone' || key.endsWith('__c') || key.endsWith('__s'))
                 .reduce((obj, key) => {
                     obj[key] = applicant[key];
                     return obj;
                 }, {});
+            rec.Applicant_Date__c = this.dateval;
+            return rec;
         });
 
-        this.applicantList = this.applicantList.map(item => ({
-            ...item,
-            Applicant_Date__c : this.dateval
-        }));
-        
-        console.log('Filtered Applicant List:', JSON.stringify(this.applicantList));        
-        
-        this.primaryApplicant = { 
-            ...this.applicantList[0], 
+        console.log('Filtered Applicant List:', JSON.stringify(payload));
+
+        this.primaryApplicant = {
+            ...payload[0],
             Primary_Applicant__c: true,
             Id : this.accountId,
-            Name : this.applicantList[0].First_Name__c + ' ' + this.applicantList[0].Last_Name__c
+            Name : payload[0].First_Name__c + ' ' + payload[0].Last_Name__c
         };
-            
-        this.applicantList.shift();
-        this.applicantList = [...this.applicantList];
+        const coApplicants = payload.slice(1);
 
-        console.log('applicantRec ==> ' + JSON.stringify(this.applicantList));
-        createApplicants({ applicantList : this.applicantList, oppId : this.recordId, profileDataList : JSON.stringify(this.profileDataList), accId : this.accountId, primaryApplicant : this.primaryApplicant })
+        console.log('applicantRec ==> ' + JSON.stringify(coApplicants));
+        createApplicants({ applicantList : coApplicants, oppId : this.recordId, profileDataList : JSON.stringify(this.profileDataList), accId : this.accountId, primaryApplicant : this.primaryApplicant })
         .then(result => {
-            if(result.startsWith('Success')){
+            if(result && result.startsWith('Success')){
                 this.showToast('Success', 'Applicant Details Created Successfully!!!', 'success');
                 this.showSpinner = false;
                 this.handleCancel();
             }else{
-                this.showToast('Error', result || 'Error Processing Applicant Details!!!', 'error');
-                this.nextText = 'Error Processing Applicant Details!!!!';
+                this.handleSubmitError(result);
             }
-
         })
         .catch(error => {
-            this.showToast('Error', error?.body?.message || 'Error Processing Applicant Details!!!', 'error');
-            this.nextText = 'Error Processing Applicant Details!!!!';
+            this.handleSubmitError(error?.body?.message);
+        })
+        .finally(() => {
+            this.isSubmitting = false;
         });
+    }
+
+    // Nothing was saved (the server undoes everything on an error): show the form again with the
+    // data the user entered, so it can be corrected and submitted again.
+    handleSubmitError(message) {
+        this.showToast('Error', (message || 'Error Processing Applicant Details!!!') + ' Nothing was saved; please correct the details and submit again.', 'error');
+        this.nextText = 'Creating Co-Applicant Records....';
+        this.showSpinner = false;
     }
 
     handleCancel(){
@@ -333,7 +348,8 @@ export default class BookingForm extends LightningElement {
                     this.projectName        = result.oppRec.Project__r.Name != null ? result.oppRec.Project__r.Name : null;
                     this.unitAndTypeValue   = [unit, type].filter(value => value).join(',');
                     this.SuperBuiltUpArea   = result.oppRec.Unit__r.Super_Built_Up_Area_sq_ft__c != null ? result.oppRec.Unit__r.Super_Built_Up_Area_sq_ft__c : null;
-                    this.RERA_No            = result.oppRec.Project__r.Company__r.Registration_Number__c != null ? result.oppRec.Project__r.Company__r.Registration_Number__c : null;
+                    // RERA number belongs to the Project (client, 21 Nov)
+                    this.RERA_No            = (result.oppRec.Project__r && result.oppRec.Project__r.RERA_Number__c) ? result.oppRec.Project__r.RERA_Number__c : null;
                 }
                 if(result.picklistValByField){
                     this.residentStatusOptions      = this.mapToLabelValuePair(result.picklistValByField['Resident_Status__c']);

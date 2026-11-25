@@ -135,16 +135,23 @@ public without sharing class GenerateReceiptDetailsOnOppController {
            
             // Demand_Letter__c dl = [SELECT id, Name,mainDemandLetter__c FROM Demand_Letter__c WHERE  mainDemandLetter__c = True LIMIT 1];
             // System.debug('dl========>'+dl);
-            receipt.Receipt_Date__c = System.Today();
+            // Use the Receipt Date selected in the component; fall back to today if not provided.
+            receipt.Receipt_Date__c = receiptData.containsKey('receiptDate') && receiptData.get('receiptDate') != null && String.isNotBlank(String.valueOf(receiptData.get('receiptDate')))
+                ? Date.valueOf(String.valueOf(receiptData.get('receiptDate')))
+                : System.today();
             receipt.Type__c = receiptData.containsKey('receiptType') && receiptData.get('receiptType') != null ? (String) receiptData.get('receiptType') : null;
             //receipt.Token_Amount__c = TRUE;
+            // Optional flag - only sent by generateReceiptOnOppTab; other callers are unaffected.
+            if (receiptData.containsKey('tokenAmount') && receiptData.get('tokenAmount') != null) {
+                receipt.Token_Amount__c = Boolean.valueOf(receiptData.get('tokenAmount'));
+            }
             receipt.Bank__c = receiptData.containsKey('bankName') && receiptData.get('bankName') != null ? (String) receiptData.get('bankName') : null;
              receipt.PAN_TAN_Number__c = receiptData.containsKey('panNo') && receiptData.get('panNo') != null ? (String) receiptData.get('panNo') : null;
             if (String.isNotBlank(receipt.PAN_TAN_Number__c) && !Pattern.matches('^[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}$', receipt.PAN_TAN_Number__c)) {
                 throw new AuraHandledException('Please enter a valid PAN Number in the format ABCDE1234F.');
             }
-            receipt.Amount__c = receiptData.containsKey('amount') && receiptData.get('amount') != null ? Integer.valueOf(receiptData.get('amount')) : null;
-            receipt.TDS_Amount__c = receiptData.containsKey('tdsAmount') && receiptData.get('tdsAmount') != null ? Integer.valueOf(receiptData.get('tdsAmount')) : null;
+            receipt.Amount__c = receiptData.containsKey('amount') && receiptData.get('amount') != null ? Decimal.valueOf(String.valueOf(receiptData.get('amount'))) : null;
+            receipt.TDS_Amount__c = receiptData.containsKey('tdsAmount') && receiptData.get('tdsAmount') != null ? Decimal.valueOf(String.valueOf(receiptData.get('tdsAmount'))) : null;
             receipt.Branch__c = receiptData.containsKey('branch') && receiptData.get('branch') != null ? (String) receiptData.get('branch') : null;
             receipt.Mode_of_Payment__c = receiptData.containsKey('modeOfPayment') && receiptData.get('modeOfPayment') != null ? (String) receiptData.get('modeOfPayment') : null;
             receipt.Drawn_on_Bank__c = receiptData.containsKey('drawnOnBank') && receiptData.get('drawnOnBank') != null ? (String) receiptData.get('drawnOnBank') : null;
@@ -265,32 +272,79 @@ public without sharing class GenerateReceiptDetailsOnOppController {
                 receipt.Tax_Invoice_Included__c = true;
             }
 
+            // Client (21 Nov): a receipt without an amount must not be saved
+            if (receipt.Mode_of_Payment__c == 'TDS') {
+                if (receipt.TDS_Amount__c == null || receipt.TDS_Amount__c <= 0) {
+                    throw userError('Please enter the TDS Amount.');
+                }
+            } else if (receipt.Amount__c == null || receipt.Amount__c <= 0) {
+                throw userError('Please enter the Amount.');
+            }
+
+            // Client (21 Nov): CGST must be a CGST tax and SGST an SGST tax
+            validateTaxMasters(receipt);
 
             System.debug('receipt==>'+receipt);
             insert receipt;
             System.debug('After Insertipn Of receipt==>'+receipt);
 
+            try {
+                Approval.ProcessSubmitRequest req = new Approval.ProcessSubmitRequest();
+                req.setObjectId(receipt.Id);
+                req.setProcessDefinitionNameOrId('Receipt_Approval_Process');
+                Approval.ProcessResult result = Approval.process(req);
+
+                receipt.Approval_Status__c = 'Sent';
+                update receipt;
+
+            } catch (Exception ex) {
                 try {
-        Approval.ProcessSubmitRequest req = new Approval.ProcessSubmitRequest();
-        req.setObjectId(receipt.Id);
-        req.setProcessDefinitionNameOrId('Receipt_Approval_Process');
-        Approval.ProcessResult result = Approval.process(req);
-
-        receipt.Approval_Status__c = 'Sent';
-        update receipt;
-
-        } catch (Exception ex) {
-            receipt.Approval_Status__c = 'Approval Failed';
-            update receipt;
-
-            throw new AuraHandledException('Receipt created but approval failed: ' + ex.getMessage());
-        }
+                    receipt.Approval_Status__c = 'Approval Failed';
+                    update receipt;
+                } catch (Exception ignore) {
+                    System.debug('Could not mark approval failure: ' + ignore.getMessage());
+                }
+                throw userError('Receipt created but approval failed: ' + ex.getMessage());
+            }
 
         } catch (AuraHandledException e) {
             throw e;
         } catch (Exception e) {
             System.debug('Exception occurred--->' + e.getMessage() + '@Line--->' + e.getLineNumber());
+            // Show the real reason instead of a false "created successfully"
+            throw userError('The receipt was not saved: ' + e.getMessage());
         }
+    }
+
+    private static AuraHandledException userError(String msg) {
+        AuraHandledException e = new AuraHandledException(msg);
+        e.setMessage(msg);
+        return e;
+    }
+
+    @TestVisible
+    private static void validateTaxMasters(Receipt__c receipt) {
+        Set<Id> ids = new Set<Id>();
+        if (receipt.Tax_Master_CGST__c != null) ids.add(receipt.Tax_Master_CGST__c);
+        if (receipt.Tax_Master_SGST__c != null) ids.add(receipt.Tax_Master_SGST__c);
+        if (ids.isEmpty()) return;
+        Map<Id, Tax_Master__c> masters = new Map<Id, Tax_Master__c>([SELECT Id, Name, Tax_Type__c FROM Tax_Master__c WHERE Id IN :ids]);
+        Tax_Master__c cgst = masters.get(receipt.Tax_Master_CGST__c);
+        if (receipt.Tax_Master_CGST__c != null && (cgst == null || cgst.Tax_Type__c != 'CGST')) {
+            throw userError('Tax Master CGST must be a CGST tax' + (cgst != null ? ' (selected: ' + cgst.Name + ')' : '') + '.');
+        }
+        Tax_Master__c sgst = masters.get(receipt.Tax_Master_SGST__c);
+        if (receipt.Tax_Master_SGST__c != null && (sgst == null || sgst.Tax_Type__c != 'SGST')) {
+            throw userError('Tax Master SGST must be an SGST tax' + (sgst != null ? ' (selected: ' + sgst.Name + ')' : '') + '.');
+        }
+    }
+
+    @AuraEnabled
+    public static Boolean hasTokenAmountReceipt(Id oppId) {
+        if (oppId == null) {
+            return false;
+        }
+        return [SELECT COUNT() FROM Receipt__c WHERE Opportunity__c = :oppId AND Token_Amount__c = true] > 0;
     }
 
     @AuraEnabled

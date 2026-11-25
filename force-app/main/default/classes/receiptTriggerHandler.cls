@@ -42,7 +42,10 @@ public without sharing class receiptTriggerHandler {
 
             System.debug('totalRcptAmt==>' + totalRcptAmt);
 
-            if (rcpt.Opportunity__c != null && totalRcptAmt > 0 && rcpt.Approval_Status__c == 'Approved' && oldRcpt.Approval_Status__c != 'Approved' && (rcpt.Type__c == 'Tax Invoice' || rcpt.Type__c == 'Credit' || rcpt.Type__c == 'Debit')) {
+            // A cancelled credit/debit note never changes the payment schedule
+            Boolean isCancelledNote = (rcpt.Type__c == 'Credit' || rcpt.Type__c == 'Debit') && rcpt.Status__c == CreditDebitNoteService.STATUS_CANCELLED;
+
+            if (!isCancelledNote && rcpt.Opportunity__c != null && totalRcptAmt > 0 && rcpt.Approval_Status__c == 'Approved' && oldRcpt.Approval_Status__c != 'Approved' && (rcpt.Type__c == 'Tax Invoice' || rcpt.Type__c == 'Credit' || rcpt.Type__c == 'Debit')) {
 
                 if (!oppToApprovedReceipts.containsKey(rcpt.Opportunity__c)) {
                     oppToApprovedReceipts.put(rcpt.Opportunity__c, new List<Receipt__c>());
@@ -66,9 +69,20 @@ public without sharing class receiptTriggerHandler {
         }
 
         List<Payment_Schedule__c> paymentSchedules = [SELECT Id, Opportunity__c, Installment_Sequence__c, Agreement_Value__c, Tax_Amount__c, Demand_Letter_Sent__c, Status__c, Total_Amount_Inclusive_Of_Tax__c,
-                Total_Received_Amount__c, Opportunity__r.AccountId, Tax_Invoice_Created__c, Debit_Payment_Schedule__c FROM Payment_Schedule__c WHERE Opportunity__c IN :oppIdsToProcess ORDER BY Opportunity__c, Installment_Sequence__c
+                Total_Received_Amount__c, Opportunity__r.AccountId, Tax_Invoice_Created__c, Debit_Payment_Schedule__c, Credit_Note_Allocation__c FROM Payment_Schedule__c WHERE Opportunity__c IN :oppIdsToProcess ORDER BY Opportunity__c, Installment_Sequence__c
         ];
         if (paymentSchedules.isEmpty()) return;
+
+        // Debit payment schedules whose GST invoice was already created when the debit note was approved:
+        // a later payment against them must not create a second invoice for the same GST.
+        Set<Id> debitPsWithNoteInvoice = new Set<Id>();
+        for (Tax_Invoice__c inv : [SELECT Payment_Schedule__c FROM Tax_Invoice__c
+                                   WHERE Payment_Schedule__r.Opportunity__c IN :oppIdsToProcess
+                                   AND Payment_Schedule__r.Debit_Payment_Schedule__c = true
+                                   AND Receipt__r.Type__c = 'Debit']) {
+            debitPsWithNoteInvoice.add(inv.Payment_Schedule__c);
+        }
+        Map<Integer, Receipt__c> debitNoteByPsIndex = new Map<Integer, Receipt__c>();
 
         Map<Id, List<Payment_Schedule__c>> oppToPaymentSchedules = new Map<Id, List<Payment_Schedule__c>>();
         for (Payment_Schedule__c ps : paymentSchedules) {
@@ -117,6 +131,9 @@ public without sharing class receiptTriggerHandler {
                     debitPS.Tax_Amount__c = rcpt.Total_Credit_Debit_Gst__c != null ? rcpt.Total_Credit_Debit_Gst__c : 0;
                     // debitPS.Installment_Sequence__c = psList.size() + 1;
                     debitPS.Debit_Payment_Schedule__c = true;
+                    debitPS.Debit_Note__c = rcpt.Id;
+                    debitPS.Tax_Invoice_Created__c = true;
+                    debitNoteByPsIndex.put(psToInsert.size(), rcpt);
                     psToInsert.add(debitPS);
                     system.debug('Created Debit Payment Schedule: ' + debitPS);
                     
@@ -164,6 +181,8 @@ public without sharing class receiptTriggerHandler {
                         Decimal applied = Math.min(rcptAmt, remainingDue);
                         System.debug('applied ::::' + applied);
                         ps.Total_Received_Amount__c = prevReceived + applied + rcpt.Total_Credit_Debit_Gst__c;
+                        // Remember what this credit note added, so cancelling it can reverse exactly this amount
+                        CreditDebitNoteService.addCreditAllocation(ps, rcpt.Id, ps.Total_Received_Amount__c - prevReceived);
                         system.debug('ps.Total_Received_Amount__c after applying credit ::::' + ps.Total_Received_Amount__c);
                         rcptAmt -= applied;
                         system.debug('rcptAmt after applying credit ::::' + rcptAmt);
@@ -217,7 +236,8 @@ public without sharing class receiptTriggerHandler {
                         ps.Total_Received_Amount__c = prevReceived + applied;
                         rcptAmt -= applied;
 
-                        if (rcpt.Type__c == 'Tax Invoice' && ps.Demand_Letter_Sent__c == false) {
+                        Boolean gstAlreadyInvoicedByDebitNote = isAgainstDebitTaxInvoice && debitPsWithNoteInvoice.contains(ps.Id);
+                        if (rcpt.Type__c == 'Tax Invoice' && ps.Demand_Letter_Sent__c == false && !gstAlreadyInvoicedByDebitNote) {
                             system.debug('Creating tax invoice for Payment Schedule: ' + ps.Id);
                             Decimal taxForReceivedAmount = 0;
                             if (totalAmt > 0) {
@@ -255,6 +275,23 @@ public without sharing class receiptTriggerHandler {
             for (Integer i = 0; i < srList.size(); i++) {
                 if (srList[i].isSuccess()) {
                     System.debug('Debit Payment Schedule inserted successfully. Id ==> ' + srList[i].getId());
+                    // Client (21 Nov): the GST / tax invoice is generated when the debit note is approved
+                    Receipt__c debitNote = debitNoteByPsIndex.get(i);
+                    if (debitNote != null) {
+                        Payment_Schedule__c debitPS = psToInsert[i];
+                        List<Payment_Schedule__c> oppSchedules = oppToPaymentSchedules.get(debitPS.Opportunity__c);
+                        Decimal cgst = debitNote.Credit_Debit_CGST__c == null ? 0 : debitNote.Credit_Debit_CGST__c;
+                        Decimal sgst = debitNote.Credit_Debit_SGST__c == null ? 0 : debitNote.Credit_Debit_SGST__c;
+                        Tax_Invoice__c inv = new Tax_Invoice__c();
+                        inv.Payment_Schedule__c = srList[i].getId();
+                        inv.Opportunity__c      = debitPS.Opportunity__c;
+                        inv.Account__c          = (oppSchedules != null && !oppSchedules.isEmpty() && oppSchedules[0].Opportunity__r != null) ? oppSchedules[0].Opportunity__r.AccountId : null;
+                        inv.Receipt__c          = debitNote.Id;
+                        inv.Received_Amount__c  = (debitNote.Amount__c == null ? 0 : debitNote.Amount__c) + cgst + sgst;
+                        inv.CGST__c             = cgst;
+                        inv.SGST__c             = sgst;
+                        taxInvoicesToInsert.add(inv);
+                    }
                 } else {
                     for (Database.Error err : srList[i].getErrors()) {
                         System.debug('Failed Debit Payment Schedule ==> ' + psToInsert[i]);
@@ -362,11 +399,13 @@ public without sharing class receiptTriggerHandler {
         List<Receipt__c> approvedReceipts = [
             SELECT Id, Opportunity__c, Opportunity__r.Name, Amount__c, TDS_Amount__c, Approval_Status__c,
                    Type__c, Total_Credit_Debit_Gst__c, Tax_Invoice_Included__c,
-                   Payment_Schedule__c, Against_Debit__c, Description__c
+                   Payment_Schedule__c, Against_Debit__c, Description__c, Pricing_Element_Master__c,
+                   Credit_Debit_CGST__c, Credit_Debit_SGST__c, Status__c
             FROM Receipt__c
             WHERE Opportunity__c = :oppId
               AND Approval_Status__c = 'Approved'
               AND Type__c IN ('Tax Invoice', 'Credit', 'Debit')
+              AND Status__c != :CreditDebitNoteService.STATUS_CANCELLED
         ];
 
         if (approvedReceipts.isEmpty()) return;

@@ -54,9 +54,9 @@ export default class GenerateReceiptDetails extends LightningElement {
 
     connectedCallback() {
         console.log('Component Loaded - connectedCallback');
-        // Multiple receipts are allowed per opportunity, so always show the form
-        this.loadPicklistValues();
-        this.fetchAccounts();
+        // If the opportunity already has a Token Amount receipt, show the "Next" screen;
+        // otherwise fetchReceipts() loads the picklists/accounts and shows the form.
+        this.fetchReceipts();
     }
 
     @track showReceiptData = false;
@@ -213,6 +213,19 @@ export default class GenerateReceiptDetails extends LightningElement {
         });
     }
 
+
+    // Client (21 Nov): show a clear error when the amount is missing
+    missingAmountMessage() {
+        if (!this.modeOfPayment) {
+            return 'Please select the Mode of Payment and enter the Amount.';
+        }
+        const value = this.modeOfPayment === 'TDS' ? this.tdsAmount : this.amount;
+        if (value === undefined || value === null || value === '' || isNaN(parseFloat(value)) || parseFloat(value) <= 0) {
+            return this.modeOfPayment === 'TDS' ? 'Please enter the TDS Amount.' : 'Please enter the Amount.';
+        }
+        return null;
+    }
+
     async handleSubmit() {
         debugger;
         console.log('Form Submit initiated');
@@ -241,6 +254,12 @@ export default class GenerateReceiptDetails extends LightningElement {
             jvReferenceNumber: this.jvReferenceNumber,
             modeOfPayment: this.modeOfPayment
         });
+
+        const amountError = this.missingAmountMessage();
+        if (amountError) {
+            this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: amountError, variant: 'error' }));
+            return;
+        }
 
         switch (this.modeOfPayment) {
             case 'Cheque':

@@ -131,7 +131,9 @@ public without sharing class FinaliseCostSheetController {
         opp.Payment_Scheme__c = getSchemeLinking.Payment_Scheme__c;
         opp.Cost_Sheet_Template__c = getSchemeLinking.Cost_Sheet_Template__c;
         opp.Unit__c = costSheetList[0].Unit__c;
-        opp.Name = 'opp';
+        // Remember exactly which cost sheet was selected, so finalizeCostSheetOnApproval finalises this one
+        system.debug('Selected Cost Sheet ID: ' + costSheetId);
+        opp.Selected_Cost_Sheet__c = costSheetId;
         update opp;
 
         List<Pricing_Element__c> costPricingAsstnList = [select id,Name,Pricing_Element_Master__r.Name,Amount__c,Actual_Amount__c,Discount__c,Discount_Amount__c,Tax_Amount__c,PE_Type__c,Quantity__c,Rate__c, Final_Tax_Amount__c, Total_Amount_Excluding_Tax__c from Pricing_Element__c where Cost_Sheet__c =:getCostSheet.ID];

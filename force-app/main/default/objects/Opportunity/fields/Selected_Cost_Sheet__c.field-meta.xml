@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Selected_Cost_Sheet__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description>Cost sheet chosen in Finalise Cost Sheet and sent for approval. finalize_CostSheet__c is set on this record when the Opportunity Cost Sheet approval is approved.</description>
+    <label>Selected Cost Sheet</label>
+    <referenceTo>Cost_Sheet__c</referenceTo>
+    <relationshipLabel>Selected On Opportunities</relationshipLabel>
+    <relationshipName>Selected_On_Opportunities</relationshipName>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>Lookup</type>
+</CustomField>

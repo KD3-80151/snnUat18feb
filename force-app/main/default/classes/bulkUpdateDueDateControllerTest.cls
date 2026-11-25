@@ -78,8 +78,9 @@ public class bulkUpdateDueDateControllerTest {
         List<bulkUpdateDueDateController.PaymentInstallmentWrapper> wrappers = new List<bulkUpdateDueDateController.PaymentInstallmentWrapper>();
         bulkUpdateDueDateController.PaymentInstallmentWrapper wrapper = new bulkUpdateDueDateController.PaymentInstallmentWrapper();
         wrapper.Name = schedule.Name;
-        wrapper.dueDate = Date.today().addDays(20);
-        wrapper.payByDate = Date.today().addDays(30);
+        // Demand Date (payByDate) may only be today or in the past
+        wrapper.dueDate = Date.today().addDays(10);
+        wrapper.payByDate = Date.today().addDays(-5);
         wrappers.add(wrapper);
 
         String payload = JSON.serialize(
@@ -95,6 +96,35 @@ public class bulkUpdateDueDateControllerTest {
         Test.stopTest();
 
 
+    }
+
+    @isTest
+    static void testSaveTableDataRejectsFutureDemandDate() {
+        Project__c project = [SELECT Id FROM Project__c LIMIT 1];
+        Payment_Scheme__c paymentScheme = [SELECT Id FROM Payment_Scheme__c LIMIT 1];
+        Payment_Schedule__c schedule = [SELECT Id, Name FROM Payment_Schedule__c LIMIT 1];
+        update new Opportunity(Id = [SELECT Opportunity__c FROM Payment_Schedule__c WHERE Id = :schedule.Id].Opportunity__c,
+                               Project__c = project.Id, Payment_Scheme__c = paymentScheme.Id);
+
+        bulkUpdateDueDateController.PaymentInstallmentWrapper wrapper = new bulkUpdateDueDateController.PaymentInstallmentWrapper();
+        wrapper.Name = schedule.Name;
+        wrapper.dueDate = Date.today().addDays(45);
+        wrapper.payByDate = Date.today().addDays(30);
+        String payload = JSON.serialize(new Map<String, Object>{
+            'projectId' => project.Id,
+            'paymentSchemeId' => paymentScheme.Id,
+            'paymentInstallments' => new List<bulkUpdateDueDateController.PaymentInstallmentWrapper>{ wrapper }
+        });
+
+        Boolean rejected = false;
+        Test.startTest();
+        try {
+            bulkUpdateDueDateController.saveTableData(payload);
+        } catch (AuraHandledException e) {
+            rejected = true;
+        }
+        Test.stopTest();
+        System.assert(rejected, 'A future Demand Date must be rejected by the bulk update.');
     }
 
     @isTest
@@ -268,9 +298,16 @@ public class bulkUpdateDueDateControllerTest {
             }
         );
 
+        // Errors are now reported to the screen instead of being swallowed (which showed a false "success").
+        Boolean errored = false;
         Test.startTest();
-        bulkUpdateDueDateController.saveTableData(payload);
+        try {
+            bulkUpdateDueDateController.saveTableData(payload);
+        } catch (AuraHandledException e) {
+            errored = true;
+        }
         Test.stopTest();
+        System.assert(errored, 'An empty installment list must be reported as an error.');
     }
 
     @isTest

@@ -124,6 +124,39 @@ public class DigioSubRepositoryTest {
         Test.stopTest();
     }
 
+    @isTest
+    public static void testSendigiodetailsSendsEmail() {
+        insert new Digio_Integration__c(Name = 'Digio', Endpoint_URL__c = 'https://api.digio.in', Authorization__c = 'Bearer someAuthCode');
+        Account acc = new Account(Name = 'Sub Test', Email__c = 'customer@example.com');
+        insert acc;
+        Opportunity opp = new Opportunity(Name = 'Test Opp', StageName = 'Prospecting', CloseDate = Date.today(), AccountId = acc.Id);
+        insert opp;
+        Test.setMock(HttpCalloutMock.class, new MockHttpResponseGenerator());
+        Test.startTest();
+        DigioSubRepository.sendigiodetails('digiDocId-12345', opp.Id, 'GeneratePartyHall');
+        System.assertEquals(1, Limits.getEmailInvocations(), 'The party hall email should be sent');
+        Test.stopTest();
+    }
+
+    @isTest
+    public static void testSendigiodetailsShowsError() {
+        insert new Digio_Integration__c(Name = 'Digio', Endpoint_URL__c = 'https://api.digio.in', Authorization__c = 'Bearer someAuthCode');
+        Account acc = new Account(Name = 'Sub Test No Email');
+        insert acc;
+        Opportunity opp = new Opportunity(Name = 'Test Opp', StageName = 'Prospecting', CloseDate = Date.today(), AccountId = acc.Id);
+        insert opp;
+        Test.setMock(HttpCalloutMock.class, new MockHttpResponseGenerator());
+        String msg;
+        Test.startTest();
+        try {
+            DigioSubRepository.sendigiodetails('digiDocId-12345', opp.Id, 'GeneratePartyHall');
+        } catch (AuraHandledException e) {
+            msg = e.getMessage();
+        }
+        Test.stopTest();
+        System.assert(msg != null && msg.contains('no email address'), 'Expected a no-email error, got: ' + msg);
+    }
+
     public class MockHttpResponseGenerator implements HttpCalloutMock {
         public HttpResponse respond(HttpRequest req) {
             HttpResponse res = new HttpResponse();

@@ -648,7 +648,11 @@ public class CustomerPortalControllerTest {
         System.assertNotEquals(null, result, 'Result should not be null.');
         System.assertEquals(1, result.projectList.size(), 'There should be 1 projects.');
         System.assert(result.projectXDocuments.containsKey(result.projectList[0].Id), 'Project 1 should have associated documents.');
-        System.assertEquals(2, result.projectXDocuments.get(result.projectList[0].Id).size(), 'Project 1 should have 2 document.');
+        // 2 folders + 1 "Project Documents" group for the files uploaded directly on the Project
+        System.assertEquals(3, result.projectXDocuments.get(result.projectList[0].Id).size(), 'Project 1 should have 2 folders and the direct project files.');
+        CustomerPortalController.ProjectDocGroup directGroup = result.projectXDocuments.get(result.projectList[0].Id)[0];
+        System.assertEquals(CustomerPortalController.PROJECT_FILES_GROUP, directGroup.Name, 'Direct project files should be listed first.');
+        System.assert(directGroup.files.size() >= 2, 'Files uploaded on the Project must be visible in the portal.');
     }
 
     @isTest

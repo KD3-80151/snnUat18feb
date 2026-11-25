@@ -11,8 +11,8 @@ public without Sharing  class costSheetTriggerHandlerTest {
 
         // Create test data for Pricing Element Master
         List<Pricing_Element_Master__c> pricingElementMasters = new List<Pricing_Element_Master__c>{
-            new Pricing_Element_Master__c(Name = 'Master 1', Parking_Type__c = '	Dependent'),
-            new Pricing_Element_Master__c(Name = 'Master 2', Parking_Type__c = '	Dependent')
+            new Pricing_Element_Master__c(Name = 'Master 1', Parking_Type__c = '	Stack'),
+            new Pricing_Element_Master__c(Name = 'Master 2', Parking_Type__c = '	Stack')
         };
         insert pricingElementMasters;
 
@@ -33,8 +33,8 @@ public without Sharing  class costSheetTriggerHandlerTest {
         towerRec.Project__c = project.id;
         insert towerRec;
         List<Parking_Details__c> parkingDetails = new List<Parking_Details__c>{
-            new Parking_Details__c(  Parking_Type__c = 'Dependent', Total_Parking__c = 100, Available_Parking__c = 90,Block__c =towerRec.id ),
-            new Parking_Details__c(  Parking_Type__c = 'Independent', Total_Parking__c = 200, Available_Parking__c = 190,Block__c =towerRec.id)
+            new Parking_Details__c(  Parking_Type__c = 'Back To Back', Total_Parking__c = 100, Available_Parking__c = 90,Block__c =towerRec.id ),
+            new Parking_Details__c(  Parking_Type__c = 'Stack', Total_Parking__c = 200, Available_Parking__c = 190,Block__c =towerRec.id)
         };
         insert parkingDetails;
 

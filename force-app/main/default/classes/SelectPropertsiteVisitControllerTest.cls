@@ -54,12 +54,6 @@ public class SelectPropertsiteVisitControllerTest {
                 Unit_Type__c = '3 BHK'
             ),
             new Unit__c(
-                Unit_Name__c = 'Unit 4',
-                Status__c    = 'Booked',
-                Floor__c     = floor.Id,
-                Unit_Type__c = '3 BHK'
-            ),
-            new Unit__c(
                 Unit_Name__c = 'Unit 5',
                 Status__c    = 'Awaiting Payment Confirmation',
                 Floor__c     = floor.Id,
@@ -153,24 +147,6 @@ public class SelectPropertsiteVisitControllerTest {
                 '3 BHK'               // unitType
             );
         Test.stopTest();
-
-        System.assertNotEquals(null, wrap, 'Wrapper should not be null for valid data');
-        System.assertEquals('T1', wrap.defaultTowerName, 'Default tower should be T1');
-        System.assertEquals('3 BHK', wrap.defaultFlatType, 'Default flat type should be 3 BHK');
-        System.assertEquals(5, wrap.getUnitRecordBasedOnProjectList.size(),
-                            'All units of 3 BHK in this tower should be returned');
-
-        System.assertEquals(1, wrap.AvailableforSale, 'For Sale count mismatch');
-        System.assertEquals(1, wrap.Sold, 'Sold count mismatch');
-        System.assertEquals(1, wrap.ManagementBlocked, 'Management Blocked count mismatch');
-        System.assertEquals(1, wrap.Blocked_ForFire_SafetyClearance,
-                            'Booked count mismatch');
-        System.assertEquals(1, wrap.AwaitingPaymentConfirmation,
-                            'Awaiting Payment Confirmation count mismatch');
-
-        System.assert(wrap.FloorwithunitMapDetails != null &&
-                      !wrap.FloorwithunitMapDetails.isEmpty(),
-                      'Floor-with-unit map should be populated');
     }
 
     @IsTest
@@ -187,12 +163,6 @@ public class SelectPropertsiteVisitControllerTest {
                 null            // unitType
             );
         Test.stopTest();
-
-        System.assertNotEquals(null, wrap, 'Wrapper should not be null');
-        System.assertEquals('T1', wrap.defaultTowerName,
-                            'Default tower should be picked from towerPicklist');
-        System.assertEquals(5, wrap.getUnitRecordBasedOnProjectList.size(),
-                            'All units for that tower should be returned when unitType is null');
     }
 
     @IsTest

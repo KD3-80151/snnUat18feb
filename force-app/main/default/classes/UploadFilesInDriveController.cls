@@ -5,20 +5,47 @@ public withOut sharing class UploadFilesInDriveController {
     public static String CLIENT_SECRET;
     public static String REDIRECT_URI;
 
-    @AuraEnabled(cacheable=true)
+    /**
+     * Resolves the object API name of a record. Uses the Id's describe first (works in every org,
+     * no key-prefix configuration needed), then falls back to ObjectPrefixMapping__mdt.
+     */
+    @TestVisible
+    private static String resolveObjectName(String recordId) {
+        if (String.isBlank(recordId)) {
+            return null;
+        }
+        try {
+            return Id.valueOf(recordId).getSObjectType().getDescribe().getName();
+        } catch (Exception e) {
+            String prefix = recordId.length() >= 3 ? recordId.substring(0, 3) : recordId;
+            for (ObjectPrefixMapping__mdt mdtRecord : [SELECT Prefix__c, ObjectName__c FROM ObjectPrefixMapping__mdt WHERE Prefix__c = :prefix LIMIT 1]) {
+                return mdtRecord.ObjectName__c;
+            }
+            return null;
+        }
+    }
+
+    /**
+     * Links the Sub_Document__c to its parent record (e.g. Document__c, Project__c) through the
+     * lookup field on Sub_Document__c that has the same API name as the parent object.
+     */
+    @TestVisible
+    private static Boolean linkToParent(Sub_Document__c subDoc, String parentId) {
+        String objectName = resolveObjectName(parentId);
+        if (objectName != null && Schema.SObjectType.Sub_Document__c.fields.getMap().containsKey(objectName.toLowerCase())) {
+            subDoc.put(objectName, parentId);
+            return true;
+        }
+        System.debug('No lookup on Sub_Document__c for parent record: ' + parentId);
+        return false;
+    }
+
+    @AuraEnabled
     public static String getFolderId(String recordId) {
         try {
             if (recordId != null) {
-                String prefix = recordId.substring(0, 3);
-                List<ObjectPrefixMapping__mdt> mdtRecords = [SELECT MasterLabel, Prefix__c, ObjectName__c FROM ObjectPrefixMapping__mdt];
                 String folderId = null;
-                String objectName = null;
-                for (ObjectPrefixMapping__mdt mdtRecord : mdtRecords) {
-                    if (mdtRecord.Prefix__c == prefix) {
-                        objectName = mdtRecord.ObjectName__c;
-                        break;
-                    }
-                }
+                String objectName = resolveObjectName(recordId);
 
                 if (objectName != null) {
                     String folderIdField;
@@ -42,7 +69,7 @@ public withOut sharing class UploadFilesInDriveController {
                         return folderId;
                     } else {
                         System.debug('Error: Folder ID is empty or not found for the provided recordId');
-                        return 'Error: Folder ID is empty or not found for the provided recordId';
+                        return 'Error: Google Drive folder is not created yet for this record. Please refresh after a few seconds and try again.';
                     }
                 } else {
                     System.debug('Error: No matching object found for the provided recordId prefix');
@@ -99,10 +126,10 @@ public withOut sharing class UploadFilesInDriveController {
             System.debug('Starting uploadFileToGoogleDrive with fileName: ' + fileName + ', fileType: ' + fileType + ', folderId: ' + folderId);
 
             String locationValue = '';
-            Map<String, String> prefixToObjectNameMap = new Map<String, String>();
-            List<ObjectPrefixMapping__mdt> mdtRecords = [SELECT Prefix__c, ObjectName__c FROM ObjectPrefixMapping__mdt];
-            for (ObjectPrefixMapping__mdt mdtRecord : mdtRecords) {
-                prefixToObjectNameMap.put(mdtRecord.Prefix__c, mdtRecord.ObjectName__c);
+
+            if (String.isBlank(folderId) || folderId.startsWith('Error')) {
+                System.debug('Invalid folderId, aborting upload: ' + folderId);
+                return null;
             }
 
             if (fileName != null && fileData != null) {
@@ -130,12 +157,9 @@ public withOut sharing class UploadFilesInDriveController {
                     return wrp;
                 }
 
-                List<String> folderList = (folderId != null || folderId != '') ? new List<String>{folderId} : new List<String>();
                 Map<String, Object> jsonData = new Map<String, Object>();
                 jsonData.put('name', fileName);
-                if (!folderList.isEmpty()) {
-                    jsonData.put('parents', folderList);
-                }
+                jsonData.put('parents', new List<String>{folderId});
                 String jsonString = JSON.serialize(jsonData);
                 Integer jsonStringLength = jsonString.length();
                 System.debug('JSON for file upload: ' + jsonString);
@@ -181,10 +205,7 @@ public withOut sharing class UploadFilesInDriveController {
                             file.Name = fileName;
                             file.File_URL__c = fileUrl;
 
-                            String recordPrefix = docId != null && docId.length() > 3 ? docId.substring(0, 3) : null;
-                            if (recordPrefix != null && prefixToObjectNameMap.containsKey(recordPrefix)) {
-                                String lookupObject = prefixToObjectNameMap.get(recordPrefix);
-                                file.put(lookupObject, docId);
+                            if (linkToParent(file, docId)) {
                                 insert file;
                             }
                         }
@@ -248,24 +269,9 @@ public static Boolean processData(String locationValue, String fileData, String 
                 Sub_Document__c file = new Sub_Document__c();
                 file.Name = fileName;
                 file.File_URL__c = fileUrl;
-                
-                Map<String, String> prefixToObjectNameMap = new Map<String, String>();
-                List<ObjectPrefixMapping__mdt> mdtRecords = [SELECT Prefix__c, ObjectName__c FROM ObjectPrefixMapping__mdt];
-                for (ObjectPrefixMapping__mdt mdtRecord : mdtRecords) {
-                    prefixToObjectNameMap.put(mdtRecord.Prefix__c, mdtRecord.ObjectName__c);
-                }
 
-                String recordPrefix = docId != null && docId.length() > 3 ? docId.substring(0, 3) : null;
-                String lookupObject = null;
-                if (recordPrefix != null && prefixToObjectNameMap.containsKey(recordPrefix)) {
-                    lookupObject = prefixToObjectNameMap.get(recordPrefix);
-                }
-
-                if (lookupObject != null) {
-                    file.put(lookupObject, docId);
+                if (linkToParent(file, docId)) {
                     insert file;
-                } else {
-                    System.debug('No matching recordId prefix found in custom metadata.');
                 }
             }
         }

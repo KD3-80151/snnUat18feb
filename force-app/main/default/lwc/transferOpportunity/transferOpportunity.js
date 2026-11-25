@@ -10,12 +10,12 @@ export default class TransferOpportunity extends LightningElement {
     @track isSaving = false; 
 
     
-    handleLookupChange(event) {
-        const opportunityIds = event.detail.value;
-        if (Array.isArray(opportunityIds) && opportunityIds.length > 0) {
-            this.selectedOpportunityId = opportunityIds[0]; 
-        }
+    activeOpportunityFilter = {
+        criteria: [{ fieldPath: 'StageName', operator: 'ne', value: 'Closed Lost' }]
+    };
 
+    handleLookupChange(event) {
+        this.selectedOpportunityId = event.detail.recordId;
     }
 
     handleSave() {
@@ -43,7 +43,7 @@ export default class TransferOpportunity extends LightningElement {
                 this.closeQuickAction();
             })
             .catch((error) => {
-                this.showToast('Error', 'An error occurred while updating the Receipt.', 'error');
+                this.showToast('Error', (error && error.body && error.body.message) || 'An error occurred while updating the Receipt.', 'error');
                 console.error(error);
             })
             .finally(() => {

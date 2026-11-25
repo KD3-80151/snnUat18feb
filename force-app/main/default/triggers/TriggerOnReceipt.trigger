@@ -3,5 +3,7 @@ trigger TriggerOnReceipt on Receipt__c (after update) {
         System.debug('After Update...');
         receiptTriggerHandler.generateDoc(Trigger.new, Trigger.oldMap);
         receiptTriggerHandler.updtRcpdAmtOnPymntSchedule(Trigger.new, Trigger.oldMap);
+
+        //receiptRefundHandler.processRefundOnApproval(Trigger.new, Trigger.oldMap);
     }
 }

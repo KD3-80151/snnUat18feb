@@ -1,6 +1,6 @@
 <template>
     <lightning-card class="slds-p-horizontal_large">
-        <h1 class="center-title">Generate Credit/Debit Note Details</h1>
+        <h1 class="center-title">Create Credit / Debit Note</h1>
 
         <div class="slds-grid slds-wrap slds-gutters slds-p-horizontal_large">
 
@@ -20,9 +20,9 @@
             <!-- Receipt Type -->
             <div class="slds-col slds-size_1-of-1 slds-p-horizontal_large">
                 <lightning-combobox
-                    label="Receipt Type"
+                    label="Note Type"
                     value={receiptType}
-                    placeholder="Select Receipt Type"
+                    placeholder="Select Credit Note or Debit Note"
                     options={receiptOptions}
                     class="custom-inputrecp"
                     name="receiptType"
@@ -81,20 +81,22 @@
 
             <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
                 <lightning-record-picker
-                    label="Tax Master Cgst"
+                    label="Tax Master CGST"
+                    placeholder="Search CGST..."
                     object-api-name="Tax_Master__c"
                     value={selectedTaxMasterCgst}
-                    filter={taxMasterActiveFilter}
+                    filter={cgstFilter}
                     onchange={handleTaxMasterChangeCgst}
                 ></lightning-record-picker>
             </div>
 
             <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
                 <lightning-record-picker
-                    label="Tax Master Sgst"
+                    label="Tax Master SGST"
+                    placeholder="Search SGST..."
                     object-api-name="Tax_Master__c"
                     value={selectedTaxMasterSgst}
-                    filter={taxMasterActiveFilter}
+                    filter={sgstFilter}
                     onchange={handleTaxMasterChangeSgst}
                 ></lightning-record-picker>
             </div>

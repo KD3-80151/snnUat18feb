@@ -24,9 +24,9 @@ angular.module('cp_app').controller('projectdoc_ctrl', function($sce, $scope, $r
 
     $scope.getApplicantDocuments = function (projectId) {
         debugger;
-        $scope.docs = $scope.projectXDocuments[projectId];
+        $scope.docs = ($scope.projectXDocuments && $scope.projectXDocuments[projectId]) || [];
         console.log('docs ---> ' + JSON.stringify($scope.docs));
-        $scope.$apply();
+        if (!$scope.$$phase) { $scope.$apply(); }
     }
 
     $scope.getTrustedUrl = function (url) {
