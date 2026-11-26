@@ -8,12 +8,32 @@ import getPicklistValues from '@salesforce/apex/GenerateReceiptDetailsOnOppContr
 import getDebitPaymentSchedules from '@salesforce/apex/GenerateReceiptDetailsOnOppController.getDebitPaymentSchedules';
 import hasTokenAmountReceipt from '@salesforce/apex/GenerateReceiptDetailsOnOppController.hasTokenAmountReceipt';
 
+// Receipt Date rules: no future date, and at most 3 days in the past (local date).
+const RECEIPT_DATE_PAST_DAYS = 3;
+const toLocalIsoDate = (d) => {
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};
+const receiptDateMaxValue = () => toLocalIsoDate(new Date());
+const receiptDateMinValue = () => {
+    const d = new Date();
+    d.setDate(d.getDate() - RECEIPT_DATE_PAST_DAYS);
+    return toLocalIsoDate(d);
+};
+const receiptDateError = (value) => {
+    if (!value) return 'Please select Receipt Date.';
+    if (value > receiptDateMaxValue()) return 'Receipt Date cannot be a future date.';
+    if (value < receiptDateMinValue()) return `Receipt Date cannot be more than ${RECEIPT_DATE_PAST_DAYS} days in the past.`;
+    return null;
+};
+
+
 const PAN_REGEX = /^[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}$/;
 const OPPORTUNITY_KEY_PREFIX = '006';
 const DEFAULT_RECEIPT_TYPE = 'Tax Invoice';
 const CLOSED_LOST_STAGE = 'Closed Lost';
 
-const today = () => new Date().toISOString().split('T')[0];
+const today = () => toLocalIsoDate(new Date());
 
 export default class GenerateReceiptOnOppTab extends LightningElement {
     /** Populated automatically when dropped on an Opportunity record page. */
@@ -225,6 +245,14 @@ export default class GenerateReceiptOnOppTab extends LightningElement {
         this.refreshTokenStatus();
     }
 
+    get receiptDateMin() {
+        return receiptDateMinValue();
+    }
+
+    get receiptDateMax() {
+        return receiptDateMaxValue();
+    }
+
     handleInputChange(event) {
         const field = event.target.name;
         let value = event.target.value;
@@ -367,6 +395,11 @@ export default class GenerateReceiptOnOppTab extends LightningElement {
     }
 
     async handleSubmit() {
+        const receiptDateMsg = receiptDateError(this.receiptDate);
+        if (receiptDateMsg) {
+            this.showToast('Error', receiptDateMsg, 'error');
+            return;
+        }
         if (this.isClosedLost) {
             this.showToast('Error', 'Receipts cannot be created for a Closed Lost Opportunity.', 'error');
             return;

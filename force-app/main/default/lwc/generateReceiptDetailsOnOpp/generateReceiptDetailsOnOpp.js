@@ -8,6 +8,26 @@ import getAccountValues from '@salesforce/apex/GenerateReceiptDetailsOnOppContro
 import getDebitPaymentSchedules from '@salesforce/apex/GenerateReceiptDetailsOnOppController.getDebitPaymentSchedules';
 import { CloseActionScreenEvent } from 'lightning/actions';
 
+// Receipt Date rules: no future date, and at most 3 days in the past (local date).
+const RECEIPT_DATE_PAST_DAYS = 3;
+const toLocalIsoDate = (d) => {
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};
+const receiptDateMaxValue = () => toLocalIsoDate(new Date());
+const receiptDateMinValue = () => {
+    const d = new Date();
+    d.setDate(d.getDate() - RECEIPT_DATE_PAST_DAYS);
+    return toLocalIsoDate(d);
+};
+const receiptDateError = (value) => {
+    if (!value) return 'Please select Receipt Date.';
+    if (value > receiptDateMaxValue()) return 'Receipt Date cannot be a future date.';
+    if (value < receiptDateMinValue()) return `Receipt Date cannot be more than ${RECEIPT_DATE_PAST_DAYS} days in the past.`;
+    return null;
+};
+
+
 const PAN_REGEX = /^[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}$/;
 
 export default class GenerateReceiptDetailsOnOpp extends LightningElement {
@@ -15,7 +35,7 @@ export default class GenerateReceiptDetailsOnOpp extends LightningElement {
 
     @track receiptType = 'Tax Invoice';
     @track modeOfPayment;
-    @track receiptDate = new Date().toISOString().split('T')[0];
+    @track receiptDate = toLocalIsoDate(new Date());
     @track amount;
     @track chequeNumber;
     @track chequeDate;
@@ -148,6 +168,14 @@ export default class GenerateReceiptDetailsOnOpp extends LightningElement {
     }
 
 
+
+    get receiptDateMin() {
+        return receiptDateMinValue();
+    }
+
+    get receiptDateMax() {
+        return receiptDateMaxValue();
+    }
 
     handleInputChange(event) {
         debugger;
@@ -295,6 +323,11 @@ export default class GenerateReceiptDetailsOnOpp extends LightningElement {
     }
 
     async handleSubmit() {
+        const receiptDateMsg = receiptDateError(this.receiptDate);
+        if (receiptDateMsg) {
+            this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: receiptDateMsg, variant: 'error' }));
+            return;
+        }
         debugger;
         console.log('Form Submit initiated');
         let isValid = true;

@@ -16,7 +16,7 @@ public with sharing class GenerateSOAforDL {
             List<Payment_Schedule__c>paymentScheduleRelatedToOpp = [select id,Name,Installment__c,Agreement_Value__c,Debit_Payment_Schedule__c,Tax_Amount__c, Total_Amount_Inclusive_Of_Tax__c, Total_Received_Amount__c, Demand_Letter_Sent__c, Total_Due_Amount__c, (select id,Amount_Balance__c,Amount_Received__c,Total_Due_Amount__c from Demand_Letters__r ) from Payment_Schedule__c where Opportunity__c =: oppId];
             System.debug('paymentScheduleRelatedToOpp==>'+paymentScheduleRelatedToOpp);
             
-            List<Opportunity> oppDetails = [SELECT Id,Name,AccountId,Unit__r.Unit_Name__c,Booking_Date__c, Total_Schedule_Amount__c, Total_Amount_Collected__c, Project__r.Name,Unit__r.Floor__r.Blocks__r.Tower_Code__c,Unit__r.Floor__r.Blocks__r.Name,
+            List<Opportunity> oppDetails = [SELECT Id,Name,AccountId,Unit__r.Unit_Name__c,Booking_Date__c, Schedule_and_Debit_Amt__c, Total_Schedule_Amount__c, Total_Amount_Collected__c, Project__r.Name,Unit__r.Floor__r.Blocks__r.Tower_Code__c,Unit__r.Floor__r.Blocks__r.Name,
                                             (SELECT Id,Document_Id__c from Documents__r where Name = 'Post Sales' LIMIT 1) from Opportunity where Id =: oppId LIMIT 1];
             String parentFolderId;
             String docId;

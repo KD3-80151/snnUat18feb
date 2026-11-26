@@ -128,7 +128,10 @@ public without sharing class GenerateReceiptDetailsController {
            
             // Demand_Letter__c dl = [SELECT id, Name,mainDemandLetter__c FROM Demand_Letter__c WHERE mainDemandLetter__c = True LIMIT 1];
             // System.debug('dl========>'+dl);
-            receipt.Receipt_Date__c = System.Today();
+            // Use the Receipt Date selected in the component; fall back to today if not provided.
+            receipt.Receipt_Date__c = receiptData.containsKey('receiptDate') && receiptData.get('receiptDate') != null && String.isNotBlank(String.valueOf(receiptData.get('receiptDate')))
+                ? Date.valueOf(String.valueOf(receiptData.get('receiptDate')))
+                : System.today();
             receipt.Type__c = receiptData.containsKey('receiptType') && receiptData.get('receiptType') != null ? (String) receiptData.get('receiptType') : null;
             receipt.Token_Amount__c = TRUE;
             receipt.Bank__c = receiptData.containsKey('bankName') && receiptData.get('bankName') != null ? (String) receiptData.get('bankName') : null;

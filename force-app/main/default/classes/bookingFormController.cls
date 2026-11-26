@@ -10,8 +10,9 @@ public without sharing class bookingFormController {
             system.debug('oppId ===> ' + oppId);
             system.debug('profileDataList ===> ' + profileDataList);
             Id customerRecTypeId = Schema.SObjectType.Account.getRecordTypeInfosByName().get('Customer').getRecordTypeId();
-            EmailTemplate temp = [SELECT Id, Subject, HtmlValue, Body FROM EmailTemplate WHERE DeveloperName = 'Customer_Email_from_BookingForm'];
-            List<Messaging.SingleEmailMessage> emailsToSend = new List<Messaging.SingleEmailMessage>();
+            // Customer_Email_from_BookingForm email is no longer sent
+            // EmailTemplate temp = [SELECT Id, Subject, HtmlValue, Body FROM EmailTemplate WHERE DeveloperName = 'Customer_Email_from_BookingForm'];
+            // List<Messaging.SingleEmailMessage> emailsToSend = new List<Messaging.SingleEmailMessage>();
             
             Map<String,String> profilePicMap = new Map<String,String>();
             List<Account> applicantListToUpdate = new List<Account>();
@@ -66,7 +67,7 @@ public without sharing class bookingFormController {
                     
                     System.debug('con::'+con);
                     
-                    if(con.Email != null && con.Phone != null){
+                    /* if(con.Email != null && con.Phone != null){
                         Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
                         String htmlBody = temp.HtmlValue
                             .replace('{!Contact.Name}', con.FirstName + ' ' + con.LastName)
@@ -77,7 +78,7 @@ public without sharing class bookingFormController {
                         email.setSaveAsActivity(false);
                         email.setHtmlBody(htmlBody);
                         emailsToSend.add(email);
-                    }
+                    } */
                 }
             }
             
@@ -218,9 +219,9 @@ public without sharing class bookingFormController {
                 update oppList[0];
 
                 // Send emails only after all DML has succeeded
-                if (!emailsToSend.isEmpty()) {
+                /* if (!emailsToSend.isEmpty()) {
                     Messaging.sendEmail(emailsToSend);
-                }
+                } */
                 return 'Success: Applicant Details Created Successfully!!!';
             }
             Database.rollback(sp);

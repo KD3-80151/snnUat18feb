@@ -48,7 +48,7 @@
                     <div class="slds-grid slds-wrap slds-gutters_small">
 
                         <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 field-cell">
-                            <lightning-input type="date" label="Receipt Date" value={receiptDate} name="receiptDate" onchange={handleInputChange} required></lightning-input>
+                            <lightning-input type="date" label="Receipt Date" value={receiptDate} min={receiptDateMin} max={receiptDateMax} message-when-range-underflow="Receipt Date cannot be more than 3 days in the past." message-when-range-overflow="Receipt Date cannot be a future date." name="receiptDate" onchange={handleInputChange} required></lightning-input>
                         </div>
 
                         <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 field-cell">

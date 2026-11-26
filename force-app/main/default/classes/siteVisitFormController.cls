@@ -604,6 +604,10 @@ public without sharing class siteVisitFormController {
                         if(visitRecord.Contact__c == null) visitRecord.Contact__c = r.ContactId;
                     }
                     if(!newRoles.isEmpty()) insert newRoles;
+                    // on the first visit this task comes from the Lead (flow) and moves to the Opportunity on conversion;
+                    // a new-project Opportunity has no Lead, so create it here
+                    createFirstFollowUpTask(projOpp.Id, visitRecord.Contact__c,
+                                            String.isBlank(salesTeamMemberId) ? UserInfo.getUserId() : (Id) salesTeamMemberId);
                     Opp = projOpp;
                 }else if(Opp.Project__c == null && !String.isBlank(projectId)){
                     Opp.Project__c = projectId;
@@ -819,6 +823,26 @@ public without sharing class siteVisitFormController {
             if (!tasks.isEmpty()) update tasks;
         } catch (Exception e) {
             System.debug('assignSalesTasks: ' + e.getMessage());
+        }
+    }
+
+    // Same task the Lead flow (r_Lead_After_Insert_Update_Sync) creates, for an Opportunity created without a Lead.
+    // Best effort: it must never stop the site visit from being saved.
+    @TestVisible
+    private static void createFirstFollowUpTask(Id oppId, Id contactId, Id ownerId) {
+        try {
+            if (oppId == null || ownerId == null) return;
+            insert new Task(
+                Subject      = 'Take First Follow Up with Customer - Within 4 Hours',
+                Priority     = 'High',
+                Status       = 'Open',
+                ActivityDate = System.today(),
+                OwnerId      = ownerId,
+                WhatId       = oppId,
+                WhoId        = contactId
+            );
+        } catch (Exception e) {
+            System.debug('createFirstFollowUpTask: ' + e.getMessage());
         }
     }
 

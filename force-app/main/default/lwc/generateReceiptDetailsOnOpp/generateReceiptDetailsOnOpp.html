@@ -33,7 +33,7 @@
 
             <!-- Receipt Date -->
             <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">
-                <lightning-input type="date" label="Receipt Date" value={receiptDate} class="custom-input" name="receiptDate" onchange={handleInputChange} required ></lightning-input>
+                <lightning-input type="date" label="Receipt Date" value={receiptDate} min={receiptDateMin} max={receiptDateMax} message-when-range-underflow="Receipt Date cannot be more than 3 days in the past." message-when-range-overflow="Receipt Date cannot be a future date." class="custom-input" name="receiptDate" onchange={handleInputChange} required ></lightning-input>
             </div>
 
             <!-- Mode of Payment -->

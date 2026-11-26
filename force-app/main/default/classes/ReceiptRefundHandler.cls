@@ -1,4 +1,4 @@
-public class ReceiptRefundHandler {
+public without Sharing class ReceiptRefundHandler {
     
     // This method will be called from trigger when status becomes 'Approved'
     public static void processRefundOnApproval(List<Receipt__c> newRecs, Map<Id, Receipt__c> oldMap) {

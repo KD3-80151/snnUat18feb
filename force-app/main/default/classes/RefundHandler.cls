@@ -1,4 +1,4 @@
-public class RefundHandler {
+public without Sharing class RefundHandler {
     
     public static void handleBefore(List<Refund__c> newList, Boolean isInsert) {
         Set<Id> receiptIds = new Set<Id>();
@@ -59,22 +59,75 @@ public class RefundHandler {
         for (Id refundId : approvedRefunds) {
             processRefundDeduction(refundId);
         }
+
+        // Roll up approved refund amounts to parent Receipt__c.Refund__c
+        Set<Id> receiptIdsToRecalc = new Set<Id>();
+        for (Refund__c ref : newList) {
+            if (ref.Approval_Status__c == 'Approved' && ref.Receipt__c != null) {
+                receiptIdsToRecalc.add(ref.Receipt__c);
+            }
+        }
+        updateReceiptRefundTotal(receiptIdsToRecalc);
     }
-    
+
     public static void handleAfterUpdate(List<Refund__c> newList, Map<Id, Refund__c> oldMap) {
         List<Refund__c> approvedRefunds = new List<Refund__c>();
-        
+        Set<Id> receiptIdsToRecalc = new Set<Id>();
+
         for (Refund__c ref : newList) {
             Refund__c oldRef = oldMap.get(ref.Id);
-            
+
             if (ref.Approval_Status__c == 'Approved' && (oldRef == null || oldRef.Approval_Status__c != 'Approved')) {
                 approvedRefunds.add(ref);
             }
+
+            // Recalculate receipt's Refund__c when a refund becomes approved, stops being approved,
+            // or an approved refund's amount / receipt changes
+            Boolean isApproved  = ref.Approval_Status__c == 'Approved';
+            Boolean wasApproved = oldRef != null && oldRef.Approval_Status__c == 'Approved';
+            if (isApproved || wasApproved) {
+                if (oldRef == null || isApproved != wasApproved
+                    || ref.Refund_Amount__c != oldRef.Refund_Amount__c
+                    || ref.Receipt__c != oldRef.Receipt__c) {
+                    if (ref.Receipt__c != null) receiptIdsToRecalc.add(ref.Receipt__c);
+                    if (oldRef != null && oldRef.Receipt__c != null) receiptIdsToRecalc.add(oldRef.Receipt__c);
+                }
+            }
         }
-        
+
         for (Refund__c ref : approvedRefunds) {
             processRefundDeduction(ref.Id);
         }
+
+        updateReceiptRefundTotal(receiptIdsToRecalc);
+    }
+
+    // Sets Receipt__c.Refund__c = sum of Refund_Amount__c of all Approved refunds under that receipt
+    public static void updateReceiptRefundTotal(Set<Id> receiptIds) {
+        if (receiptIds == null || receiptIds.isEmpty()) return;
+
+        Map<Id, Decimal> totalByReceipt = new Map<Id, Decimal>();
+        for (Id rid : receiptIds) {
+            totalByReceipt.put(rid, 0);
+        }
+
+        for (AggregateResult ar : [
+            SELECT Receipt__c rid, SUM(Refund_Amount__c) total
+            FROM Refund__c
+            WHERE Receipt__c IN :receiptIds AND Approval_Status__c = 'Approved'
+            GROUP BY Receipt__c
+        ]) {
+            Decimal total = (Decimal) ar.get('total');
+            totalByReceipt.put((Id) ar.get('rid'), total == null ? 0 : total);
+        }
+
+        List<Receipt__c> receiptsToUpdate = new List<Receipt__c>();
+        for (Id rid : totalByReceipt.keySet()) {
+            receiptsToUpdate.add(new Receipt__c(Id = rid, Refund__c = totalByReceipt.get(rid)));
+        }
+
+        update receiptsToUpdate;
+        System.debug('Updated Refund__c on ' + receiptsToUpdate.size() + ' receipt(s)');
     }
     
     public static void submitForApproval(Id refundId) {

@@ -1247,6 +1247,8 @@ public without sharing class DigioWrapperClass {
         public String accntName          { get; set; }
         public String allotmentDate      { get; set; }
         public String projectAddress      { get; set; }
+
+        public String transferFee       { get; set; }
     }
 
     //!leagal department contact details

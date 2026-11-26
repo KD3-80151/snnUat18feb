@@ -42,7 +42,7 @@ public without sharing class QueueableToGenerateWelcomeLetter implements Queueab
 
             List<Opportunity> oppList = [
                 SELECT Id, Name, Project__c, AccountId, Account.Full_Name__c, Account.Email__c, Account.Phone, Unit__r.Unit_Name__c, Unit__r.Floor__r.Blocks__r.Tower_Code__c, Project__r.Name, Project__r.Bank_Name__c, Project__r.Company__c,
-                Project__r.Company__r.Name, Project__r.Company__r.Address__c, Project__r.Company__r.Email__c, Project__r.Company__r.PAN_No__c, Project__r.Account_Name__c, Project__r.Account_Number__c, Project__r.Project_Address__c,
+                Project__r.Company__r.Name, Project__r.Company__r.Address__c, Project__r.Company__r.Email__c, Project__r.Company__r.PAN_No__c, Project__r.Account_Name__c, Project__r.Account_Number__c, Project__r.Project_Address__c, Project__r.Transfer_Fee__c,
                 Project__r.Type_of_Account__c, Project__r.Branch__c, Project__r.IFSC_Code__c, Booking_Date__c, (SELECT Id, Account__r.Full_Name__c FROM Applicants__r),
                 (SELECT Id, Name, Document_Id__c FROM Documents__r WHERE Name = 'Root Folder' LIMIT 1) FROM Opportunity WHERE Id = :recordId LIMIT 1];
 
@@ -61,12 +61,13 @@ public without sharing class QueueableToGenerateWelcomeLetter implements Queueab
             }
 
             Digio_Integration__c customData = Digio_Integration__c.getValues('Digio');
-            String templateKey = null;
-            if (customData != null) {
-                templateKey = (opp.Project__c == System.label.Felicity_Project) ? customData.Welcome_Letter_Felicity__c
-                            : (opp.Project__c == System.label.Duomont_Project) ? customData.Welcome_Letter_Duomont__c
-                            : customData.Welcome_Letter__c;
-            }
+            // String templateKey = null;
+            // if (customData != null) {
+            //     templateKey = (opp.Project__c == System.label.Felicity_Project) ? customData.Welcome_Letter_Felicity__c
+            //                 : (opp.Project__c == System.label.Duomont_Project) ? customData.Welcome_Letter_Duomont__c
+            //                 : customData.Welcome_Letter__c;
+            // }
+            String templateKey = (customData != null) ? customData.Welcome_Letter__c : null;
 
             system.debug('templateKey::>>' + templateKey);
 
@@ -131,6 +132,7 @@ public without sharing class QueueableToGenerateWelcomeLetter implements Queueab
             tempValues.bankIfsc             = (opp.Project__r != null && opp.Project__r.IFSC_Code__c != null) ? opp.Project__r.IFSC_Code__c : '';
             tempValues.accntName            = (opp.Account != null && opp.Account.Full_Name__c != null) ? opp.Account.Full_Name__c : '';
             tempValues.allotmentDate        = System.today().format();
+            tempValues.transferFee          = (opp.Project__r.Transfer_Fee__c != null) ? String.valueOf(opp.Project__r.Transfer_Fee__c) : '';
 
             tempList.template_values = tempValues;
 
@@ -217,7 +219,7 @@ public without sharing class QueueableToGenerateWelcomeLetter implements Queueab
             System.debug('sendWelcomeLetterEmail oppId => ' + oppId);
             System.debug('sendWelcomeLetterEmail contentVersionIds => ' + contentVersionIds);
 
-            Opportunity opp = [SELECT Id, Name, Account.Email__c, Project__r.Name, Welcome_Sent_Date__c FROM Opportunity WHERE Id = :oppId LIMIT 1];
+            Opportunity opp = [SELECT Id, Name, Account.Name, Account.Email__c, Project__r.Name, Welcome_Sent_Date__c FROM Opportunity WHERE Id = :oppId LIMIT 1];
             List<ContentVersion> cvs = [SELECT Id, Title, VersionData, ContentDocumentId FROM ContentVersion WHERE Id IN :contentVersionIds];
             EmailTemplate temp = [SELECT Id, Subject, HtmlValue, Body FROM EmailTemplate WHERE DeveloperName = 'WelcomeLetterPDFEmailTemplate' LIMIT 1];
             OrgWideEmailAddress[] owea = [SELECT Id FROM OrgWideEmailAddress LIMIT 1];
@@ -244,7 +246,10 @@ public without sharing class QueueableToGenerateWelcomeLetter implements Queueab
             if (owea != null && !owea.isEmpty()) email.setOrgWideEmailAddressId(owea[0].Id);
 
             String subject = temp.Subject;
-            String htmlBody = temp.HtmlValue.replace('{!Opportunity.Name}', opp.Name);
+            String accountName = (opp.Account != null && opp.Account.Name != null) ? opp.Account.Name : '';
+            String htmlBody = temp.HtmlValue
+                                .replace('{!Opportunity.Name}', opp.Name != null ? opp.Name : '')
+                                .replace('{!Account.Name}', accountName);
 
             email.setSubject(subject);
             email.setToAddresses(new String[]{ opp.Account.Email__c });
